@@ -1,0 +1,35 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    font-family: 'Inter var', system-ui, sans-serif;
+  }
+  
+  body {
+    @apply bg-legal-light text-legal-dark;
+  }
+}
+
+@layer components {
+  .btn {
+    @apply px-4 py-2 rounded-md font-medium transition-colors duration-200;
+  }
+  
+  .btn-primary {
+    @apply bg-legal-secondary text-white hover:bg-opacity-90;
+  }
+  
+  .btn-secondary {
+    @apply bg-legal-light text-legal-dark border border-legal-dark hover:bg-legal-dark hover:text-white;
+  }
+  
+  .card {
+    @apply bg-white rounded-lg shadow-card p-4 transition-shadow duration-200 hover:shadow-card-hover;
+  }
+  
+  .input {
+    @apply w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-legal-secondary;
+  }
+}

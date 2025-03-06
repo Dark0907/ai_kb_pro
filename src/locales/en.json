@@ -1,0 +1,55 @@
+{
+  "app": {
+    "title": "Wanhuida Knowledge Base",
+    "subtitle": "Intelligent Legal Assistant"
+  },
+  "nav": {
+    "home": "Home",
+    "features": "Features",
+    "about": "About Us",
+    "contact": "Contact",
+    "history": "History",
+    "settings": "Settings"
+  },
+  "chat": {
+    "placeholder": "Enter your legal question...",
+    "send": "Send",
+    "thinking": "Thinking...",
+    "copy": "Copy",
+    "read": "Read",
+    "share": "Share",
+    "new_chat": "New Chat",
+    "start_new": "Start a New Conversation",
+    "start_description": "Enter your legal question and our AI assistant will provide professional answers"
+  },
+  "sidebar": {
+    "recent": "Recent Conversations",
+    "today": "Today",
+    "last_7_days": "Last 7 Days",
+    "last_30_days": "Last 30 Days",
+    "search": "Search history",
+    "pin": "Pin",
+    "unpin": "Unpin"
+  },
+  "reference": {
+    "title": "References",
+    "laws": "Laws",
+    "cases": "Cases",
+    "contracts": "Contracts",
+    "view_more": "View More",
+    "source": "Source",
+    "no_references": "No references available"
+  },
+  "settings": {
+    "language": "Language",
+    "theme": "Theme",
+    "light": "Light",
+    "dark": "Dark",
+    "system": "System"
+  },
+  "notFound": {
+    "title": "Page Not Found",
+    "message": "Sorry, the page you are looking for does not exist or has been removed",
+    "back_home": "Back to Home"
+  }
+} 

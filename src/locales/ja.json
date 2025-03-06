@@ -1,0 +1,55 @@
+{
+  "app": {
+    "title": "ワンフイダ知識ベース",
+    "subtitle": "インテリジェント法律アシスタント"
+  },
+  "nav": {
+    "home": "ホーム",
+    "features": "機能紹介",
+    "about": "会社概要",
+    "contact": "お問い合わせ",
+    "history": "履歴",
+    "settings": "設定"
+  },
+  "chat": {
+    "placeholder": "法律に関する質問を入力してください...",
+    "send": "送信",
+    "thinking": "考え中...",
+    "copy": "コピー",
+    "read": "読み上げ",
+    "share": "共有",
+    "new_chat": "新しい会話",
+    "start_new": "新しい会話を始める",
+    "start_description": "法律に関する質問を入力すると、AIアシスタントが専門的な回答を提供します"
+  },
+  "sidebar": {
+    "recent": "最近の会話",
+    "today": "今日",
+    "last_7_days": "過去7日間",
+    "last_30_days": "過去30日間",
+    "search": "履歴を検索",
+    "pin": "固定",
+    "unpin": "固定解除"
+  },
+  "reference": {
+    "title": "参照元",
+    "laws": "法律",
+    "cases": "判例",
+    "contracts": "契約",
+    "view_more": "もっと見る",
+    "source": "ソース",
+    "no_references": "参照元はありません"
+  },
+  "settings": {
+    "language": "言語",
+    "theme": "テーマ",
+    "light": "ライト",
+    "dark": "ダーク",
+    "system": "システム設定に従う"
+  },
+  "notFound": {
+    "title": "ページが見つかりません",
+    "message": "申し訳ありませんが、お探しのページは存在しないか、削除されました",
+    "back_home": "ホームに戻る"
+  }
+} 

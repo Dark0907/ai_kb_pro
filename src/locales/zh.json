@@ -1,0 +1,55 @@
+{
+  "app": {
+    "title": "万慧达文库",
+    "subtitle": "智能法律助手"
+  },
+  "nav": {
+    "home": "首页",
+    "features": "功能介绍",
+    "about": "关于我们",
+    "contact": "联系我们",
+    "history": "历史记录",
+    "settings": "设置"
+  },
+  "chat": {
+    "placeholder": "输入您的法律问题...",
+    "send": "发送",
+    "thinking": "思考中...",
+    "copy": "复制",
+    "read": "朗读",
+    "share": "分享",
+    "new_chat": "新对话",
+    "start_new": "开始新的对话",
+    "start_description": "输入您的法律问题，AI助手将为您提供专业解答"
+  },
+  "sidebar": {
+    "recent": "最近对话",
+    "today": "今天",
+    "last_7_days": "最近7天",
+    "last_30_days": "最近30天",
+    "search": "搜索历史记录",
+    "pin": "固定",
+    "unpin": "取消固定"
+  },
+  "reference": {
+    "title": "引用来源",
+    "laws": "法规",
+    "cases": "判例",
+    "contracts": "合同",
+    "view_more": "查看更多",
+    "source": "来源",
+    "no_references": "暂无引用来源"
+  },
+  "settings": {
+    "language": "语言",
+    "theme": "主题",
+    "light": "浅色",
+    "dark": "深色",
+    "system": "跟随系统"
+  },
+  "notFound": {
+    "title": "页面未找到",
+    "message": "抱歉，您访问的页面不存在或已被移除",
+    "back_home": "返回首页"
+  }
+} 
