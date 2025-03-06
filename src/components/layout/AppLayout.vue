@@ -63,7 +63,7 @@
         <div 
           v-if="referenceStore.showReferencePanel"
           :class="[
-            'w-80 h-full transition-all duration-300 bg-white dark:bg-law-800 shadow-law overflow-y-auto',
+            'w-80 h-full transition-all duration-300 bg-white dark:bg-law-800 shadow-law overflow-y-auto dark:border-law-700 border-l',
             'fixed right-0 top-16 bottom-0 z-30 lg:relative lg:top-0 lg:z-10',
             { 'animate-slide-in-right': referenceStore.showReferencePanel }
           ]"

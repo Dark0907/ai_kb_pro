@@ -1,7 +1,7 @@
 <template>
   <div class="flex flex-col h-full">
     <!-- 引用面板头部 -->
-    <div class="p-4 border-b border-law-200 dark:border-law-700 bg-white-light dark:bg-primary text-primary flex justify-between items-center">
+    <div class="p-4 border-b border-law-200 dark:bg-law-800 dark:border-law-700 bg-white-light  dark:text-accent text-primary flex justify-between items-center">
       <div class="flex items-center">
         <span class="text-xl mr-2">📜</span>
         <h2 class="text-xl font-bold">{{ $t('reference.title') }}</h2>
@@ -21,7 +21,7 @@
     </div>
     
     <!-- 引用内容 -->
-    <div class="flex-1 overflow-y-auto p-4 bg-law-50 dark:bg-law-900">
+    <div class="flex-1 overflow-y-auto p-4 bg-law-50 dark:bg-law-800">
       <!-- 加载中状态 -->
       <div v-if="referenceStore.isLoading" class="flex justify-center items-center h-full">
         <div class="relative w-16 h-16">

@@ -30,7 +30,7 @@
       {{ reference.section }}
     </p>
     
-    <div class="bg-law-50 dark:bg-law-900 p-3 rounded-md border border-law-200 dark:border-law-700">
+    <div class="bg-law-50 dark:bg-law-800 p-3 rounded-md border border-law-200 dark:border-law-700">
       <p class="text-xs text-law-600 dark:text-law-300 line-clamp-2">
         {{ getContentPreview(reference.content) }}
       </p>

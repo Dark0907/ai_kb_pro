@@ -34,14 +34,14 @@
       </div>
       <div class="flex-1">
         <div class="max-w-[80%] min-w-[60px]">
-          <div class="bg-law-200 dark:bg-law-800 rounded-lg shadow-law p-4 inline-block">
-            <p class="text-law-900 dark:text-law-100 whitespace-pre-line break-words">{{ message.content }}</p>
+          <div class="bg-law-200 dark:bg-law-700 rounded-lg shadow-law p-4 inline-block">
+            <div v-html="renderMarkdown(message.content)" class="text-law-900 dark:text-law-100 whitespace-pre-line break-words"></div>
             
             <!-- 引用来源 -->
             <div v-if="message.references && message.references.length > 0" class="mt-3 pt-3 border-t border-law-300 dark:border-law-700">
               <div class="flex items-center mb-2">
                 <span class="text-lg mr-1">📜</span>
-                <span class="text-sm font-medium text-primary">{{ $t('reference.title') }}</span>
+                <span class="text-sm font-medium text-primary dark:text-accent">{{ $t('reference.title') }}</span>
                 <span class="ml-2 px-2 py-0.5 bg-accent bg-opacity-20 rounded-full text-xs text-accent-dark font-semibold">
                   {{ message.references.length }}
                 </span>
@@ -71,15 +71,19 @@
                   class="text-law-600 dark:text-law-400 hover:text-accent dark:hover:text-accent transition-colors duration-200"
                   :title="$t('chat.copy')"
                 >
-                  <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <svg v-if="!isCopied" class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
                     <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                  </svg>
+                  <svg v-else class="w-4 h-4 text-green-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M20 6L9 17l-5-5"></path>
                   </svg>
                 </button>
                 
                 <button 
-                  @click="readMessage"
-                  class="text-law-600 dark:text-law-400 hover:text-accent dark:hover:text-accent transition-colors duration-200"
+                  @click="toggleReadMessage"
+                  :class="{'text-red-500': isReading, 'text-law-600 dark:text-law-400': !isReading}"
+                  class="hover:text-accent dark:hover:text-accent transition-colors duration-200"
                   :title="$t('chat.read')"
                 >
                   <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -112,7 +116,8 @@
 </template>
 
 <script setup>
-import { defineProps, defineEmits } from 'vue'
+import { defineProps, defineEmits, ref } from 'vue'
+import { marked } from 'marked'
 
 const props = defineProps({
   message: {
@@ -123,17 +128,30 @@ const props = defineProps({
 
 defineEmits(['reference-click'])
 
+// 状态变量，控制复制图标的状态
+const isCopied = ref(false)
+const isReading = ref(false) // 控制朗读状态
+
 // 格式化时间
 const formatTime = (timestamp) => {
   const date = new Date(timestamp)
-  return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+  const options = { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hour12: false }
+  return date.toLocaleString('zh-CN', options).replace(/\//g, '-').replace(',', ' ') // 替换斜杠为短横线，并去掉逗号
+}
+
+// 渲染 Markdown
+const renderMarkdown = (content) => {
+  return marked(content)
 }
 
 // 复制消息
 const copyMessage = () => {
   navigator.clipboard.writeText(props.message.content)
     .then(() => {
-      // 可以添加复制成功的提示
+      isCopied.value = true // 设置为已复制状态
+      setTimeout(() => {
+        isCopied.value = false // 2秒后恢复状态
+      }, 2000)
       console.log('消息已复制到剪贴板')
     })
     .catch(err => {
@@ -141,15 +159,23 @@ const copyMessage = () => {
     })
 }
 
-// 朗读消息
-const readMessage = () => {
-  if ('speechSynthesis' in window) {
-    const utterance = new SpeechSynthesisUtterance(props.message.content)
-    // 设置语言
-    utterance.lang = document.documentElement.lang || 'zh-CN'
-    window.speechSynthesis.speak(utterance)
+// 切换朗读状态
+const toggleReadMessage = () => {
+  if (isReading.value) {
+    window.speechSynthesis.cancel() // 取消朗读
+    isReading.value = false
   } else {
-    console.error('浏览器不支持语音合成')
+    if ('speechSynthesis' in window) {
+      const utterance = new SpeechSynthesisUtterance(props.message.content)
+      utterance.lang = document.documentElement.lang || 'zh-CN'
+      window.speechSynthesis.speak(utterance)
+      isReading.value = true
+      utterance.onend = () => {
+        isReading.value = false // 朗读结束后恢复状态
+      }
+    } else {
+      console.error('浏览器不支持语音合成')
+    }
   }
 }
 
@@ -164,7 +190,6 @@ const shareMessage = () => {
       console.error('分享失败:', err)
     })
   } else {
-    // 如果浏览器不支持原生分享，可以实现自定义分享逻辑
     console.log('浏览器不支持原生分享')
   }
 }
