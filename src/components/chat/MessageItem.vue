@@ -153,8 +153,12 @@ const renderMarkdown = (content) => {
   marked.setOptions({
     breaks: true, // 允许回车换行
     gfm: true, // 启用 GitHub 风格的 Markdown
-    headerIds: false, // 不生成标题 ID
-    mangle: false // 不转义内联 HTML
+    headerIds: true, // 生成标题 ID，便于样式应用
+    mangle: false, // 不转义内联 HTML
+    pedantic: false, // 不使用严格模式
+    sanitize: false, // 不过滤 HTML 标签
+    smartLists: true, // 使用更智能的列表行为
+    smartypants: true // 使用更智能的标点符号
   });
   
   return marked(content);
@@ -214,5 +218,86 @@ const shareMessage = () => {
 <style scoped>
 .break-words {
   word-break: break-word;
+}
+
+/* Markdown 样式 */
+.markdown-content h1, 
+.markdown-content h2, 
+.markdown-content h3, 
+.markdown-content h4, 
+.markdown-content h5, 
+.markdown-content h6 {
+  margin-top: 1em;
+  margin-bottom: 0.5em;
+  font-weight: 600;
+}
+
+.markdown-content h1 { font-size: 1.8em; }
+.markdown-content h2 { font-size: 1.5em; }
+.markdown-content h3 { font-size: 1.3em; }
+.markdown-content h4 { font-size: 1.2em; }
+
+.markdown-content ul, 
+.markdown-content ol {
+  padding-left: 1.5em;
+  margin-bottom: 1em;
+}
+
+.markdown-content ul li, 
+.markdown-content ol li {
+  margin-bottom: 0.25em;
+}
+
+.markdown-content p {
+  margin-bottom: 1em;
+}
+
+.markdown-content hr {
+  margin: 1.5em 0;
+  border: 0;
+  border-top: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.markdown-content blockquote {
+  padding-left: 1em;
+  border-left: 4px solid #e0e0e0;
+  margin-left: 0;
+  margin-right: 0;
+  color: #666;
+}
+
+.markdown-content code {
+  background-color: rgba(0, 0, 0, 0.05);
+  padding: 0.2em 0.4em;
+  border-radius: 3px;
+  font-family: monospace;
+}
+
+.markdown-content pre {
+  background-color: rgba(0, 0, 0, 0.05);
+  padding: 1em;
+  border-radius: 5px;
+  overflow-x: auto;
+  margin-bottom: 1em;
+}
+
+.markdown-content pre code {
+  background-color: transparent;
+  padding: 0;
+}
+
+/* 适配暗色模式 */
+.dark .markdown-content hr {
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.dark .markdown-content blockquote {
+  border-left-color: #555;
+  color: #aaa;
+}
+
+.dark .markdown-content code,
+.dark .markdown-content pre {
+  background-color: rgba(255, 255, 255, 0.05);
 }
 </style>

@@ -35,17 +35,17 @@ export default defineConfig({
     },
     cors: true,
     proxy: {
-      // Dark 请求地址
-      // '/kb_api': {
-      //   target: 'https://ips.wanhuida.cn/kb_api/',
-      //   changeOrigin: true,
-      //   rewrite: path => path.replace(/^\/kb_api/, ''), 
-      // },
+      // 请求地址
       '/kb_api': {
-        target: 'http://192.168.89.6:8777',
+        target: 'https://ipc.wanhuida.com/kb_api/',
         changeOrigin: true,
-        rewrite: path => path.replace(/^\/kb_api/, '/api'), 
+        rewrite: path => path.replace(/^\/kb_api/, ''), 
       },
+      // '/kb_api': {
+      //   target: 'http://192.168.89.6:8777',
+      //   changeOrigin: true,
+      //   rewrite: path => path.replace(/^\/kb_api/, '/api'), 
+      // },
       '/ip_service': {
         target: 'http://192.168.0.168:8000',
         changeOrigin: true,

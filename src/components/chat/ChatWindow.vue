@@ -231,7 +231,7 @@ const sendMessage = async () => {
           const currentMessage = chatStore.currentChat.messages.find(m => m.id === currentMessageId);
           
           if (currentMessage) {
-            // 更新消息内容 - 保留原始格式，不进行 HTML 转换
+            // 更新消息内容 - 保留原始格式
             currentMessage.content += res.response;
             
             // 如果有引用文档，更新引用
@@ -259,9 +259,12 @@ const sendMessage = async () => {
         // 查找当前消息并进行最终的格式处理
         const currentMessage = chatStore.currentChat.messages.find(m => m.id === currentMessageId);
         if (currentMessage) {
-          // 可以在这里对内容进行最终的格式调整，例如添加必要的换行符
           // 确保 Markdown 格式正确
-          currentMessage.content = currentMessage.content.replace(/\n/g, '\n\n');
+          // 不需要替换所有的 \n 为 \n\n，因为这可能会破坏已有的 Markdown 格式
+          // 只需确保段落之间有空行
+          currentMessage.content = currentMessage.content
+            .replace(/\n{3,}/g, '\n\n') // 将多个连续换行减少为两个
+            .replace(/\n\n/g, '\n\n'); // 确保段落之间有空行
         }
         
         ctrl.abort();
