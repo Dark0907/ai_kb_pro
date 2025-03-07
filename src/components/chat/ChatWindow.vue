@@ -82,6 +82,10 @@ import { ref, watch, nextTick, onMounted, defineProps, inject } from 'vue'
 import { useChatStore } from '../../stores/chat'
 import { useReferenceStore } from '../../stores/reference'
 import MessageItem from './MessageItem.vue'
+import { API_URL } from '@services/api'; // 引入 API_URL
+import { userId } from '@services/urlConfig'; // 引入 userId
+import { fetchEventSource } from '@microsoft/fetch-event-source';
+import { Typewriter } from '@utils/typewriter';
 
 const props = defineProps({
   chatId: {
@@ -95,6 +99,25 @@ const referenceStore = useReferenceStore()
 const messageInput = ref('')
 const messagesContainer = ref(null)
 const appLayout = inject('appLayout')
+
+// 聊天对话
+const chatHistory = ref([])
+const currentChat = ref(null)
+const selectList = ref(['KBd7f038374e244f509956852a06da19e2']); // 假设这是你选择的知识库ID列表
+const history = ref([]); // 假设这是聊天历史
+const showLoading = ref(false); // 加载状态
+const QA_List = ref([{ answer: '' }]); // 假设这是你的问答列表
+
+const typewriter = new Typewriter((str) => {
+  if (str && currentMessageId) {
+    const currentMessage = chatStore.currentChat.messages.find(m => m.id === currentMessageId);
+    if (currentMessage) {
+      currentMessage.content += str || ''; // 逐字更新消息内容
+    }
+  }
+});
+
+let currentMessageId = null; // 用于存储当前消息的ID
 
 // 获取聊天数据
 onMounted(async () => {
@@ -119,10 +142,137 @@ watch(() => chatStore.currentChat?.messages.length, () => {
 const sendMessage = async () => {
   if (!messageInput.value.trim() || chatStore.isLoading) return
   
-  const message = messageInput.value
+  const q = messageInput.value // 用户输入的问题
   messageInput.value = ''
   
-  await chatStore.sendMessage(message)
+  // 使用测试数据, 先注释掉下面的其他程序
+  // await chatStore.sendMessage(q)
+  try {
+    chatStore.isLoading = true
+    
+    // 添加用户消息
+    chatStore.currentChat.messages.push({
+      id: Date.now().toString(),
+      role: 'user',
+      content: q,
+      timestamp: new Date().toISOString()
+    })
+
+    // // 模拟AI响应
+    // setTimeout(() => {
+    //   chatStore.currentChat.messages.push({
+    //     id: (Date.now() + 1).toString(),
+    //     role: 'assistant',
+    //     content: '这是一个模拟的AI回复。在实际应用中，这里将是来自后端API的响应。',
+    //     timestamp: new Date().toISOString(),
+    //     references: [
+    //       { id: '1', type: 'law', title: '中华人民共和国民法典', section: '第一千一百六十五条' },
+    //       { id: '2', type: 'case', title: '张三诉李四合同纠纷案', court: '最高人民法院' }
+    //     ]
+    //   })
+    //   chatStore.isLoading = false
+    // }, 1000)
+
+
+    // // 使用 fetchEventSource 发送请求
+    const ctrl = new AbortController(); // 创建一个 AbortController 实例
+
+    fetchEventSource('http://192.168.89.6:8777/api/local_doc_qa/local_doc_chat', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Accept: ['text/event-stream', 'application/json'],
+      },
+      openWhenHidden: true,
+      body: JSON.stringify({
+        user_id: userId,
+        kb_ids: selectList.value,
+        history: history.value,
+        question: q,
+        streaming: true,
+        networking: false,
+        product_source: 'saas',
+      }),
+      signal: ctrl.signal,
+      onopen(e) {
+        console.log('open');
+        if (e.ok && e.headers.get('content-type') === 'text/event-stream') {
+          console.log("everything's good");
+          
+          // 创建一个新的消息对象
+          const newMessageId = Date.now().toString();
+          currentMessageId = newMessageId;
+          
+          chatStore.currentChat.messages.push({
+            id: newMessageId,
+            role: 'assistant',
+            content: '', // 初始内容为空
+            timestamp: new Date().toISOString(),
+            references: [] // 初始引用为空
+          });
+          
+          typewriter.start();
+        } else if (e.headers.get('content-type') === 'application/json') {
+          chatStore.isLoading = false;
+          return e.json().then(data => {
+            message.error(data?.msg || '出错了,请稍后刷新重试。');
+          }).catch(e => {
+            console.log(e);
+            message.error('出错了,请稍后刷新重试。');
+          });
+        }
+      },
+      onmessage(msg) {
+        console.log('message');
+        const res = JSON.parse(msg.data);
+        
+        if (res?.code == 200 && res?.response) {
+          // 查找当前消息
+          const currentMessage = chatStore.currentChat.messages.find(m => m.id === currentMessageId);
+          
+          if (currentMessage) {
+            // 更新消息内容
+            const formattedResponse = res.response.replaceAll('\n', '<br/>');
+            currentMessage.content += formattedResponse; // 追加内容
+            
+            // 如果有引用文档，更新引用
+            if (res.source_documents && res.source_documents.length > 0) {
+              currentMessage.references = res.source_documents;
+            }
+          }
+          
+          // 使用打字机效果
+          const formattedResponse = res.response.replaceAll('\n', '<br/>');
+          typewriter.add(formattedResponse);
+          
+          scrollToBottom();
+        }
+      },
+      onclose(e) {
+        console.log('close');
+        typewriter.done();
+        ctrl.abort();
+        chatStore.isLoading = false;
+        nextTick(() => {
+          scrollToBottom();
+        });
+      },
+      onerror(err) {
+        console.log('error',err);
+        typewriter.done();
+        ctrl.abort();
+        chatStore.isLoading = false;
+        message.error(err.msg || '出错了');
+        nextTick(() => {
+          scrollToBottom();
+        });
+        throw err;
+      },
+    });
+  } catch (error) {
+    console.error('发送消息失败:', error);
+    isLoading.value = false;
+  }
 }
 
 // 处理引用点击
