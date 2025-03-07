@@ -86,6 +86,7 @@ import { API_URL } from '@services/api'; // 引入 API_URL
 import { userId } from '@services/urlConfig'; // 引入 userId
 import { fetchEventSource } from '@microsoft/fetch-event-source';
 import { Typewriter } from '@utils/typewriter';
+import { marked } from 'marked'
 
 const props = defineProps({
   chatId: {
@@ -177,7 +178,7 @@ const sendMessage = async () => {
     // // 使用 fetchEventSource 发送请求
     const ctrl = new AbortController(); // 创建一个 AbortController 实例
 
-    fetchEventSource('http://192.168.89.6:8777/api/local_doc_qa/local_doc_chat', {
+    fetchEventSource(API_URL + '/kb_api/local_doc_qa/local_doc_chat', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -223,7 +224,6 @@ const sendMessage = async () => {
         }
       },
       onmessage(msg) {
-        console.log('message');
         const res = JSON.parse(msg.data);
         
         if (res?.code == 200 && res?.response) {
@@ -231,26 +231,39 @@ const sendMessage = async () => {
           const currentMessage = chatStore.currentChat.messages.find(m => m.id === currentMessageId);
           
           if (currentMessage) {
-            // 更新消息内容
-            const formattedResponse = res.response.replaceAll('\n', '<br/>');
-            currentMessage.content += formattedResponse; // 追加内容
+            // 更新消息内容 - 保留原始格式，不进行 HTML 转换
+            currentMessage.content += res.response;
             
             // 如果有引用文档，更新引用
             if (res.source_documents && res.source_documents.length > 0) {
-              currentMessage.references = res.source_documents;
+              currentMessage.references = res.source_documents.map(doc => ({
+                id: doc.file_id, 
+                title: doc.file_name,
+                type: 'law',
+                section: '',
+                court: ''
+              }));
             }
           }
           
           // 使用打字机效果
-          const formattedResponse = res.response.replaceAll('\n', '<br/>');
-          typewriter.add(formattedResponse);
+          typewriter.add(res.response);
           
           scrollToBottom();
         }
       },
       onclose(e) {
-        console.log('close');
+        console.log('close', chatStore.currentChat.messages);
         typewriter.done();
+        
+        // 查找当前消息并进行最终的格式处理
+        const currentMessage = chatStore.currentChat.messages.find(m => m.id === currentMessageId);
+        if (currentMessage) {
+          // 可以在这里对内容进行最终的格式调整，例如添加必要的换行符
+          // 确保 Markdown 格式正确
+          currentMessage.content = currentMessage.content.replace(/\n/g, '\n\n');
+        }
+        
         ctrl.abort();
         chatStore.isLoading = false;
         nextTick(() => {

@@ -147,7 +147,17 @@ const formatTime = (timestamp) => {
 
 // 渲染 Markdown
 const renderMarkdown = (content) => {
-  return marked(content)
+  if (!content) return '';
+  
+  // 配置 marked 选项，确保正确解析 Markdown
+  marked.setOptions({
+    breaks: true, // 允许回车换行
+    gfm: true, // 启用 GitHub 风格的 Markdown
+    headerIds: false, // 不生成标题 ID
+    mangle: false // 不转义内联 HTML
+  });
+  
+  return marked(content);
 }
 
 // 复制消息
