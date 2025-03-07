@@ -11,9 +11,9 @@
       </div>
       <button 
         @click="closeReferencePanel"
-        class="p-1 rounded-full hover:bg-primary-dark dark:hover:bg-primary-light transition-colors duration-200"
+        class="p-1 rounded-full hover:bg-law-200 dark:hover:bg-law-700 transition-colors duration-200"
       >
-        <svg class="w-5 h-5 text-white" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <svg class="w-5 h-5 text-primary dark:text-white" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <line x1="18" y1="6" x2="6" y2="18"></line>
           <line x1="6" y1="6" x2="18" y2="18"></line>
         </svg>

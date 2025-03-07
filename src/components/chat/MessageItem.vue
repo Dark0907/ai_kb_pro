@@ -41,13 +41,19 @@
             <div v-if="message.references && message.references.length > 0" class="mt-3 pt-3 border-t border-law-300 dark:border-law-700">
               <div class="flex items-center mb-2">
                 <span class="text-lg mr-1">📜</span>
-                <span class="text-sm font-medium text-primary dark:text-accent">{{ $t('reference.title') }}</span>
+                <button 
+                  @click="$emit('reference-click', message.references)"
+                  class="text-sm font-medium text-primary dark:text-accent hover:underline hover:text-accent transition-colors duration-200"
+                >
+                  {{ $t('reference.title') }}
+                </button>
                 <span class="ml-2 px-2 py-0.5 bg-accent bg-opacity-20 rounded-full text-xs text-accent-dark font-semibold">
                   {{ message.references.length }}
                 </span>
               </div>
               
-              <div class="flex flex-wrap gap-2">
+              <!-- 底部显示来源数据 -->
+              <!-- <div class="flex flex-wrap gap-2">
                 <button 
                   v-for="ref in message.references" 
                   :key="ref.id"
@@ -58,7 +64,7 @@
                   <span v-else-if="ref.type === 'case'" class="text-lg mr-1">⚖️</span>
                   <span class="truncate max-w-[150px]">{{ ref.title }}</span>
                 </button>
-              </div>
+              </div> -->
             </div>
             <div class="mt-2 flex items-start justify-between">
               <span class="text-xs text-gray-500 dark:text-gray-400 mt-1">

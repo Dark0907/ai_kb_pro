@@ -1,7 +1,7 @@
 <template>
   <button 
     @click="toggleTheme"
-    class="p-2 rounded-md hover:bg-primary-dark dark:hover:bg-primary-light focus:outline-none focus:ring-2 focus:ring-accent transition-colors duration-200"
+    class="p-2 rounded-md hover:bg-law-100 dark:hover:bg-primary-light focus:outline-none focus:ring-2 focus:ring-accent transition-colors duration-200"
   >
     <!-- 暗色主题图标 -->
     <span v-if="currentTheme === 'light'" class="text-xl">🌙</span>
