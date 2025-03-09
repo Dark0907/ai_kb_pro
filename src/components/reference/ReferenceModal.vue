@@ -15,28 +15,23 @@
         </div>
         <div class="modal-body">
           <h3 class="modal-title">引用详情</h3>
-          <p class="modal-description">
-            这是一些模拟数据，用于展示模态框的内容。你可以在这里添加更多信息，比如法律条款、案例分析等。
-          </p>
-          <p class="modal-description">
-            继续添加更多内容以测试滚动效果。继续添加更多内容以测试滚动效果。继续添加更多内容以测试滚动效果。
-          </p>
-          <p class="modal-description">
-            继续添加更多内容以测试滚动效果。继续添加更多内容以测试滚动效果。继续添加更多内容以测试滚动效果。
-          </p>
-          <p class="modal-description">
-            继续添加更多内容以测试滚动效果。继续添加更多内容以测试滚动效果。继续添加更多内容以测试滚动效果。
-          </p>
-          <p class="modal-description">
-            继续添加更多内容以测试滚动效果。继续添加更多内容以测试滚动效果。继续添加更多内容以测试滚动效果。
-          </p>
+          <div v-if="referenceData">
+            <p class="modal-description">{{ referenceData.title }}</p>
+            <p class="modal-description">{{ referenceData.content }}</p>
+            <p class="modal-description">来源: {{ referenceData.source }}</p>
+            <a :href="referenceData.url" target="_blank" class="text-accent hover:underline">查看更多</a>
+          </div>
+          <div v-else class="text-center py-4">
+            <p>暂无引用详情数据</p>
+          </div>
         </div>
       </div>
     </div>
   </template>
   
   <script setup>
-  import { ref } from 'vue'
+  import { ref, onMounted, watch } from 'vue'
+  import { useReferenceStore } from '../../stores/reference'
   
   const props = defineProps({
     isVisible: {
@@ -46,6 +41,49 @@
   })
   
   const emit = defineEmits(['close'])
+  const referenceStore = useReferenceStore()
+  const referenceData = ref(null)
+  
+  // 从本地存储获取引用数据
+  const getLocalReferenceData = () => {
+    const storedData = localStorage.getItem('referenceData')
+    if (storedData) {
+      try {
+        return JSON.parse(storedData)
+      } catch (error) {
+        console.error('解析本地存储的引用数据失败:', error)
+        return null
+      }
+    }
+    return null
+  }
+  
+  // 保存引用数据到本地存储
+  const saveReferenceDataToLocal = (data) => {
+    if (data) {
+      try {
+        localStorage.setItem('referenceData', JSON.stringify(data))
+      } catch (error) {
+        console.error('保存引用数据到本地存储失败:', error)
+      }
+    }
+  }
+  
+  // 监听 activeReference 变化，更新本地数据
+  watch(() => referenceStore.activeReference, (newValue) => {
+    if (newValue) {
+      referenceData.value = newValue
+      saveReferenceDataToLocal(newValue)
+    }
+  }, { immediate: true })
+  
+  // 组件挂载时从本地存储获取数据
+  onMounted(() => {
+    const localData = getLocalReferenceData()
+    if (localData) {
+      referenceData.value = localData
+    }
+  })
   
   const close = () => {
     emit('close')

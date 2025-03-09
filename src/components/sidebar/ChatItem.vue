@@ -21,12 +21,13 @@
     
     <!-- 固定按钮 -->
     <button 
+      v-if="chat.pinned || isHovered"
       class="ml-2 p-1 rounded-full hover:bg-law-200 dark:hover:bg-law-600 transition-colors duration-200"
       @click.stop="$emit('toggle-pin')"
     >
       <span 
         class="text-sm"
-        :class="chat.isPinned ? 'text-accent' : 'text-law-400 dark:text-law-500'"
+        :class="chat.pinned ? 'text-accent' : 'text-law-400 dark:text-law-500'"
       >
         📌
       </span>
@@ -35,7 +36,8 @@
 </template>
 
 <script setup>
-import { defineProps, defineEmits } from 'vue'
+import { defineProps, defineEmits, ref } from 'vue'
+import { useChatStore } from '../../stores/chat'
 
 const props = defineProps({
   chat: {
@@ -50,9 +52,17 @@ const props = defineProps({
 
 defineEmits(['click', 'toggle-pin'])
 
+const chatStore = useChatStore()
+const isHovered = ref(false)
+
 // 格式化日期
 const formatDate = (timestamp) => {
-  const date = new Date(timestamp)
-  return date.toLocaleDateString()
+  return chatStore.formatTime(timestamp)
 }
 </script>
+
+<style scoped>
+.flex:hover .ml-2 {
+  display: block;
+}
+</style>

@@ -102,8 +102,6 @@ import ReferenceModal from './ReferenceModal.vue'
 
 const referenceStore = useReferenceStore()
 
-console.log('referenceStore',referenceStore.references,referenceStore.references.length);
-
 // 法规引用
 const lawReferences = computed(() => {
   return referenceStore.references.filter(ref => ref.refType === 'law')
@@ -117,13 +115,10 @@ const caseReferences = computed(() => {
 // 设置活动引用
 const setActiveReference = (reference) => {
   // 如果点击的是当前活动引用，则隐藏模态框
-  console.log(referenceStore.activeReference,reference.id);
   if (referenceStore.activeReference && referenceStore.activeReference.id === reference.id) {
-    console.log('点击的是当前活动引用，则隐藏模态框');
     referenceStore.setActiveReference(null)
   } else {
     // 否则设置为新的活动引用
-    console.log('否则设置为新的活动引用');
     referenceStore.setActiveReference(reference)
   }
 
@@ -131,13 +126,11 @@ const setActiveReference = (reference) => {
 
 // 关闭活动引用
 const closeActiveReference = () => {
-  console.log(2222);
   referenceStore.setActiveReference(null)
 }
 
 // 关闭引用面板
 const closeReferencePanel = () => {
-  console.log(1111);
   // 发送事件给父组件
   referenceStore.setShowReferencePanel(false)
 }

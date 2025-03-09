@@ -23,7 +23,7 @@
               <span class="text-2xl mr-2">📋</span>
               <h4 class="font-medium text-primary dark:text-accent">文档分析</h4>
             </div>
-            <p class="text-sm text-law-600 dark:text-law-300">上传法律文件，获取专业解读</p>
+            <p class="text-sm text-law-600 dark:text-law-300">查看法律文件，获取专业解读</p>
           </div>
         </div>
       </div>
@@ -86,8 +86,6 @@ import { API_URL } from '@services/api'; // 引入 API_URL
 import { userId } from '@services/urlConfig'; // 引入 userId
 import { fetchEventSource } from '@microsoft/fetch-event-source';
 import { Typewriter } from '@utils/typewriter';
-import { marked } from 'marked'
-import path from 'path';
 
 const props = defineProps({
   chatId: {
@@ -97,24 +95,103 @@ const props = defineProps({
 })
 
 const chatStore = useChatStore()
+console.log('chatStore',chatStore.currentChat);
 const referenceStore = useReferenceStore()
 const messageInput = ref('')
 const messagesContainer = ref(null)
 const appLayout = inject('appLayout')
 
+// 从本地存储获取聊天历史
+const getLocalChatHistory = () => {
+  const storedData = localStorage.getItem('chatHistory')
+  if (storedData) {
+    try {
+      return JSON.parse(storedData)
+    } catch (error) {
+      console.error('解析本地存储的聊天历史失败:', error)
+      return []
+    }
+  }
+  return []
+}
+
+// 保存聊天历史到本地存储
+const saveChatHistoryToLocal = (data) => {
+  if (data) {
+    try {
+      localStorage.setItem('chatHistory', JSON.stringify(data))
+    } catch (error) {
+      console.error('保存聊天历史到本地存储失败:', error)
+    }
+  }
+}
+
+// 从本地存储获取知识库选择列表
+const getLocalSelectList = () => {
+  const storedData = localStorage.getItem('selectList')
+  if (storedData) {
+    try {
+      return JSON.parse(storedData)
+    } catch (error) {
+      console.error('解析本地存储的知识库选择列表失败:', error)
+      return ['KBd7f038374e244f509956852a06da19e2'] // 默认值
+    }
+  }
+  return ['KBd7f038374e244f509956852a06da19e2'] // 默认值
+}
+
+// 保存知识库选择列表到本地存储
+const saveSelectListToLocal = (data) => {
+  if (data) {
+    try {
+      localStorage.setItem('selectList', JSON.stringify(data))
+    } catch (error) {
+      console.error('保存知识库选择列表到本地存储失败:', error)
+    }
+  }
+}
+
+// 从本地存储获取当前聊天
+const getLocalCurrentChat = () => {
+  const storedData = localStorage.getItem('currentChat')
+  if (storedData) {
+    try {
+      return JSON.parse(storedData)
+    } catch (error) {
+      console.error('解析本地存储的当前聊天失败:', error)
+      return null
+    }
+  }
+  return null
+}
+
+// 保存当前聊天到本地存储
+const saveCurrentChatToLocal = (data) => {
+  if (data) {
+    try {
+      localStorage.setItem('currentChat', JSON.stringify(data))
+    } catch (error) {
+      console.error('保存当前聊天到本地存储失败:', error)
+    }
+  }
+}
+
 // 聊天对话
-const chatHistory = ref([])
-const currentChat = ref(null)
-const selectList = ref(['KBd7f038374e244f509956852a06da19e2']); // 假设这是你选择的知识库ID列表
-const history = ref([]); // 假设这是聊天历史
+const chatHistory = ref(getLocalChatHistory())
+const currentChat = ref(getLocalCurrentChat())
+const selectList = ref(getLocalSelectList()); // 从本地存储获取知识库ID列表
+const history = ref([]); // 聊天历史
 const showLoading = ref(false); // 加载状态
-const QA_List = ref([{ answer: '' }]); // 假设这是你的问答列表
+const QA_List = ref([{ answer: '' }]); // 问答列表
 
 const typewriter = new Typewriter((str) => {
   if (str && currentMessageId) {
     const currentMessage = chatStore.currentChat.messages.find(m => m.id === currentMessageId);
     if (currentMessage) {
       currentMessage.content += str || ''; // 逐字更新消息内容
+      
+      // 保存当前聊天到本地存储
+      saveCurrentChatToLocal(chatStore.currentChat);
     }
   }
 });
@@ -123,21 +200,23 @@ let currentMessageId = null; // 用于存储当前消息的ID
 
 // 获取聊天数据
 onMounted(async () => {
-  await chatStore.fetchChat(props.chatId)
-  scrollToBottom()
+  if (props.chatId) {
+    await chatStore.fetchChat(props.chatId);
+    scrollToBottom();
+  }
 })
 
 // 监听聊天ID变化
 watch(() => props.chatId, async (newChatId) => {
   if (newChatId) {
-    await chatStore.fetchChat(newChatId)
-    scrollToBottom()
+    await chatStore.fetchChat(newChatId);
+    scrollToBottom();
   }
 })
 
 // 监听消息变化，自动滚动到底部
 watch(() => chatStore.currentChat?.messages.length, () => {
-  scrollToBottom()
+  scrollToBottom();
 })
 
 // 发送消息
@@ -147,8 +226,6 @@ const sendMessage = async () => {
   const q = messageInput.value // 用户输入的问题
   messageInput.value = ''
   
-  // 使用测试数据, 先注释掉下面的其他程序
-  // await chatStore.sendMessage(q)
   try {
     chatStore.isLoading = true
     
@@ -159,24 +236,14 @@ const sendMessage = async () => {
       content: q,
       timestamp: new Date().toISOString()
     })
+    
+    // 更新聊天标题为用户消息内容
+    chatStore.updateChatTitle(chatStore.currentChat.id, q)
+    
+    // 保存当前聊天到本地存储
+    chatStore.saveCurrentChatToLocal(chatStore.currentChat);
 
-    // // 模拟AI响应
-    // setTimeout(() => {
-    //   chatStore.currentChat.messages.push({
-    //     id: (Date.now() + 1).toString(),
-    //     role: 'assistant',
-    //     content: '这是一个模拟的AI回复。在实际应用中，这里将是来自后端API的响应。',
-    //     timestamp: new Date().toISOString(),
-    //     references: [
-    //       { id: '1', type: 'law', title: '中华人民共和国民法典', section: '第一千一百六十五条' },
-    //       { id: '2', type: 'case', title: '张三诉李四合同纠纷案', court: '最高人民法院' }
-    //     ]
-    //   })
-    //   chatStore.isLoading = false
-    // }, 1000)
-
-
-    // // 使用 fetchEventSource 发送请求
+    // 使用 fetchEventSource 发送请求
     const ctrl = new AbortController(); // 创建一个 AbortController 实例
 
     fetchEventSource(API_URL + '/kb_api/local_doc_qa/local_doc_chat', {
@@ -213,6 +280,9 @@ const sendMessage = async () => {
             references: [] // 初始引用为空
           });
           
+          // 保存当前聊天到本地存储
+          chatStore.saveCurrentChatToLocal(chatStore.currentChat);
+          
           typewriter.start();
         } else if (e.headers.get('content-type') === 'application/json') {
           chatStore.isLoading = false;
@@ -245,7 +315,13 @@ const sendMessage = async () => {
                 section: doc.content,
                 path: doc.file_path
               }));
+              
+              // 保存引用数据到本地存储
+              localStorage.setItem('sourceDocuments', JSON.stringify(res.source_documents));
             }
+            
+            // 保存当前聊天到本地存储
+            chatStore.saveCurrentChatToLocal(chatStore.currentChat);
           }
 
           // 使用打字机效果
@@ -266,6 +342,9 @@ const sendMessage = async () => {
           currentMessage.content = currentMessage.content
             .replace(/\n{3,}/g, '\n\n') // 将多个连续换行减少为两个
             .replace(/\n\n/g, '\n\n'); // 确保段落之间有空行
+            
+          // 保存当前聊天到本地存储
+          chatStore.saveCurrentChatToLocal(chatStore.currentChat);
         }
         
         ctrl.abort();
@@ -288,7 +367,7 @@ const sendMessage = async () => {
     });
   } catch (error) {
     console.error('发送消息失败:', error);
-    isLoading.value = false;
+    chatStore.isLoading = false;
   }
 }
 
@@ -296,6 +375,9 @@ const sendMessage = async () => {
 const handleReferenceClick = (references) => {
   console.log('references1',references);
   if (references && references.length > 0) {
+    // 保存引用数据到本地存储
+    localStorage.setItem('clickedReferences', JSON.stringify(references));
+    
     referenceStore.fetchReferences(references)
     // 引用面板的显示现在由 referenceStore.showReferencePanel 控制
     // 如果在小屏幕上，可能还需要调用 appLayout.toggleReference()
