@@ -264,14 +264,14 @@ export const useChatStore = defineStore('chat', () => {
   }
 
   // 格式化时间
-  const formatTime = (timestamp) => {
+  const formatTime = (timestamp, chatId) => {
     const date = new Date(timestamp)
     
     // 基本格式：年/月/日
     const baseFormat = `${date.getFullYear()}/${(date.getMonth() + 1).toString().padStart(2, '0')}/${date.getDate().toString().padStart(2, '0')}`
     
-    // 检查聊天是否有消息
-    const chat = chatHistory.value.find(c => c.id === currentChat.value?.id)
+    // 检查指定聊天是否有消息
+    const chat = chatHistory.value.find(c => c.id === chatId)
     if (chat && chat.messages && chat.messages.length > 0) {
       // 如果有聊天记录，则添加时分
       return `${baseFormat} ${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`
