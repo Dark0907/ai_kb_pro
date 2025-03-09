@@ -82,56 +82,15 @@
       </div>
     </div>
     
-    <!-- 引用详情 -->
-    <div 
-      v-if="referenceStore.activeReference" 
-      class="border-t border-law-200 dark:border-law-700 bg-white dark:bg-law-800 transition-all duration-300 ease-in-out"
-      :class="{ 'animate-slide-in-up': referenceStore.activeReference }"
-    >
-      <div class="p-4">
-        <div class="flex justify-between items-center mb-2">
-          <h3 class="text-lg font-semibold text-primary dark:text-accent flex items-center">
-            <span v-if="referenceStore.activeReference.refType === 'law'" class="text-xl mr-2">📜</span>
-            <span v-else-if="referenceStore.activeReference.refType === 'case'" class="text-xl mr-2">⚖️</span>
-            {{ referenceStore.activeReference.title }}
-          </h3>
-          <button 
-            @click="closeActiveReference"
-            class="p-1 rounded-full hover:bg-law-200 dark:hover:bg-law-700 transition-colors duration-200"
-          >
-            <svg class="w-4 h-4 text-law-600 dark:text-law-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <line x1="18" y1="6" x2="6" y2="18"></line>
-              <line x1="6" y1="6" x2="18" y2="18"></line>
-            </svg>
-          </button>
-        </div>
-        
-        <p class="text-sm text-law-600 dark:text-law-300 mb-2 flex items-center">
-          <span class="text-sm mr-1">📌</span>
-          {{ referenceStore.activeReference.section }}
-        </p>
-        
-        <div class="bg-law-50 dark:bg-law-900 p-4 rounded-md text-sm whitespace-pre-line mb-3 border border-law-200 dark:border-law-700 shadow-inner max-h-60 overflow-y-auto">
-          {{ referenceStore.activeReference.content }}
-        </div>
-        
-        <div class="flex justify-between items-center text-xs text-law-500 dark:text-law-400">
-          <span>{{ $t('reference.source') }}: {{ referenceStore.activeReference.source }}</span>
-          <a 
-            :href="referenceStore.activeReference.url" 
-            target="_blank"
-            class="text-accent hover:underline flex items-center"
-          >
-            <span>{{ $t('reference.view_more') }}</span>
-            <svg class="w-3 h-3 ml-1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
-              <polyline points="15 3 21 3 21 9"></polyline>
-              <line x1="10" y1="14" x2="21" y2="3"></line>
-            </svg>
-          </a>
-        </div>
+    <!-- 引用详情模态框 -->
+    <reference-modal :isVisible="!!referenceStore.activeReference" @close="closeActiveReference">
+      <div>
+        <h3 class="text-lg font-semibold">{{ referenceStore.activeReference.title }}</h3>
+        <p>{{ referenceStore.activeReference.content }}</p>
+        <p>来源: {{ referenceStore.activeReference.source }}</p>
+        <a :href="referenceStore.activeReference.url" target="_blank">查看更多</a>
       </div>
-    </div>
+    </reference-modal>
   </div>
 </template>
 
@@ -139,8 +98,11 @@
 import { computed } from 'vue'
 import { useReferenceStore } from '../../stores/reference'
 import ReferenceItem from './ReferenceItem.vue'
+import ReferenceModal from './ReferenceModal.vue'
 
 const referenceStore = useReferenceStore()
+
+console.log('referenceStore',referenceStore.references,referenceStore.references.length);
 
 // 法规引用
 const lawReferences = computed(() => {
@@ -154,21 +116,28 @@ const caseReferences = computed(() => {
 
 // 设置活动引用
 const setActiveReference = (reference) => {
-  // 如果点击的是当前活动引用，则关闭它
+  // 如果点击的是当前活动引用，则隐藏模态框
+  console.log(referenceStore.activeReference,reference.id);
   if (referenceStore.activeReference && referenceStore.activeReference.id === reference.id) {
+    console.log('点击的是当前活动引用，则隐藏模态框');
     referenceStore.setActiveReference(null)
   } else {
+    // 否则设置为新的活动引用
+    console.log('否则设置为新的活动引用');
     referenceStore.setActiveReference(reference)
   }
+
 }
 
 // 关闭活动引用
 const closeActiveReference = () => {
+  console.log(2222);
   referenceStore.setActiveReference(null)
 }
 
 // 关闭引用面板
 const closeReferencePanel = () => {
+  console.log(1111);
   // 发送事件给父组件
   referenceStore.setShowReferencePanel(false)
 }

@@ -12,30 +12,37 @@ export const useReferenceStore = defineStore('reference', () => {
 
   // 获取引用
   const fetchReferences = async (referenceIds) => {
+    console.log('获取引用',referenceIds);
     try {
       isLoading.value = true
       // 模拟API调用
       // const response = await api.post('/references', { ids: referenceIds })
       // references.value = response.data
-      
+
+      // 将引用数据转换为法律引用(接口传递数据)
+      references.value = referenceIds
+        .map(ref => {
+          return { ...ref, refType: 'law' }
+        })
+
       // 从本地数据中获取引用
-      const lawRefs = referenceIds
-        .filter(ref => ref.type === 'law')
-        .map(ref => {
-          const law = laws.find(l => l.id === ref.id)
-          return law ? { ...law, refType: 'law' } : null
-        })
-        .filter(Boolean)
+      // const lawRefs = referenceIds
+      //   .filter(ref => ref.type === 'law')
+      //   .map(ref => {
+      //     const law = laws.find(l => l.id === ref.id)
+      //     return law ? { ...law, refType: 'law' } : null
+      //   })
+      //   .filter(Boolean)
       
-      const caseRefs = referenceIds
-        .filter(ref => ref.type === 'case')
-        .map(ref => {
-          const caseItem = cases.find(c => c.id === ref.id)
-          return caseItem ? { ...caseItem, refType: 'case' } : null
-        })
-        .filter(Boolean)
+      // const caseRefs = referenceIds
+      //   .filter(ref => ref.type === 'case')
+      //   .map(ref => {
+      //     const caseItem = cases.find(c => c.id === ref.id)
+      //     return caseItem ? { ...caseItem, refType: 'case' } : null
+      //   })
+      //   .filter(Boolean)
       
-      references.value = [...lawRefs, ...caseRefs]
+      // references.value = [...lawRefs, ...caseRefs]
       
       // 自动显示引用面板
       showReferencePanel.value = true

@@ -25,16 +25,16 @@
     </div>
     
     <!-- 引用内容预览 -->
-    <p class="text-xs text-law-600 dark:text-law-300 mb-2 flex items-center">
+    <p v-if="reference.section" class="text-xs text-law-600 dark:text-law-300 mb-2 flex items-center">
       <span class="text-xs mr-1">📌</span>
       {{ reference.section }}
     </p>
     
-    <div class="bg-law-50 dark:bg-law-800 p-3 rounded-md border border-law-200 dark:border-law-700">
+    <!-- <div class="bg-law-50 dark:bg-law-800 p-3 rounded-md border border-law-200 dark:border-law-700">
       <p class="text-xs text-law-600 dark:text-law-300 line-clamp-2">
         {{ getContentPreview(reference.content) }}
       </p>
-    </div>
+    </div> -->
     
     <div class="mt-2 flex justify-end">
       <span class="text-xs text-accent hover:underline flex items-center">

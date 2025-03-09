@@ -87,6 +87,7 @@ import { userId } from '@services/urlConfig'; // 引入 userId
 import { fetchEventSource } from '@microsoft/fetch-event-source';
 import { Typewriter } from '@utils/typewriter';
 import { marked } from 'marked'
+import path from 'path';
 
 const props = defineProps({
   chatId: {
@@ -226,26 +227,27 @@ const sendMessage = async () => {
       onmessage(msg) {
         const res = JSON.parse(msg.data);
         
-        if (res?.code == 200 && res?.response) {
+        if (res?.code == 200) {
           // 查找当前消息
           const currentMessage = chatStore.currentChat.messages.find(m => m.id === currentMessageId);
           
           if (currentMessage) {
             // 更新消息内容 - 保留原始格式
             currentMessage.content += res.response;
-            
+
             // 如果有引用文档，更新引用
-            if (res.source_documents && res.source_documents.length > 0) {
+            if (res.source_documents && res.source_documents.length > 0) { 
+              console.log('res.source_documents',res.source_documents);
               currentMessage.references = res.source_documents.map(doc => ({
                 id: doc.file_id, 
                 title: doc.file_name,
                 type: 'law',
-                section: '',
-                court: ''
+                section: doc.content,
+                path: doc.file_path
               }));
             }
           }
-          
+
           // 使用打字机效果
           typewriter.add(res.response);
           
@@ -253,7 +255,6 @@ const sendMessage = async () => {
         }
       },
       onclose(e) {
-        console.log('close', chatStore.currentChat.messages);
         typewriter.done();
         
         // 查找当前消息并进行最终的格式处理
@@ -293,6 +294,7 @@ const sendMessage = async () => {
 
 // 处理引用点击
 const handleReferenceClick = (references) => {
+  console.log('references1',references);
   if (references && references.length > 0) {
     referenceStore.fetchReferences(references)
     // 引用面板的显示现在由 referenceStore.showReferencePanel 控制
