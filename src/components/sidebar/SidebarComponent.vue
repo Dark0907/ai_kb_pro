@@ -47,6 +47,7 @@
           :is-active="currentChatId === chat.id"
           @click="selectChat(chat.id)"
           @toggle-pin="togglePinChat(chat.id)"
+          @delete="deleteChat(chat.id)"
         />
       </div>
       
@@ -62,6 +63,7 @@
           :is-active="currentChatId === chat.id"
           @click="selectChat(chat.id)"
           @toggle-pin="togglePinChat(chat.id)"
+          @delete="deleteChat(chat.id)"
         />
       </div>
       
@@ -77,6 +79,7 @@
           :is-active="currentChatId === chat.id"
           @click="selectChat(chat.id)"
           @toggle-pin="togglePinChat(chat.id)"
+          @delete="deleteChat(chat.id)"
         />
       </div>
     </div>
@@ -152,5 +155,13 @@ const createNewChat = async () => {
 // 固定/取消固定聊天
 const togglePinChat = (chatId) => {
   chatStore.togglePinChat(chatId)
+}
+
+// 处理聊天删除
+const handleChatDeleted = (chatId) => {
+  // 如果删除的是当前活动的聊天，则切换到第一个聊天
+  if (chatId === activeChatId.value && chatStore.chatHistory.length > 0) {
+    emit('select-chat', chatStore.chatHistory[0].id)
+  }
 }
 </script>

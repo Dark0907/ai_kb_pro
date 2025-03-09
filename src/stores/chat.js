@@ -314,6 +314,39 @@ export const useChatStore = defineStore('chat', () => {
     }
   })
 
+  // 删除聊天
+  const deleteChat = async (chatId) => {
+    try {
+      // 从聊天历史中删除
+      const chatIndex = chatHistory.value.findIndex(chat => chat.id === chatId)
+      if (chatIndex !== -1) {
+        chatHistory.value.splice(chatIndex, 1)
+        
+        // 保存聊天历史到本地存储
+        saveChatHistoryToLocal(chatHistory.value)
+        
+        // 从本地存储中删除聊天数据
+        localStorage.removeItem(`chat_${chatId}`)
+        
+        // 如果当前聊天被删除，则清空当前聊天
+        if (currentChat.value && currentChat.value.id === chatId) {
+          currentChat.value = null
+          
+          // 如果还有其他聊天，则切换到第一个聊天
+          if (chatHistory.value.length > 0) {
+            await fetchChat(chatHistory.value[0].id)
+          }
+        }
+        
+        return true
+      }
+      return false
+    } catch (error) {
+      console.error('删除聊天失败:', error)
+      return false
+    }
+  }
+
   // 初始化时从本地存储加载聊天历史
   fetchChatHistory()
 
@@ -330,6 +363,7 @@ export const useChatStore = defineStore('chat', () => {
     groupedChats,
     updateChatTitle,
     saveCurrentChatToLocal,
-    getLocalCurrentChat
+    getLocalCurrentChat,
+    deleteChat
   }
 }) 
