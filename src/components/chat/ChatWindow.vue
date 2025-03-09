@@ -312,8 +312,7 @@ const sendMessage = async () => {
                 id: doc.file_id, 
                 title: doc.file_name,
                 type: 'law',
-                section: doc.content,
-                path: doc.file_path
+                section: doc.content
               }));
               
               // 保存引用数据到本地存储

@@ -83,24 +83,26 @@
     </div>
     
     <!-- 引用详情模态框 -->
-    <reference-modal :isVisible="!!referenceStore.activeReference" @close="closeActiveReference">
-      <div>
-        <h3 class="text-lg font-semibold">{{ referenceStore.activeReference.title }}</h3>
-        <p>{{ referenceStore.activeReference.content }}</p>
-        <p>来源: {{ referenceStore.activeReference.source }}</p>
-        <a :href="referenceStore.activeReference.url" target="_blank">查看更多</a>
-      </div>
-    </reference-modal>
+    <reference-modal
+      v-if="showModal"
+      :isVisible="showModal" 
+      :referenceId="activeReferenceId"
+      :referenceTitle="activeReferenceTitle"
+      @close="closeActiveReference"
+    />
   </div>
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import { useReferenceStore } from '../../stores/reference'
 import ReferenceItem from './ReferenceItem.vue'
 import ReferenceModal from './ReferenceModal.vue'
 
 const referenceStore = useReferenceStore()
+const showModal = ref(false)
+const activeReferenceId = ref('')
+const activeReferenceTitle = ref('')
 
 // 法规引用
 const lawReferences = computed(() => {
@@ -115,22 +117,27 @@ const caseReferences = computed(() => {
 // 设置活动引用
 const setActiveReference = (reference) => {
   // 如果点击的是当前活动引用，则隐藏模态框
-  if (referenceStore.activeReference && referenceStore.activeReference.id === reference.id) {
-    referenceStore.setActiveReference(null)
+  if (showModal.value && activeReferenceId.value === reference.id) {
+    closeActiveReference()
   } else {
     // 否则设置为新的活动引用
+    activeReferenceId.value = reference.id
+    activeReferenceTitle.value = reference.title
+    showModal.value = true
     referenceStore.setActiveReference(reference)
   }
-
 }
 
 // 关闭活动引用
 const closeActiveReference = () => {
+  showModal.value = false
   referenceStore.setActiveReference(null)
 }
 
 // 关闭引用面板
 const closeReferencePanel = () => {
+  // 关闭模态框
+  closeActiveReference()
   // 发送事件给父组件
   referenceStore.setShowReferencePanel(false)
 }
