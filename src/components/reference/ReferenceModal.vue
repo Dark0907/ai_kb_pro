@@ -19,9 +19,27 @@
               <p class="mt-2">加载中...</p>
             </div>
             <div v-else-if="error" class="text-center text-red-500 py-4">{{ error }}</div>
-            <div v-else-if="fileContent" class="py-2">
-                <div v-if="isBase64" v-html="decodedContent"></div>
-                <div v-else>{{ fileContent }}</div>
+            <div v-else-if="sourceUrl" class="source-content">
+                <!-- 使用不同的组件显示不同类型的文件 -->
+                <PdfView v-if="sourceType === 'pdf'" :source-url="sourceUrl" />
+                <DocxView v-if="sourceType === 'docx'" :source-url="sourceUrl" />
+                <ExcelView v-if="sourceType === 'xlsx'" :source-url="sourceUrl" />
+                <MsgView v-if="sourceType === 'msg'" :source-url="sourceUrl" />
+                <MdView v-if="sourceType === 'md'" :source-url="sourceUrl" />
+                <EmlView v-if="sourceType === 'eml'" :source-url="sourceUrl" />
+                
+                <!-- 图片显示 -->
+                <img 
+                  v-if="imageArr.includes(sourceType)" 
+                  :src="sourceUrl" 
+                  class="max-w-full h-auto mx-auto"
+                  alt="图片预览"
+                />
+                
+                <!-- 文本显示 -->
+                <div v-if="sourceType === 'txt'" class="txt-content">
+                  {{ textContent }}
+                </div>
             </div>
             <div v-else class="text-center py-4">
                 <p>暂无内容</p>
@@ -32,9 +50,15 @@
 </template>
   
 <script setup>
-  import { ref, onMounted, watch, computed, onUnmounted } from 'vue'
-  import { API_URL } from '@services/api'
-  import { userId } from '@services/urlConfig'
+  import { ref, watch } from 'vue'
+  import urlResquest from '@/services/urlConfig'
+  import { resultControl } from '@/utils/utils'
+  import PdfView from './Source/PdfView.vue'
+  import DocxView from './Source/DocxView.vue'
+  import ExcelView from './Source/ExcelView.vue'
+  import MsgView from './Source/MsgView.vue'
+  import MdView from './Source/MdView.vue'
+  import EmlView from './Source/EmlView.vue'
   
   const props = defineProps({
     isVisible: {
@@ -55,99 +79,89 @@
   
   const loading = ref(false)
   const error = ref(null)
-  const fileContent = ref('')
-  const isBase64 = ref(false)
-  let abortController = null // 用于取消请求
+  const sourceUrl = ref(null)
+  const sourceType = ref('')
+  const textContent = ref('')
   
-  // 解码 Base64 内容
-  const decodedContent = computed(() => {
-    if (fileContent.value) {
-      try {
-        // 尝试解码 Base64 内容
-        const decoded = atob(fileContent.value)
-        return decoded
-      } catch (e) {
-        console.error('Base64 解码失败:', e)
-        return fileContent.value
-      }
-    }
-    return ''
-  })
+  // 图片类型数组
+  const imageArr = ['jpg', 'png', 'jpeg']
   
-  // 取消当前请求
-  const cancelCurrentRequest = () => {
-    if (abortController) {
-      console.log('取消当前请求')
-      abortController.abort()
-      abortController = null
-    }
+  // 支持的文件类型
+  const supportSourceTypes = ['pdf', 'docx', 'xlsx', 'txt', 'jpg', 'png', 'jpeg', 'msg', 'md', 'eml']
+  
+  // Base64 类型映射
+  const b64Types = [
+    'application/pdf',
+    'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    'text/plain',
+    'image/jpeg',
+    'image/png',
+    'image/jpeg',
+    'application/msg',
+    'application/md',
+    'application/eml',
+  ]
+  
+  // 获取 Base64 类型
+  const getB64Type = (suffix) => {
+    const index = supportSourceTypes.indexOf(suffix)
+    return b64Types[index]
   }
   
   // 获取引用数据
   const fetchReferenceData = async (referenceId) => {
-    if (referenceId) {
+    if (!referenceId) {
       error.value = '引用ID不存在'
       return
     }
     
-    // 取消之前的请求
-    cancelCurrentRequest()
-    
-    // 创建新的 AbortController
-    abortController = new AbortController()
-    
     loading.value = true
     error.value = null
-    fileContent.value = ''
+    sourceUrl.value = null
+    textContent.value = ''
     
     try {
-      console.log('请求参数:', { user_id: userId, file_id: referenceId })
+      console.log('请求参数:', { file_id: referenceId })
       
-      // 设置超时
-      const timeoutId = setTimeout(() => {
-        if (abortController) {
-          abortController.abort()
-          error.value = '请求超时，请稍后重试'
-          loading.value = false
+      // 使用与 Chat.vue 相同的请求方式
+      const res = await resultControl(await urlResquest.getFile({ file_id: referenceId }))
+      
+      if (res && res.base64_content) {
+        // 获取文件后缀
+        const suffix = props.referenceTitle.split('.').pop().toLowerCase()
+        
+        // 检查是否支持该文件类型
+        if (supportSourceTypes.includes(suffix)) {
+          const b64Type = getB64Type(suffix)
+          console.log('b64Type', b64Type)
+          
+          sourceType.value = suffix
+          sourceUrl.value = `data:${b64Type};base64,${res.base64_content}`
+          // console.log('sourceUrl', sourceUrl.value)
+          // 如果是文本文件，解码内容
+          if (suffix === 'txt') {
+            try {
+              const decodedTxt = atob(res.base64_content)
+              const correctStr = decodeURIComponent(escape(decodedTxt))
+              console.log('decodedTxt', correctStr)
+              textContent.value = correctStr
+            } catch (e) {
+              console.error('解码文本失败:', e)
+              textContent.value = '文本解码失败'
+            }
+          }
+        } else {
+          error.value = '不支持的文件类型'
         }
-      }, 10000) // 10秒超时
-      
-      const response = await fetch(`${API_URL}/kb_api/local_doc_qa/get_file_base64`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ user_id: userId, file_id: referenceId }),
-        signal: abortController.signal // 添加 signal 以支持取消
-      })
-      
-      // 清除超时
-      clearTimeout(timeoutId)
-      
-      if (!response.ok) {
-        throw new Error(`请求失败: ${response.status} ${response.statusText}`)
-      }
-      
-      const data = await response.json()
-      console.log('接口返回数据:', data)
-      
-      if (data && data.base64_content) {
-        isBase64.value = true
-        fileContent.value = data.base64_content
       } else {
         error.value = '未能获取有效数据'
       }
     } catch (err) {
-      // 如果是取消请求导致的错误，不显示错误信息
-      if (err.name === 'AbortError') {
-        console.log('请求已取消')
-      } else {
-        error.value = '获取引用内容失败，请稍后重试。'
-        console.error('获取引用内容失败:', err)
-      }
+      error.value = err.msg || '获取引用内容失败，请稍后重试'
+      console.error('获取引用内容失败:', err)
     } finally {
       loading.value = false
-      abortController = null
     }
   }
   
@@ -162,24 +176,14 @@
   watch(() => props.isVisible, (newValue) => {
     if (newValue && props.referenceId) {
       fetchReferenceData(props.referenceId)
-    } else if (!newValue) {
-      // 当模态框关闭时，取消当前请求
-      cancelCurrentRequest()
     }
   })
   
   // 关闭模态框
   const close = () => {
-    // 取消当前请求
-    cancelCurrentRequest()
     // 通知父组件关闭模态框
     emit('close')
   }
-  
-  // 组件卸载时取消请求
-  onUnmounted(() => {
-    cancelCurrentRequest()
-  })
   
   // 拖动功能
   const modalContent = ref(null)
@@ -227,8 +231,8 @@
   background: white;
   padding: 20px;
   border-radius: 8px;
-  width: 60%; /* 调整宽度 */
-  max-width: 500px;
+  width: 70%; /* 调整宽度 */
+  max-width: 800px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1); 
   position: relative; /* 使关闭按钮相对定位 */
 }
@@ -248,17 +252,27 @@
 }
 
 .modal-body {
-  max-height: 400px; /* 设置最大高度 */
+  max-height: 70vh; /* 设置最大高度 */
   overflow-y: auto; /* 超出时显示滚动条 */
   padding-top: 10px; /* 增加顶部间距 */
 }
 
-.modal-title {
-  font-size: 1.5em;
-  margin-bottom: 10px;
+.source-content {
+  width: 100%;
+  min-height: 300px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
-.modal-description {
-  margin-bottom: 10px;
+.txt-content {
+  width: 100%;
+  padding: 10px;
+  white-space: pre-wrap;
+  font-family: monospace;
+  background-color: #f5f5f5;
+  border-radius: 4px;
+  max-height: 500px;
+  overflow-y: auto;
 }
 </style>

@@ -1,4 +1,4 @@
-// 定义与后端 API 交互的函数，包括 GET 和 POST 请求等。
+// 定义与后端 API 交互的函数，通常包括 GET 和 POST 请求等。
 import axios from 'axios';
 
 export const API_URL = import.meta.env.VITE_APP_MODE === 'dev' ? '' : import.meta.env.VITE_APP_API_HOST; // 使用 Vite 环境变量

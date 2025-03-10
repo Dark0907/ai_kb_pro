@@ -13,6 +13,9 @@
     "@heroicons/vue": "^2.2.0",
     "@microsoft/fetch-event-source": "^2.0.1",
     "@tailwindcss/typography": "^0.5.16",
+    "@vue-office/docx": "^1.6.0",
+    "@vue-office/excel": "^1.7.6",
+    "@vue-office/pdf": "^1.6.5",
     "axios": "^1.8.1",
     "dompurify": "^3.2.4",
     "marked": "^15.0.7",
@@ -27,6 +30,7 @@
     "@vitejs/plugin-vue": "^5.2.1",
     "autoprefixer": "^10.4.19",
     "postcss": "^8.4.35",
+    "sass-embedded": "^1.85.1",
     "vite": "^6.2.0"
   }
 }

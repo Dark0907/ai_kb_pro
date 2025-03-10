@@ -135,7 +135,7 @@ const urlConfig = {
   // 获取文件base64
   getFile: {
     type: EUrlType.POST,
-    url: 'kb_api/local_doc_qa/get_file_base64',
+    url: '/kb_api/local_doc_qa/get_file_base64',
     param: {
       user_id: userId,
     },
