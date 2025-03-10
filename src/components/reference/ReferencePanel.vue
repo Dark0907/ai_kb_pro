@@ -51,31 +51,11 @@
           </h3> -->
           <div class="space-y-3">
             <reference-item 
-              v-for="reference in lawReferences" 
+              v-for="(reference, index) in lawReferences" 
               :key="reference.id"
               :reference="reference"
-              :is-active="referenceStore.activeReference && referenceStore.activeReference.id === reference.id"
-              @click="setActiveReference(reference)"
-            />
-          </div>
-        </div>
-        
-        <!-- 判例引用 -->
-        <div v-if="caseReferences.length > 0" class="mb-6">
-          <h3 class="text-lg font-semibold text-primary dark:text-accent mb-3 flex items-center">
-            <span class="text-xl mr-2">⚖️</span>
-            {{ $t('reference.cases') }}
-            <span class="ml-2 px-2 py-0.5 bg-accent bg-opacity-20 rounded-full text-xs text-accent-dark font-semibold">
-              {{ caseReferences.length }}
-            </span>
-          </h3>
-          <div class="space-y-3">
-            <reference-item 
-              v-for="reference in caseReferences" 
-              :key="reference.id"
-              :reference="reference"
-              :is-active="referenceStore.activeReference && referenceStore.activeReference.id === reference.id"
-              @click="setActiveReference(reference)"
+              :is-active="referenceStore.activeReference && referenceStore.activeReference.id === reference.id && activeIndex === index"
+              @click="setActiveReference(reference, index)"
             />
           </div>
         </div>
@@ -105,19 +85,15 @@ const showModal = ref(false)
 const activeReferenceId = ref('')
 const activeReferenceTitle = ref('')
 const activeReferenceSection = ref('')
+const activeIndex = ref(0)
 
 // 法规引用
 const lawReferences = computed(() => {
   return referenceStore.references.filter(ref => ref.refType === 'law')
 })
 
-// 判例引用
-const caseReferences = computed(() => {
-  return referenceStore.references.filter(ref => ref.refType === 'case')
-})
-
 // 设置活动引用
-const setActiveReference = (reference) => {
+const setActiveReference = (reference, index) => {
   console.log('reference', reference)
   // 如果点击的是当前活动引用，则隐藏模态框
   if (showModal.value && activeReferenceId.value === reference.id) {
@@ -127,6 +103,7 @@ const setActiveReference = (reference) => {
     activeReferenceId.value = reference.id
     activeReferenceTitle.value = reference.title
     activeReferenceSection.value = reference.section
+    activeIndex.value = index ? index : 0
     showModal.value = true
     referenceStore.setActiveReference(reference)
   }
