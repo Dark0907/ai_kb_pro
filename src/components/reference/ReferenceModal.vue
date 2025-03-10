@@ -1,46 +1,51 @@
 <template>
     <div v-if="isVisible" class="modal-overlay" @click.self="close">
-      <div class="modal-content" ref="modalContent" @mousedown="startDrag">
-        <div class="modal-header">
+      <div class="modal-content bg-white dark:bg-law-800 border border-law-200 dark:border-law-700 w-[90%] md:w-[70%] lg:w-[60%] max-w-4xl" ref="modalContent" @mousedown="startDrag">
+        <div class="modal-header flex justify-between items-center border-b border-law-200 dark:border-law-700 pb-3 mb-3">
           <div class="flex items-center">
             <span class="text-xl mr-2">📜</span>
-            <h2 class="text-xl font-bold">{{ referenceTitle }}</h2>
+            <h2 class="text-sm md:text-lg font-bold text-primary dark:text-accent break-words max-w-full">{{ referenceTitle }}</h2>
           </div>
-          <button @click="close" class="close-button">
-            <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <button @click="close" class="close-button p-1 rounded-full hover:bg-law-200 dark:hover:bg-law-700 transition-colors duration-200">
+            <svg class="w-5 h-5 text-primary dark:text-white" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <line x1="18" y1="6" x2="6" y2="18"></line>
               <line x1="6" y1="6" x2="18" y2="18"></line>
             </svg>
           </button>
         </div>
-        <div class="modal-body">
-            <div v-if="loading" class="text-center py-4">
+        <div class="modal-body max-h-[60vh] md:max-h-[70vh] overflow-y-auto pt-2">
+            <div v-if="loading" class="flex flex-col justify-center items-center py-8">
               <div class="inline-block animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-accent"></div>
-              <p class="mt-2">加载中...</p>
+              <p class="mt-2 text-law-600 dark:text-law-300">加载中...</p>
             </div>
             <div v-else-if="error" class="text-center text-red-500 py-4">{{ error }}</div>
-            <div v-else-if="sourceUrl" class="source-content">
+            <div v-else-if="sourceUrl" class="source-content w-full min-h-[200px] md:min-h-[300px] flex flex-col items-center">
                 <!-- 使用不同的组件显示不同类型的文件 -->
-                <PdfView v-if="sourceType === 'pdf'" :source-url="sourceUrl" />
-                <DocxView v-if="sourceType === 'docx'" :source-url="sourceUrl" />
-                <ExcelView v-if="sourceType === 'xlsx'" :source-url="sourceUrl" />
-                <MsgView v-if="sourceType === 'msg'" :source-url="sourceUrl" />
-                <MdView v-if="sourceType === 'md'" :source-url="sourceUrl" />
-                <EmlView v-if="sourceType === 'eml'" :source-url="sourceUrl" />
+                <PdfView v-if="sourceType === 'pdf'" :source-url="sourceUrl" class="w-full" />
+                <DocxView v-if="sourceType === 'docx'" :source-url="sourceUrl" class="w-full" />
+                <ExcelView v-if="sourceType === 'xlsx'" :source-url="sourceUrl" class="w-full" />
+                <MsgView v-if="sourceType === 'msg'" :source-url="sourceUrl" class="w-full" />
+                <MdView v-if="sourceType === 'md'" :source-url="sourceUrl" class="w-full" />
+                <EmlView v-if="sourceType === 'eml'" :source-url="sourceUrl" class="w-full" />
                 
                 <!-- 图片显示 -->
                 <img 
                   v-if="imageArr.includes(sourceType)" 
                   :src="sourceUrl" 
-                  class="max-w-full h-auto mx-auto"
+                  class="max-w-full h-auto mx-auto object-contain max-h-[50vh]"
                   alt="图片预览"
                 />
                 
                 <!-- 文本显示 -->
-                <div v-if="sourceType === 'txt'" ref="highlightedText" class="txt-content"  v-html="highlightTextContent"></div>
+                <div 
+                  v-if="sourceType === 'txt'" 
+                  ref="highlightedText" 
+                  class="w-full p-3 md:p-4 whitespace-pre-wrap font-sans text-xs md:text-sm text-law-900 dark:text-law-100 bg-law-50 dark:bg-law-700 rounded-md max-h-[50vh] overflow-y-auto border border-law-200 dark:border-law-600" 
+                  v-html="highlightTextContent"
+                ></div>
             </div>
-            <div v-else class="text-center py-4">
-                <p>暂无内容</p>
+            <div v-else class="flex flex-col justify-center items-center py-8">
+                <p class="text-law-600 dark:text-law-300">暂无内容</p>
             </div>
         </div>
       </div>
@@ -196,7 +201,7 @@ const highlightTextContent = computed(() => {
     const highlightRegex = new RegExp(`(${matchedText})`, 'gi'); // 创建高亮显示的正则表达式
 
     // 返回高亮后的文本内容
-    return textContent.value.replace(highlightRegex, '<span style="background-color: yellow;">$1</span>');
+    return textContent.value.replace(highlightRegex, '<span class="bg-yellow-300 dark:bg-yellow-600">$1</span>');
   }
   return textContent.value;
 });
@@ -204,7 +209,7 @@ const highlightTextContent = computed(() => {
 // 自动滚动到高亮位置
 watch(highlightTextContent, (newValue) => {
   nextTick(() => {
-    const highlightedElement = document.querySelector('.txt-content span[style*="background-color: yellow"]');
+    const highlightedElement = document.querySelector('.bg-yellow-300, .dark\\:bg-yellow-600');
     if (highlightedElement) {
       highlightedElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
@@ -223,6 +228,9 @@ watch(highlightTextContent, (newValue) => {
   let offset = { x: 0, y: 0 }
   
   const startDrag = (event) => {
+    // 在移动设备上禁用拖动
+    if (window.innerWidth < 768) return;
+    
     isDragging = true
     offset.x = event.clientX - modalContent.value.getBoundingClientRect().left
     offset.y = event.clientY - modalContent.value.getBoundingClientRect().top
@@ -260,51 +268,37 @@ watch(highlightTextContent, (newValue) => {
 } 
 
 .modal-content {
-  background: white;
-  padding: 20px;
+  padding: 16px;
   border-radius: 8px;
-  width: 70%; /* 调整宽度 */
-  max-width: 800px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1); 
-  position: relative; /* 使关闭按钮相对定位 */
+  position: relative;
+  transition: all 0.3s ease-in-out;
 }
 
-.modal-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  border-bottom: 1px solid #e0e0e0; /* 添加底部边框 */
-  padding-bottom: 10px;
+@media (max-width: 640px) {
+  .modal-content {
+    width: 95%;
+    padding: 12px;
+  }
+  
+  .modal-body {
+    max-height: 70vh;
+  }
 }
 
-.close-button {
-  background: none;
-  border: none;
-  cursor: pointer;
-}
-
-.modal-body {
-  max-height: 70vh; /* 设置最大高度 */
-  overflow-y: auto; /* 超出时显示滚动条 */
-  padding-top: 10px; /* 增加顶部间距 */
+/* 添加动效 */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .source-content {
-  width: 100%;
-  min-height: 300px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-
-.txt-content {
-  width: 100%;
-  padding: 10px;
-  white-space: pre-wrap;
-  font-family: monospace;
-  background-color: #f5f5f5;
-  border-radius: 4px;
-  max-height: 500px;
-  overflow-y: auto;
+  animation: fadeIn 0.3s ease-out;
 }
 </style>

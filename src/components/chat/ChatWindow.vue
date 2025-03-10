@@ -307,7 +307,7 @@ const sendMessage = async () => {
 
             // 如果有引用文档，更新引用
             if (res.source_documents && res.source_documents.length > 0) { 
-              console.log('res.source_documents',res.source_documents);
+              // console.log('res.source_documents',res.source_documents);
               currentMessage.references = res.source_documents.map(doc => ({
                 id: doc.file_id, 
                 title: doc.file_name,
@@ -324,7 +324,7 @@ const sendMessage = async () => {
           }
 
           // 使用打字机效果
-          typewriter.add(res.response);
+          typewriter.add(res.response.replaceAll('\n', '<br/>'));
           
           scrollToBottom();
         }
