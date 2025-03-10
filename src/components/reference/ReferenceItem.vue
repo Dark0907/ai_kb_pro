@@ -19,7 +19,7 @@
       <!-- 判例图标 -->
       <span v-else-if="reference.refType === 'case'" class="text-xl mr-2 text-primary dark:text-accent">⚖️</span>
       
-      <h4 class="text-sm font-medium text-primary dark:text-accent truncate">
+      <h4 class="text-sm font-medium text-primary dark:text-accent truncate" :title="reference.title">
         {{ reference.title }}
       </h4>
     </div>
