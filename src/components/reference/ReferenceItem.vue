@@ -26,8 +26,9 @@
     
     <!-- 引用内容预览 -->
     <p v-if="reference.section" class="text-xs text-law-600 dark:text-law-300 mb-2 flex items-center">
-      <span class="text-xs mr-1">📌</span>
-      {{ reference.section }}
+      <!-- <span class="text-xs mr-1">📌</span> -->
+      {{ getContentPreview(reference.section) }}
+      <!-- {{ reference.section }} -->
     </p>
     
     <!-- <div class="bg-law-50 dark:bg-law-800 p-3 rounded-md border border-law-200 dark:border-law-700">
@@ -76,7 +77,7 @@ defineEmits(['click'])
 // 获取内容预览
 const getContentPreview = (content) => {
   if (!content) return ''
-  return content.length > 150 ? content.substring(0, 150) + '...' : content
+  return content.length > 40 ? content.substring(0, 40) + '...' : content
 }
 </script>
 

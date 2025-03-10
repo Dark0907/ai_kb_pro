@@ -4,8 +4,8 @@
     <div class="p-4 border-b border-law-200 dark:bg-law-800 dark:border-law-700 bg-white-light  dark:text-accent text-primary flex justify-between items-center">
       <div class="flex items-center">
         <span class="text-xl mr-2">📜</span>
-        <h2 class="text-xl font-bold">{{ $t('reference.title') }}</h2>
-        <span v-if="referenceStore.references.length > 0" class="ml-2 px-2 py-0.5 bg-accent bg-opacity-30 rounded-full text-xs text-white font-semibold">
+        <h2 class="text-lg font-semibold">{{ $t('reference.title') }}</h2>
+        <span v-if="referenceStore.references.length > 0" class="ml-2 px-2 py-0.5 bg-accent bg-opacity-20 rounded-full text-xs text-accent-dark font-semibold">
           {{ referenceStore.references.length }}
         </span>
       </div>
@@ -33,7 +33,7 @@
       <!-- 无引用状态 -->
       <div v-else-if="referenceStore.references.length === 0" class="flex flex-col justify-center items-center h-full text-center">
         <div class="w-20 h-20 rounded-full bg-accent bg-opacity-20 flex items-center justify-center mb-4">
-          <span class="text-4xl">📜</span>
+          <span class="text-xl">📜</span>
         </div>
         <p class="text-law-600 dark:text-law-300">{{ $t('reference.no_references') }}</p>
       </div>
@@ -42,13 +42,13 @@
       <div v-else>
         <!-- 法规引用 -->
         <div v-if="lawReferences.length > 0" class="mb-6">
-          <h3 class="text-lg font-semibold text-primary dark:text-accent mb-3 flex items-center">
+          <!-- <h3 class="text-lg font-semibold text-primary dark:text-accent mb-3 flex items-center">
             <span class="text-xl mr-2">📜</span>
             {{ $t('reference.laws') }}
             <span class="ml-2 px-2 py-0.5 bg-accent bg-opacity-20 rounded-full text-xs text-accent-dark font-semibold">
               {{ lawReferences.length }}
             </span>
-          </h3>
+          </h3> -->
           <div class="space-y-3">
             <reference-item 
               v-for="reference in lawReferences" 
