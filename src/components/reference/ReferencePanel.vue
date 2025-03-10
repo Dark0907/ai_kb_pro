@@ -88,6 +88,7 @@
       :isVisible="showModal" 
       :referenceId="activeReferenceId"
       :referenceTitle="activeReferenceTitle"
+      :referenceSection="activeReferenceSection"
       @close="closeActiveReference"
     />
   </div>
@@ -103,6 +104,7 @@ const referenceStore = useReferenceStore()
 const showModal = ref(false)
 const activeReferenceId = ref('')
 const activeReferenceTitle = ref('')
+const activeReferenceSection = ref('')
 
 // 法规引用
 const lawReferences = computed(() => {
@@ -116,6 +118,7 @@ const caseReferences = computed(() => {
 
 // 设置活动引用
 const setActiveReference = (reference) => {
+  console.log('reference', reference)
   // 如果点击的是当前活动引用，则隐藏模态框
   if (showModal.value && activeReferenceId.value === reference.id) {
     closeActiveReference()
@@ -123,6 +126,7 @@ const setActiveReference = (reference) => {
     // 否则设置为新的活动引用
     activeReferenceId.value = reference.id
     activeReferenceTitle.value = reference.title
+    activeReferenceSection.value = reference.section
     showModal.value = true
     referenceStore.setActiveReference(reference)
   }

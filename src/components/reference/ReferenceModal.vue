@@ -37,9 +37,7 @@
                 />
                 
                 <!-- 文本显示 -->
-                <div v-if="sourceType === 'txt'" class="txt-content">
-                  {{ textContent }}
-                </div>
+                <div v-if="sourceType === 'txt'" class="txt-content"  v-html="highlightTextContent"></div>
             </div>
             <div v-else class="text-center py-4">
                 <p>暂无内容</p>
@@ -50,7 +48,7 @@
 </template>
   
 <script setup>
-  import { ref, watch } from 'vue'
+  import { ref, watch, computed } from 'vue'
   import urlResquest from '@/services/urlConfig'
   import { resultControl } from '@/utils/utils'
   import PdfView from './Source/PdfView.vue'
@@ -72,6 +70,10 @@
     referenceTitle: {
       type: String,
       default: '引用详情'
+    },
+    referenceSection: {
+      type: String,
+      default: ''
     }
   })
   
@@ -144,7 +146,7 @@
             try {
               const decodedTxt = atob(res.base64_content)
               const correctStr = decodeURIComponent(escape(decodedTxt))
-              console.log('decodedTxt', correctStr)
+              // console.log('decodedTxt', correctStr)
               textContent.value = correctStr
             } catch (e) {
               console.error('解码文本失败:', e)
@@ -178,6 +180,26 @@
       fetchReferenceData(props.referenceId)
     }
   })
+
+// 高亮显示文本内容
+const highlightTextContent = computed(() => {
+  if (textContent.value && props.referenceSection) {
+    // 提取文件名，去掉后缀
+    const fileNameWithoutExtension = props.referenceTitle.replace(/\.[^/.]+$/, ""); // 去掉文件后缀
+    const sectionRegex = new RegExp(`${fileNameWithoutExtension} : (.*)`, 'i'); // 创建正则表达式，匹配文件名后面的内容
+
+    // 从 referenceSection 中提取出需要的部分
+    const match = props.referenceSection.match(sectionRegex);
+    const matchedText = match ? match[1] : ''; // 获取匹配的内容
+
+    // 创建高亮显示的正则表达式
+    const highlightRegex = new RegExp(`(${matchedText})`, 'gi'); // 创建高亮显示的正则表达式
+
+    // 返回高亮后的文本内容
+    return textContent.value.replace(highlightRegex, '<span style="background-color: yellow;">$1</span>');
+  }
+  return textContent.value;
+});
   
   // 关闭模态框
   const close = () => {
