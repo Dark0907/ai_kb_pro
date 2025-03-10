@@ -37,7 +37,7 @@
                 />
                 
                 <!-- 文本显示 -->
-                <div v-if="sourceType === 'txt'" class="txt-content"  v-html="highlightTextContent"></div>
+                <div v-if="sourceType === 'txt'" ref="highlightedText" class="txt-content"  v-html="highlightTextContent"></div>
             </div>
             <div v-else class="text-center py-4">
                 <p>暂无内容</p>
@@ -48,7 +48,7 @@
 </template>
   
 <script setup>
-  import { ref, watch, computed } from 'vue'
+  import { ref, watch, computed, nextTick } from 'vue'
   import urlResquest from '@/services/urlConfig'
   import { resultControl } from '@/utils/utils'
   import PdfView from './Source/PdfView.vue'
@@ -199,6 +199,16 @@ const highlightTextContent = computed(() => {
     return textContent.value.replace(highlightRegex, '<span style="background-color: yellow;">$1</span>');
   }
   return textContent.value;
+});
+
+// 自动滚动到高亮位置
+watch(highlightTextContent, (newValue) => {
+  nextTick(() => {
+    const highlightedElement = document.querySelector('.txt-content span[style*="background-color: yellow"]');
+    if (highlightedElement) {
+      highlightedElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  });
 });
   
   // 关闭模态框
