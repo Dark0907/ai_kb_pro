@@ -60,7 +60,7 @@
         </div>
         
         <!-- 右侧引用区域 - 默认隐藏，点击引用时显示 -->
-        <div 
+        <div
           v-if="referenceStore.showReferencePanel"
           :class="[
             'w-80 h-full transition-all duration-300 bg-white dark:bg-law-800 shadow-law overflow-y-auto dark:border-law-700 border-l',
@@ -76,7 +76,8 @@
           v-if="referenceStore.showReferencePanel && !isLargeScreen" 
           class="fixed inset-0 z-20 bg-black bg-opacity-50 lg:hidden"
           @click="closeReferencePanel"
-        ></div>
+        >
+        </div>
       </main>
     </div>
   </div>
@@ -106,6 +107,8 @@ const toggleSidebar = () => {
 }
 
 const toggleReference = () => {
+  console.log('toggleReference',referenceStore.showReferencePanel)
+  console.log('toggleReference',isLargeScreen.value)
   referenceStore.setShowReferencePanel(!referenceStore.showReferencePanel)
 }
 

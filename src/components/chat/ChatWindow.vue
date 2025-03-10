@@ -134,10 +134,10 @@ const getLocalSelectList = () => {
       return JSON.parse(storedData)
     } catch (error) {
       console.error('解析本地存储的知识库选择列表失败:', error)
-      return ['KBd7f038374e244f509956852a06da19e2'] // 默认值
+      return ['KB7d679dc67a9648288027465ccf2798f4'] // 默认值
     }
   }
-  return ['KBd7f038374e244f509956852a06da19e2'] // 默认值
+  return ['KB7d679dc67a9648288027465ccf2798f4'] // 默认值
 }
 
 // 保存知识库选择列表到本地存储
@@ -188,13 +188,17 @@ const typewriter = new Typewriter((str) => {
   if (str && currentMessageId) {
     const currentMessage = chatStore.currentChat.messages.find(m => m.id === currentMessageId);
     if (currentMessage) {
-      currentMessage.content += str || ''; // 逐字更新消息内容
+      // 在这里更新 currentMessage.content，恢复打字机效果
+      currentMessage.content += str;
       
       // 保存当前聊天到本地存储
-      saveCurrentChatToLocal(chatStore.currentChat);
+      chatStore.saveCurrentChatToLocal(chatStore.currentChat);
     }
   }
 });
+
+// 添加一个变量来存储完整的响应内容
+let fullResponse = '';
 
 let currentMessageId = null; // 用于存储当前消息的ID
 
@@ -243,6 +247,9 @@ const sendMessage = async () => {
     // 保存当前聊天到本地存储
     chatStore.saveCurrentChatToLocal(chatStore.currentChat);
 
+    // 重置完整响应内容
+    fullResponse = '';
+
     // 使用 fetchEventSource 发送请求
     const ctrl = new AbortController(); // 创建一个 AbortController 实例
 
@@ -261,6 +268,7 @@ const sendMessage = async () => {
         streaming: true,
         networking: false,
         product_source: 'saas',
+        is_internal: true, // true 为内部人员传参，false 为外部人员传参
       }),
       signal: ctrl.signal,
       onopen(e) {
@@ -302,18 +310,34 @@ const sendMessage = async () => {
           const currentMessage = chatStore.currentChat.messages.find(m => m.id === currentMessageId);
           
           if (currentMessage) {
-            // 更新消息内容 - 保留原始格式
-            currentMessage.content += res.response;
+            // 如果 response 为空但 history 有值，说明这是最后一条消息
+            if (res.response === "" && res.history && res.history.length > 0) {
+              // 最后一条消息，包含完整的对话历史
+              // 不做任何处理，等待 onclose 处理
+              console.log("收到最后一条消息，包含完整历史");
+            } else {
+              // 正常的消息片段，累加到 fullResponse
+              fullResponse += res.response;
+              
+              // 使用打字机效果，只传递当前的响应片段
+              typewriter.add(res.response);
+            }
 
             // 如果有引用文档，更新引用
             if (res.source_documents && res.source_documents.length > 0) { 
-              // console.log('res.source_documents',res.source_documents);
-              currentMessage.references = res.source_documents.map(doc => ({
-                id: doc.file_id, 
-                title: doc.file_name,
-                type: 'law',
-                section: doc.content
-              }));
+              // 确保不重复添加相同的引用
+              const existingIds = new Set(currentMessage.references.map(ref => ref.id));
+              
+              const newReferences = res.source_documents
+                .filter(doc => !existingIds.has(doc.file_id))
+                .map(doc => ({
+                  id: doc.file_id,
+                  title: doc.file_name,
+                  type: 'law',
+                  section: doc.content
+                }));
+              
+              currentMessage.references = [...currentMessage.references, ...newReferences];
               
               // 保存引用数据到本地存储
               localStorage.setItem('sourceDocuments', JSON.stringify(res.source_documents));
@@ -322,9 +346,6 @@ const sendMessage = async () => {
             // 保存当前聊天到本地存储
             chatStore.saveCurrentChatToLocal(chatStore.currentChat);
           }
-
-          // 使用打字机效果
-          typewriter.add(res.response.replaceAll('\n', '<br/>'));
           
           scrollToBottom();
         }
@@ -335,13 +356,6 @@ const sendMessage = async () => {
         // 查找当前消息并进行最终的格式处理
         const currentMessage = chatStore.currentChat.messages.find(m => m.id === currentMessageId);
         if (currentMessage) {
-          // 确保 Markdown 格式正确
-          // 不需要替换所有的 \n 为 \n\n，因为这可能会破坏已有的 Markdown 格式
-          // 只需确保段落之间有空行
-          currentMessage.content = currentMessage.content
-            .replace(/\n{3,}/g, '\n\n') // 将多个连续换行减少为两个
-            .replace(/\n\n/g, '\n\n'); // 确保段落之间有空行
-            
           // 保存当前聊天到本地存储
           chatStore.saveCurrentChatToLocal(chatStore.currentChat);
         }

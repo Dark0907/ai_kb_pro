@@ -35,7 +35,7 @@
       <div class="flex-1">
         <div class="max-w-[80%] min-w-[60px]">
           <div class="bg-law-200 dark:bg-law-700 rounded-lg shadow-law p-4 inline-block">
-            <div v-html="renderMarkdown(message.content)" class="text-law-900 dark:text-law-100 whitespace-pre-line break-words"></div>
+            <div v-html="renderMarkdown(message.content)" class="text-law-900 dark:text-law-100 markdown-content"></div>
             
             <!-- 引用来源 -->
             <div v-if="message.references && message.references.length > 0" class="mt-3 pt-3 border-t border-law-300 dark:border-law-700">
@@ -51,20 +51,6 @@
                   {{ message.references.length }}
                 </span>
               </div>
-              
-              <!-- 底部显示来源数据 -->
-              <!-- <div class="flex flex-wrap gap-2">
-                <button 
-                  v-for="ref in message.references" 
-                  :key="ref.id"
-                  @click="$emit('reference-click', message.references)"
-                  class="inline-flex items-center px-3 py-2 rounded-md text-xs bg-white dark:bg-law-700 text-law-900 dark:text-law-100 border border-law-300 dark:border-law-600 hover:bg-law-100 dark:hover:bg-law-600 transition-all duration-200 shadow-law hover:shadow-md hover:translate-y-[-1px]"
-                >
-                  <span v-if="ref.type === 'law'" class="text-lg mr-1">📜</span>
-                  <span v-else-if="ref.type === 'case'" class="text-lg mr-1">⚖️</span>
-                  <span class="truncate max-w-[150px]">{{ ref.title }}</span>
-                </button>
-              </div> -->
             </div>
             <div class="mt-2 flex items-start justify-between">
               <span class="text-xs text-gray-500 dark:text-gray-400 mt-1">
@@ -147,6 +133,7 @@ const formatTime = (timestamp) => {
 
 // 渲染 Markdown
 const renderMarkdown = (content) => {
+  console.log('content',content);
   if (!content) return '';
   
   // 配置 marked 选项，确保正确解析 Markdown
@@ -160,7 +147,7 @@ const renderMarkdown = (content) => {
     smartLists: true, // 使用更智能的列表行为
     smartypants: true // 使用更智能的标点符号
   });
-  
+  // console.log('marked(content)',marked(content));
   return marked(content);
 }
 
@@ -215,62 +202,74 @@ const shareMessage = () => {
 }
 </script>
 
-<style scoped>
-.break-words {
+<style>
+/* 注意：这里不使用 scoped，以便样式能够应用到 v-html 渲染的内容 */
+.markdown-content {
+  color: inherit;
+  font-family: inherit;
+  line-height: 1.6;
   word-break: break-word;
 }
 
-/* Markdown 样式 */
-.markdown-content h1, 
-.markdown-content h2, 
-.markdown-content h3, 
-.markdown-content h4, 
-.markdown-content h5, 
-.markdown-content h6 {
+/* 标题样式 */
+.markdown-content h1 {
+  font-size: 1.8em;
   margin-top: 1em;
   margin-bottom: 0.5em;
-  font-weight: 600;
+  font-weight: bold;
 }
 
-.markdown-content h1 { font-size: 1.8em; }
-.markdown-content h2 { font-size: 1.5em; }
-.markdown-content h3 { font-size: 1.3em; }
-.markdown-content h4 { font-size: 1.2em; }
-
-.markdown-content ul, 
-.markdown-content ol {
-  padding-left: 1.5em;
-  margin-bottom: 1em;
+.markdown-content h2 {
+  font-size: 1.5em;
+  margin-top: 1em;
+  margin-bottom: 0.5em;
+  font-weight: bold;
 }
 
-.markdown-content ul li, 
-.markdown-content ol li {
-  margin-bottom: 0.25em;
+.markdown-content h3 {
+  font-size: 1.3em;
+  margin-top: 1em;
+  margin-bottom: 0.5em;
+  font-weight: bold;
 }
 
+.markdown-content h4, .markdown-content h5, .markdown-content h6 {
+  font-size: 1.1em;
+  margin-top: 1em;
+  margin-bottom: 0.5em;
+  font-weight: bold;
+}
+
+/* 段落样式 */
 .markdown-content p {
-  margin-bottom: 1em;
+  /* margin-bottom: 1em; */
 }
 
-.markdown-content hr {
-  margin: 1.5em 0;
-  border: 0;
-  border-top: 1px solid rgba(0, 0, 0, 0.1);
+/* 列表样式 */
+.markdown-content ul, .markdown-content ol {
+  padding-left: 2em;
+  margin: 1em 0;
 }
 
-.markdown-content blockquote {
-  padding-left: 1em;
-  border-left: 4px solid #e0e0e0;
-  margin-left: 0;
-  margin-right: 0;
-  color: #666;
+.markdown-content li {
+  margin-bottom: 0.5em;
 }
 
+.markdown-content ul {
+  list-style-type: disc;
+}
+
+.markdown-content ol {
+  list-style-type: decimal;
+}
+
+/* 代码样式 */
 .markdown-content code {
+  font-family: monospace;
   background-color: rgba(0, 0, 0, 0.05);
   padding: 0.2em 0.4em;
   border-radius: 3px;
-  font-family: monospace;
+  font-size: 0.9em;
 }
 
 .markdown-content pre {
@@ -278,17 +277,69 @@ const shareMessage = () => {
   padding: 1em;
   border-radius: 5px;
   overflow-x: auto;
-  margin-bottom: 1em;
+  margin: 1em 0;
 }
 
 .markdown-content pre code {
   background-color: transparent;
   padding: 0;
+  border-radius: 0;
+  font-size: 0.9em;
+}
+
+/* 引用样式 */
+.markdown-content blockquote {
+  border-left: 4px solid #ddd;
+  padding-left: 1em;
+  margin: 1em 0;
+  color: #666;
+}
+
+/* 表格样式 */
+.markdown-content table {
+  border-collapse: collapse;
+  width: 100%;
+  margin: 1em 0;
+}
+
+.markdown-content th, .markdown-content td {
+  border: 1px solid #ddd;
+  padding: 8px;
+  text-align: left;
+}
+
+.markdown-content th {
+  background-color: rgba(0, 0, 0, 0.05);
+  font-weight: bold;
+}
+
+/* 水平线样式 */
+.markdown-content hr {
+  border: 0;
+  border-top: 1px solid #e0e2e4;
+  margin: 1em 0;
+}
+
+/* 链接样式 */
+.markdown-content a {
+  color: #0366d6;
+  text-decoration: none;
+}
+
+.markdown-content a:hover {
+  text-decoration: underline;
+}
+
+/* 图片样式 */
+.markdown-content img {
+  max-width: 100%;
+  height: auto;
 }
 
 /* 适配暗色模式 */
-.dark .markdown-content hr {
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
+.dark .markdown-content code,
+.dark .markdown-content pre {
+  background-color: rgba(255, 255, 255, 0.05);
 }
 
 .dark .markdown-content blockquote {
@@ -296,8 +347,19 @@ const shareMessage = () => {
   color: #aaa;
 }
 
-.dark .markdown-content code,
-.dark .markdown-content pre {
+.dark .markdown-content th, .dark .markdown-content td {
+  border-color: #555;
+}
+
+.dark .markdown-content th {
   background-color: rgba(255, 255, 255, 0.05);
+}
+
+.dark .markdown-content hr {
+  border-top-color: rgba(255, 255, 255, 0.1);
+}
+
+.dark .markdown-content a {
+  color: #58a6ff;
 }
 </style>
