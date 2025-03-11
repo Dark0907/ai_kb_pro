@@ -133,9 +133,20 @@ const formatTime = (timestamp) => {
 
 // 渲染 Markdown
 const renderMarkdown = (content) => {
-  console.log('content',content);
   if (!content) return '';
-  
+
+  // 找到 </think> 的位置
+  const thinkEndIndex = content.indexOf('</think>');
+  let thinkContent = '';
+  let markdownContent = content;
+
+  if (thinkEndIndex !== -1) {
+    // 截取 </think> 之前的内容
+    thinkContent = content.substring(0, thinkEndIndex);
+    // 截取 </think> 之后的内容用于 Markdown 渲染
+    markdownContent = content.substring(thinkEndIndex + 8); // 8 是 "</think>".length
+  }
+
   // 配置 marked 选项，确保正确解析 Markdown
   marked.setOptions({
     breaks: true, // 允许回车换行
@@ -147,9 +158,18 @@ const renderMarkdown = (content) => {
     smartLists: true, // 使用更智能的列表行为
     smartypants: true // 使用更智能的标点符号
   });
-  // console.log('marked(content)',marked(content));
-  return marked(content);
-}
+
+  // 渲染 Markdown 内容
+  const renderedMarkdown = marked(markdownContent);
+
+  // 如果有 think 内容，则添加到渲染结果前面，并应用小字体样式
+  if (thinkContent) {
+    return `<div class="small-text">${thinkContent}</div>${renderedMarkdown}`;
+  }
+
+  return renderedMarkdown;
+};
+
 
 // 复制消息
 const copyMessage = () => {
@@ -209,6 +229,14 @@ const shareMessage = () => {
   font-family: inherit;
   line-height: 1.6;
   word-break: break-word;
+}
+
+.markdown-content .small-text {
+  font-size: 0.8em;
+  color: #8b8b8b;
+  white-space: pre-wrap;
+  line-height: 1.4;
+  margin-bottom: 1em;
 }
 
 /* 标题样式 */
