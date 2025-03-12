@@ -82,7 +82,7 @@ import { ref, watch, nextTick, onMounted, defineProps, inject } from 'vue'
 import { useChatStore } from '../../stores/chat'
 import { useReferenceStore } from '../../stores/reference'
 import MessageItem from './MessageItem.vue'
-import { API_URL } from '@services/api'; // 引入 API_URL
+import { apiBase } from '@services/index';
 import { userId } from '@services/urlConfig'; // 引入 userId
 import { fetchEventSource } from '@microsoft/fetch-event-source';
 import { Typewriter } from '@utils/typewriter';
@@ -253,7 +253,7 @@ const sendMessage = async () => {
     // 使用 fetchEventSource 发送请求
     const ctrl = new AbortController(); // 创建一个 AbortController 实例
 
-    fetchEventSource(API_URL + '/kb_api/local_doc_qa/local_doc_chat', {
+    fetchEventSource(apiBase + '/kb_api/local_doc_qa/local_doc_chat', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
