@@ -40,7 +40,7 @@
             <!-- 引用来源 -->
             <div v-if="message.references && message.references.length > 0" class="mt-3 pt-3 border-t border-law-300 dark:border-law-700">
               <div class="flex items-center mb-2">
-                <span class="text-lg mr-1">📜</span>
+                <span class="text-lg mr-1">📚</span>
                 <button 
                   @click="$emit('reference-click', message.references)"
                   class="text-sm font-medium text-primary dark:text-accent hover:underline hover:text-accent transition-colors duration-200"

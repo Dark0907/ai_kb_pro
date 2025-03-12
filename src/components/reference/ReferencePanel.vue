@@ -3,7 +3,7 @@
     <!-- 引用面板头部 -->
     <div class="p-4 border-b border-law-200 dark:bg-law-800 dark:border-law-700 bg-white-light  dark:text-accent text-primary flex justify-between items-center">
       <div class="flex items-center">
-        <span class="text-xl mr-2">📜</span>
+        <span class="text-xl mr-2">📚</span>
         <h2 class="text-lg font-semibold">{{ $t('reference.title') }}</h2>
         <span v-if="referenceStore.references.length > 0" class="ml-2 px-2 py-0.5 bg-accent bg-opacity-20 rounded-full text-xs text-accent-dark font-semibold">
           {{ referenceStore.references.length }}
