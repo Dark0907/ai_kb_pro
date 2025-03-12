@@ -134,10 +134,10 @@ const getLocalSelectList = () => {
       return JSON.parse(storedData)
     } catch (error) {
       console.error('解析本地存储的知识库选择列表失败:', error)
-      return ['KB7d679dc67a9648288027465ccf2798f4'] // 默认值
+      return ['KB969f8f2f026e478eb98c5c4158c0bbac'] // 默认值
     }
   }
-  return ['KB7d679dc67a9648288027465ccf2798f4'] // 默认值
+  return ['KB969f8f2f026e478eb98c5c4158c0bbac'] // 默认值
 }
 
 // 保存知识库选择列表到本地存储
@@ -153,27 +153,27 @@ const saveSelectListToLocal = (data) => {
 
 // 从本地存储获取当前聊天
 const getLocalCurrentChat = () => {
-  const storedData = localStorage.getItem('currentChat')
-  if (storedData) {
-    try {
-      return JSON.parse(storedData)
-    } catch (error) {
-      console.error('解析本地存储的当前聊天失败:', error)
-      return null
-    }
-  }
+  // const storedData = localStorage.getItem('currentChat')
+  // if (storedData) {
+  //   try {
+  //     return JSON.parse(storedData)
+  //   } catch (error) {
+  //     console.error('解析本地存储的当前聊天失败:', error)
+  //     return null
+  //   }
+  // }
   return null
 }
 
 // 保存当前聊天到本地存储
 const saveCurrentChatToLocal = (data) => {
-  if (data) {
-    try {
-      localStorage.setItem('currentChat', JSON.stringify(data))
-    } catch (error) {
-      console.error('保存当前聊天到本地存储失败:', error)
-    }
-  }
+  // if (data) {
+  //   try {
+  //     localStorage.setItem('currentChat', JSON.stringify(data))
+  //   } catch (error) {
+  //     console.error('保存当前聊天到本地存储失败:', error)
+  //   }
+  // }
 }
 
 // 聊天对话
@@ -331,16 +331,13 @@ const sendMessage = async () => {
               const newReferences = res.source_documents
                 .filter(doc => !existingIds.has(doc.file_id))
                 .map(doc => ({
-                  id: doc.file_id,
+                  file_id: doc.file_id,
                   title: doc.file_name,
                   type: 'law',
                   section: doc.content
                 }));
               
               currentMessage.references = [...currentMessage.references, ...newReferences];
-              
-              // 保存引用数据到本地存储
-              localStorage.setItem('sourceDocuments', JSON.stringify(res.source_documents));
             }
             
             // 保存当前聊天到本地存储
@@ -386,11 +383,7 @@ const sendMessage = async () => {
 
 // 处理引用点击
 const handleReferenceClick = (references) => {
-  console.log('references1',references);
   if (references && references.length > 0) {
-    // 保存引用数据到本地存储
-    localStorage.setItem('clickedReferences', JSON.stringify(references));
-    
     referenceStore.fetchReferences(references)
     // 引用面板的显示现在由 referenceStore.showReferencePanel 控制
     // 如果在小屏幕上，可能还需要调用 appLayout.toggleReference()

@@ -54,7 +54,7 @@
               v-for="(reference, index) in lawReferences" 
               :key="reference.id"
               :reference="reference"
-              :is-active="referenceStore.activeReference && referenceStore.activeReference.id === reference.id && activeIndex === index"
+              :is-active="referenceStore.activeReference && referenceStore.activeReference.file_id === reference.file_id && activeIndex === index"
               @click="setActiveReference(reference, index)"
             />
           </div>
@@ -96,11 +96,11 @@ const lawReferences = computed(() => {
 const setActiveReference = (reference, index) => {
   console.log('reference', reference)
   // 如果点击的是当前活动引用，则隐藏模态框
-  if (showModal.value && activeReferenceId.value === reference.id) {
+  if (showModal.value && activeReferenceId.value === reference.file_id) {
     closeActiveReference()
   } else {
     // 否则设置为新的活动引用
-    activeReferenceId.value = reference.id
+    activeReferenceId.value = reference.file_id
     activeReferenceTitle.value = reference.title
     activeReferenceSection.value = reference.section
     activeIndex.value = index ? index : 0
