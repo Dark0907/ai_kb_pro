@@ -1,33 +1,35 @@
 <template>
   <div class="knowledge-base-selector relative kb-dropdown">
-    <!-- 下拉按钮 -->
-    <button 
-      @click.stop="toggleDropdown" 
-      class="flex items-center space-x-1 px-2.5 py-1.5 rounded-full bg-law-50 dark:bg-law-700 hover:bg-law-100 dark:hover:bg-law-600 transition-colors duration-200 text-law-800 dark:text-law-100 border border-law-200 dark:border-law-600 shadow-sm"
-    >
-      <svg class="w-4 h-4 text-accent" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"></path>
-      </svg>
-      <span class="text-sm font-medium hidden md:inline">
-        {{ $t('sidebar.knowledge_base') }}
-      </span>
-      <svg 
-        class="w-4 h-4" 
-        xmlns="http://www.w3.org/2000/svg" 
-        viewBox="0 0 24 24" 
-        fill="none" 
-        stroke="currentColor" 
-        stroke-width="2" 
-        stroke-linecap="round" 
-        stroke-linejoin="round"
-        :class="{ 'transform rotate-180': isDropdownOpen }"
+    <div class="flex items-center">
+      <!-- 下拉按钮 -->
+      <button 
+        @click.stop="toggleDropdown" 
+        class="flex items-center space-x-1 px-2.5 py-1.5 rounded-full bg-law-50 dark:bg-law-700 hover:bg-law-100 dark:hover:bg-law-600 transition-colors duration-200 text-law-800 dark:text-law-100 border border-law-200 dark:border-law-600 shadow-sm"
       >
-        <polyline points="6 9 12 15 18 9"></polyline>
-      </svg>
-      <span v-if="selectedKbs.length > 0" class="ml-1 flex items-center justify-center w-5 h-5 text-xs font-semibold text-white bg-accent rounded-full">
-        {{ selectedKbs.length }}
-      </span>
-    </button>
+        <svg class="w-4 h-4 text-accent" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"></path>
+        </svg>
+        <span class="text-sm font-medium hidden md:inline">
+          {{ $t('sidebar.knowledge_base') }}
+        </span>
+        <svg 
+          class="w-4 h-4" 
+          xmlns="http://www.w3.org/2000/svg" 
+          viewBox="0 0 24 24" 
+          fill="none" 
+          stroke="currentColor" 
+          stroke-width="2" 
+          stroke-linecap="round" 
+          stroke-linejoin="round"
+          :class="{ 'transform rotate-180': isDropdownOpen }"
+        >
+          <polyline points="6 9 12 15 18 9"></polyline>
+        </svg>
+        <span v-if="selectedKbs.length > 0" class="ml-1 flex items-center justify-center w-5 h-5 text-xs font-semibold text-white bg-accent rounded-full">
+          {{ selectedKbs.length }}
+        </span>
+      </button>
+    </div>
     
     <!-- 下拉菜单 -->
     <div 
@@ -42,7 +44,21 @@
         
         <div v-else>
           <div class="flex items-center justify-between mb-3 pb-3 border-b border-law-200 dark:border-law-700">
-            <h3 class="text-base font-semibold text-law-800 dark:text-law-100">{{ $t('sidebar.knowledge_base') }}</h3>
+            <div class="flex items-center">
+              <h3 class="text-base font-semibold text-law-800 dark:text-law-100">{{ $t('sidebar.knowledge_base') }}</h3>
+              <!-- 设置图标按钮 -->
+              <button 
+                @click="openKnowledgeBaseManager" 
+                class="ml-2 p-1.5 rounded-full bg-law-50 dark:bg-law-700 hover:bg-law-100 dark:hover:bg-law-600 transition-colors duration-200 text-law-800 dark:text-law-100 border border-law-200 dark:border-law-600 shadow-sm"
+                title="管理知识库"
+              >
+                <svg class="w-4 h-4 text-accent" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="12" cy="12" r="3"></circle>
+                  <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+                </svg>
+              </button>
+            </div>
+            
             <div class="flex space-x-2">
               <button 
                 @click="selectAllKbs" 
@@ -140,6 +156,10 @@
 import { ref, computed, watch, onMounted, onUnmounted } from 'vue';
 import { useKnowledgeBase } from '@/stores/useKnowledgeBase';
 import { storeToRefs } from 'pinia';
+import { useRouter } from 'vue-router';
+
+// 获取路由器
+const router = useRouter();
 
 // 获取知识库数据
 const knowledgeBaseStore = useKnowledgeBase();
@@ -212,6 +232,14 @@ const selectAllKbs = () => {
 const clearSelection = () => {
   selectedKbs.value = [];
   updateSelection();
+};
+
+// 打开知识库管理界面
+const openKnowledgeBaseManager = () => {
+  // 关闭下拉菜单
+  isDropdownOpen.value = false;
+  // 导航到知识库管理页面
+  router.push('/knowledge-base-manager');
 };
 
 // 点击外部关闭下拉列表

@@ -1,5 +1,6 @@
 <script setup>
-import { ref, provide, onMounted } from 'vue'
+import { ref, provide, onMounted, computed } from 'vue'
+import { useRoute } from 'vue-router'
 import AppLayout from './components/layout/AppLayout.vue'
 import { useChatStore } from './stores/chat'
 import { useSettingsStore } from './stores/settings'
@@ -7,6 +8,13 @@ import { useSettingsStore } from './stores/settings'
 const appLayoutRef = ref(null)
 const chatStore = useChatStore()
 const settingsStore = useSettingsStore()
+const route = useRoute()
+
+// 计算当前路由是否需要使用常规布局
+const useAppLayout = computed(() => {
+  // 知识库管理页面不使用常规布局
+  return route.name !== 'KnowledgeBaseManager'
+})
 
 // 提供布局组件给子组件
 provide('appLayout', {
@@ -25,7 +33,9 @@ onMounted(async () => {
 </script>
 
 <template>
-  <app-layout ref="appLayoutRef" />
+  <!-- 根据路由决定是否使用常规布局 -->
+  <app-layout v-if="useAppLayout" ref="appLayoutRef" />
+  <router-view v-else />
 </template>
 
 <style scoped>

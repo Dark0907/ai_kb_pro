@@ -12,6 +12,11 @@ const routes = [
     component: () => import('../views/Chat.vue')
   },
   {
+    path: '/knowledge-base-manager',
+    name: 'KnowledgeBaseManager',
+    component: () => import('../views/knowledge-base/KnowledgeBaseManager.vue')
+  },
+  {
     path: '/:pathMatch(.*)*',
     name: 'NotFound',
     component: () => import('../views/NotFound.vue')
