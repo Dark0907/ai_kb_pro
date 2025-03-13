@@ -6,7 +6,7 @@
     <!-- 用户消息 - 显示在右侧 -->
     <div v-if="message.role === 'user'" class="flex items-start justify-end">
       <div class="flex-1 flex justify-end">
-        <div class="max-w-[80%] min-w-[60px]">
+        <div class="flex flex-col items-end max-w-[80%] min-w-[60px]">
           <div class="bg-primary-light dark:bg-primary text-white rounded-lg shadow-law p-4 inline-block">
             <p class="whitespace-pre-line break-words">{{ message.content }}</p>
           </div>
@@ -33,7 +33,7 @@
         </div>
       </div>
       <div class="flex-1">
-        <div class="max-w-[80%] min-w-[60px]">
+        <div class="max-w-[90%] min-w-[60px]">
           <div class="bg-law-200 dark:bg-law-700 rounded-lg shadow-law p-4 inline-block">
             <div v-html="renderMarkdown(message.content)" class="text-law-900 dark:text-law-100 markdown-content"></div>
             
@@ -108,7 +108,7 @@
 </template>
 
 <script setup>
-import { defineProps, defineEmits, ref } from 'vue'
+import { defineProps, defineEmits, ref, onMounted, onUnmounted } from 'vue'
 import { marked } from 'marked'
 
 const props = defineProps({
@@ -164,47 +164,79 @@ const renderMarkdown = (content) => {
 
   // 如果有 think 内容，则添加到渲染结果前面，并应用小字体样式
   if (thinkContent) {
-    return `<div class="small-text">${thinkContent}</div>${renderedMarkdown}`;
+    return `<div class="thinking-part">${thinkContent}</div>${renderedMarkdown}`;
   }
 
   return renderedMarkdown;
 };
 
-
 // 复制消息
 const copyMessage = () => {
-  navigator.clipboard.writeText(props.message.content)
+  navigator.clipboard.writeText(cleanMarkdown(props.message.content))
     .then(() => {
       isCopied.value = true // 设置为已复制状态
       setTimeout(() => {
         isCopied.value = false // 2秒后恢复状态
       }, 2000)
-      console.log('消息已复制到剪贴板')
     })
     .catch(err => {
       console.error('复制失败:', err)
     })
 }
 
+const cleanMarkdown = (content) => {
+  // 找到 </think> 的位置
+  const thinkEndIndex = content.indexOf('</think>');
+  let cleanContent = content
+
+  if (thinkEndIndex !== -1) {
+    // 截取 </think> 之后的内容
+    cleanContent = content.substring(thinkEndIndex + 8); // 8 是 "</think>".length
+  }
+  return cleanContent
+    .replace(/(\*\*|__)(.*?)\1/g, '$2') // 去掉粗体
+    .replace(/(\*|_)(.*?)\1/g, '$2') // 去掉斜体
+    .replace(/`(.*?)`/g, '$1') // 去掉代码块
+    .replace(/!\[.*?\]\(.*?\)/g, '') // 去掉图片
+    .replace(/#+\s+/g, '') // 去掉标题
+};
+
+
 // 切换朗读状态
 const toggleReadMessage = () => {
   if (isReading.value) {
-    window.speechSynthesis.cancel() // 取消朗读
-    isReading.value = false
+    window.speechSynthesis.cancel(); // 取消朗读
+    isReading.value = false;
   } else {
     if ('speechSynthesis' in window) {
-      const utterance = new SpeechSynthesisUtterance(props.message.content)
-      utterance.lang = document.documentElement.lang || 'zh-CN'
-      window.speechSynthesis.speak(utterance)
-      isReading.value = true
+      // 清理 Markdown 格式
+      const finalContent = cleanMarkdown(props.message.content);
+      const utterance = new SpeechSynthesisUtterance(finalContent);
+      utterance.lang = document.documentElement.lang || 'zh-CN';
+      window.speechSynthesis.speak(utterance);
+      isReading.value = true;
       utterance.onend = () => {
-        isReading.value = false // 朗读结束后恢复状态
-      }
+        isReading.value = false; // 朗读结束后恢复状态
+      };
     } else {
-      console.error('浏览器不支持语音合成')
+      console.error('浏览器不支持语音合成');
     }
   }
-}
+};
+
+// 在组件挂载时添加事件监听器
+onMounted(() => {
+  window.addEventListener('beforeunload', () => {
+    window.speechSynthesis.cancel(); // 页面刷新时取消朗读
+  });
+});
+
+// 在组件卸载时移除事件监听器
+onUnmounted(() => {
+  window.removeEventListener('beforeunload', () => {
+    window.speechSynthesis.cancel();
+  });
+});
 
 // 分享消息
 const shareMessage = () => {
@@ -231,7 +263,7 @@ const shareMessage = () => {
   word-break: break-word;
 }
 
-.markdown-content .small-text {
+.markdown-content .thinking-part {
   font-size: 0.8em;
   color: #8b8b8b;
   white-space: pre-wrap;

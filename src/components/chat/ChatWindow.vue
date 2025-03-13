@@ -39,7 +39,7 @@
     </div>
     
     <!-- 输入区域 -->
-    <div class="border-t border-law-200 dark:border-law-700 p-4 bg-white dark:bg-law-800">
+    <div class="border-t border-law-200 dark:border-law-700 p-3 bg-white dark:bg-law-800">
       <div class="relative">
         <textarea 
           v-model="messageInput"

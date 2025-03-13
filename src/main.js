@@ -3,7 +3,7 @@ import pinia from './stores/index'
 import { createI18n } from 'vue-i18n'
 import App from './App.vue'
 import router from './router'
-import './style.css'
+import './styles/style.css'
 
 // 国际化配置
 import zh from './locales/zh.json'
