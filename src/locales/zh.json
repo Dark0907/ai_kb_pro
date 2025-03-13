@@ -29,7 +29,12 @@
     "last_30_days": "最近30天",
     "search": "搜索历史记录",
     "pin": "固定",
-    "unpin": "取消固定"
+    "unpin": "取消固定",
+    "knowledge_base": "知识库列表",
+    "no_knowledge_base": "暂无知识库",
+    "selected_count": "已选择 {count} 个知识库",
+    "select_all": "全选",
+    "clear": "清空"
   },
   "reference": {
     "title": "引用来源",

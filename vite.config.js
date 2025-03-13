@@ -2,13 +2,26 @@ import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import path from 'path'
 
+//不需要手动引入ref等
+import AutoImport from 'unplugin-auto-import/vite';
+
 function resovePath(paths) {
   return path.resolve(__dirname, paths);
 }
 
 // https://vite.dev/config/
 export default defineConfig({
-  plugins: [vue()],
+  plugins: [
+    AutoImport({
+      imports: ['vue', 'vue-router', 'pinia'],
+      //下面配置生成自动导入 eslint规则json 生成后enabled改为false，避免重复生成  esint extend导入生成的自动导入json规则
+      dts: './auto-imports.d.ts',
+      eslintrc: {
+        enabled: true,
+      },
+    }),
+    vue()
+  ],
   resolve: {
     // 设置别名
     alias: {
@@ -22,6 +35,7 @@ export default defineConfig({
       '@plugins': resovePath('./src/plugins'),
       '@styles': resovePath('./src/styles'),
       '@services': resovePath('./src/services'),
+      '@language': resovePath('./src/language'),
     },
   },
   server: {

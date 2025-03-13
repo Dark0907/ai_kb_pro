@@ -29,7 +29,12 @@
     "last_30_days": "Last 30 Days",
     "search": "Search history",
     "pin": "Pin",
-    "unpin": "Unpin"
+    "unpin": "Unpin",
+    "knowledge_base": "Knowledge Base List",
+    "no_knowledge_base": "No knowledge base available",
+    "selected_count": "{count} knowledge base(s) selected",
+    "select_all": "Select All",
+    "clear": "Clear"
   },
   "reference": {
     "title": "References",

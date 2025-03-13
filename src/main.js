@@ -1,5 +1,5 @@
 import { createApp } from 'vue'
-import { createPinia } from 'pinia'
+import pinia from './stores/index'
 import { createI18n } from 'vue-i18n'
 import App from './App.vue'
 import router from './router'
@@ -23,7 +23,7 @@ const i18n = createI18n({
 
 const app = createApp(App)
 
-app.use(createPinia())
+app.use(pinia)
 app.use(router)
 app.use(i18n)
 

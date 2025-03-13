@@ -46,7 +46,7 @@ const ipsConfig: IIpsConfig = {
   // 获取知识库列表
   ipsKbList: {
     type: EUrlType.POST,
-    url: 'ip_service/interface/kbmg/queryUserLibList',
+    url: '/ip_service/interface/kbmg/queryUserLibList',
     showLoading: true,
     param: {
       tokenID: ipsToken,

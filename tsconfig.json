@@ -23,6 +23,35 @@
       "emailjs-mime-parser"
     ],
     "baseUrl": "./",
+    "paths": {
+      "@/*": [
+        "src/*"
+      ],
+      "@views/": [
+        "src/views"
+      ],
+      "@comps": [
+        "./src/components"
+      ],
+      "@imgs": [
+        "./src/assets/img"
+      ],
+      "@icons": [
+        "./src/assets/icons"
+      ],
+      "@utils": [
+        "./src/utils"
+      ],
+      "@stores": [
+        "./src/store"
+      ],
+      "@plugins": [
+        "./src/plugins"
+      ],
+      "@styles": [
+        "./src/styles"
+      ],
+    }
   },
   "include": [
     "src/**/*.ts",
