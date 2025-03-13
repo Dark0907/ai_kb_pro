@@ -9,25 +9,38 @@
       <p class="text-sm text-law-100 opacity-80">{{ $t('app.subtitle') }}</p>
     </div> -->
     
-    <!-- 新建聊天按钮 -->
-    <div class="p-3">
+    <!-- 新建聊天按钮和搜索 -->
+    <div class="p-3 flex items-center space-x-2">
       <button 
+        v-if="!isSearchActive"
         @click="createNewChat"
-        class="w-full flex items-center justify-center space-x-2 p-2 bg-accent text-white rounded-md hover:bg-accent-light transition-all duration-200 shadow-law hover:shadow-md hover:translate-y-[-1px]"
+        class="flex-1 flex items-center justify-center space-x-2 p-2 bg-accent text-white rounded-md hover:bg-accent-light transition-all duration-200 shadow-law hover:shadow-md hover:translate-y-[-1px]"
       >
         <span class="text-lg">✨</span>
         <span class="font-medium">{{ $t('chat.new_chat') }}</span>
       </button>
-    </div>
-    
-    <!-- 搜索框 -->
-    <div class="px-4 py-2">
-      <div class="relative">
+      
+      <!-- 搜索图标按钮 -->
+      <button 
+        @click="toggleSearch" 
+        class="p-2 bg-law-100 dark:bg-law-700 text-law-900 dark:text-law-100 rounded-md hover:bg-law-200 dark:hover:bg-law-600 transition-all duration-200"
+        :class="{ 'hidden': isSearchActive }"
+      >
+        <span class="text-lg">🔍</span>
+      </button>
+      
+      <!-- 搜索框 -->
+      <div 
+        v-if="isSearchActive" 
+        class="flex-1 relative animate-slide-in"
+      >
         <input 
           v-model="searchQuery"
           type="text"
           :placeholder="$t('sidebar.search')"
           class="w-full pl-10 pr-4 py-2 bg-law-100 dark:bg-law-700 text-law-900 dark:text-law-100 rounded-md focus:outline-none focus:ring-2 focus:ring-accent border border-law-200 dark:border-law-600"
+          @blur="onSearchBlur"
+          ref="searchInput"
         />
         <span class="absolute left-3 top-2.5 text-lg">🔍</span>
       </div>
@@ -92,7 +105,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, nextTick } from 'vue'
 import { useRouter } from 'vue-router'
 import { useChatStore } from '../../stores/chat'
 import ChatItem from './ChatItem.vue'
@@ -101,6 +114,8 @@ const router = useRouter()
 const chatStore = useChatStore()
 const searchQuery = ref('')
 const currentChatId = ref('')
+const isSearchActive = ref(false)
+const searchInput = ref(null)
 
 // 获取聊天历史
 onMounted(async () => {
@@ -164,4 +179,40 @@ const handleChatDeleted = (chatId) => {
     emit('select-chat', chatStore.chatHistory[0].id)
   }
 }
+
+// 切换搜索状态
+const toggleSearch = () => {
+  isSearchActive.value = !isSearchActive.value
+  if (isSearchActive.value) {
+    nextTick(() => {
+      searchInput.value.focus()
+    })
+  }
+}
+
+// 处理搜索框失去焦点
+const onSearchBlur = () => {
+  // 如果搜索框为空，则隐藏搜索框
+  if (!searchQuery.value.trim()) {
+    isSearchActive.value = false;
+  }
+}
 </script>
+
+<style scoped>
+/* 添加动画 */
+.animate-slide-in {
+  animation: slideIn 0.3s ease-out forwards;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+</style>

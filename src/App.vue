@@ -4,10 +4,12 @@ import { useRoute } from 'vue-router'
 import AppLayout from './components/layout/AppLayout.vue'
 import { useChatStore } from './stores/chat'
 import { useSettingsStore } from './stores/settings'
+import { useKnowledgeBase } from './stores/useKnowledgeBase'
 
 const appLayoutRef = ref(null)
 const chatStore = useChatStore()
 const settingsStore = useSettingsStore()
+const knowledgeBaseStore = useKnowledgeBase()
 const route = useRoute()
 
 // 计算当前路由是否需要使用常规布局
@@ -29,6 +31,9 @@ provide('appLayout', {
 onMounted(async () => {
   await chatStore.fetchChatHistory()
   settingsStore.initTheme()
+  
+  // 预加载知识库数据
+  await knowledgeBaseStore.getList()
 })
 </script>
 

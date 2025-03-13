@@ -8,6 +8,9 @@ import ipsResquest from '@/services/ipsConfig';
 
 
 export const useKnowledgeBase = defineStore('knowledgeBase', () => {
+  // 标记是否已经加载过知识库列表数据
+  const hasLoadedData = ref(false);
+
   // 当前操作的知识库id
   const currentId = ref('');
   const setCurrentId = (id: string) => {
@@ -59,6 +62,11 @@ export const useKnowledgeBase = defineStore('knowledgeBase', () => {
 
   //获取知识库列表
   const getList = async () => {
+    // 如果已经加载过数据且列表不为空，则直接返回
+    if (hasLoadedData.value && knowledgeBaseList.value.length > 0) {
+      return;
+    }
+    
     try {
       // 原获取列表
       // const res: any = await urlResquest.kbList();
@@ -82,6 +90,7 @@ export const useKnowledgeBase = defineStore('knowledgeBase', () => {
           const list = res.data;
           setKnowledgeBaseList(list);
           setDefault(pageStatus.normal);
+          hasLoadedData.value = true; // 标记已加载数据
           if (!selectList.value.length) {
             // 首先遍历 selectList.value 数组
             list.forEach(item => {
@@ -107,6 +116,7 @@ export const useKnowledgeBase = defineStore('knowledgeBase', () => {
   };
 
   return {
+    hasLoadedData,
     currentId,
     setCurrentId,
     knowledgeBaseList,

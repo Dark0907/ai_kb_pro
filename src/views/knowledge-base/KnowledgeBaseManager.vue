@@ -16,7 +16,7 @@
       
       <!-- 添加语言和主题切换 -->
       <div class="flex items-center space-x-2">
-        <language-switcher />
+        <language-switcher class="hidden md:block" />
         <theme-switcher />
       </div>
     </div>
@@ -47,10 +47,11 @@
         class="w-full md:w-64 border-b md:border-b-0 md:border-r border-law-200 dark:border-law-700 bg-law-50 dark:bg-law-800 overflow-y-auto"
         :class="{'hidden md:block': activeTab === 'doc', 'block': activeTab === 'kb' || !isMobile}"
       >
-        <div class="p-4">
+        <div class="p-4 flex items-center space-x-2">
           <button 
+            v-if="!isSearchActive"
             @click="showCreateKbModal = true" 
-            class="w-full flex items-center justify-center space-x-2 px-4 py-2 bg-accent text-white rounded-lg hover:bg-accent-dark transition-colors"
+            class="flex-1 flex items-center justify-center space-x-2 px-4 py-2 bg-accent text-white rounded-lg hover:bg-accent-dark transition-colors"
           >
             <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <line x1="12" y1="5" x2="12" y2="19"></line>
@@ -58,11 +59,36 @@
             </svg>
             <span>{{ $t('knowledge_base.create_new') || '新建知识库' }}</span>
           </button>
+          
+          <!-- 搜索图标按钮 -->
+          <button 
+            @click="toggleSearch" 
+            class="p-2 bg-law-100 dark:bg-law-700 text-law-900 dark:text-law-100 rounded-md hover:bg-law-200 dark:hover:bg-law-600 transition-all duration-200"
+            :class="{ 'hidden': isSearchActive }"
+          >
+            <span class="text-lg">🔍</span>
+          </button>
+          
+          <!-- 搜索框 -->
+          <div 
+            v-if="isSearchActive" 
+            class="flex-1 relative animate-slide-in"
+          >
+            <input 
+              v-model="searchQuery"
+              type="text"
+              :placeholder="$t('knowledge_base.search_kb') || '搜索知识库'"
+              class="w-full pl-10 pr-4 py-2 bg-law-100 dark:bg-law-700 text-law-900 dark:text-law-100 rounded-md focus:outline-none focus:ring-2 focus:ring-accent border border-law-200 dark:border-law-600"
+              @blur="onSearchBlur"
+              ref="searchInput"
+            />
+            <span class="absolute left-3 top-2.5 text-lg">🔍</span>
+          </div>
         </div>
         
         <div class="px-2 pb-4">
           <div 
-            v-for="kb in knowledgeBaseList" 
+            v-for="kb in filteredKnowledgeBaseList" 
             :key="kb.kb_id"
             @click="selectKnowledgeBase(kb)"
             class="flex items-center justify-between p-3 mb-1 rounded-lg cursor-pointer transition-colors"
@@ -497,7 +523,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted } from 'vue';
+import { ref, onMounted, onUnmounted, watch, nextTick } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { useKnowledgeBase } from '@/stores/useKnowledgeBase';
 import { storeToRefs } from 'pinia';
@@ -507,7 +533,7 @@ import ThemeSwitcher from '../../components/layout/ThemeSwitcher.vue'
 const router = useRouter();
 const route = useRoute();
 const knowledgeBaseStore = useKnowledgeBase();
-const { knowledgeBaseList } = storeToRefs(knowledgeBaseStore);
+const { knowledgeBaseList, hasLoadedData } = storeToRefs(knowledgeBaseStore);
 
 // 状态
 const selectedKb = ref(null);
@@ -524,6 +550,9 @@ const kbToRename = ref(null);
 const docToDelete = ref(null);
 const activeTab = ref('kb'); // 移动端标签切换状态：'kb' 或 'doc'
 const isMobile = ref(false); // 是否为移动设备
+const isSearchActive = ref(false);
+const searchQuery = ref('');
+const searchInput = ref(null);
 
 // 检测设备类型
 const checkDeviceType = () => {
@@ -536,12 +565,20 @@ onMounted(() => {
   checkDeviceType();
   window.addEventListener('resize', checkDeviceType);
   
-  knowledgeBaseStore.getList().then(() => {
-    // 自动选择第一个知识库
-    if (knowledgeBaseList.value && knowledgeBaseList.value.length > 0) {
-      selectKnowledgeBase(knowledgeBaseList.value[0]);
-    }
-  });
+  // 只有当知识库列表为空或未加载过数据时才获取列表
+  if (!hasLoadedData.value || !knowledgeBaseList.value || knowledgeBaseList.value.length === 0) {
+    knowledgeBaseStore.getList().then(() => {
+      // 自动选择第一个知识库
+      if (knowledgeBaseList.value && knowledgeBaseList.value.length > 0) {
+        filteredKnowledgeBaseList.value = [...knowledgeBaseList.value];
+        selectKnowledgeBase(knowledgeBaseList.value[0]);
+      }
+    });
+  } else if (knowledgeBaseList.value && knowledgeBaseList.value.length > 0) {
+    // 如果已有知识库列表数据，直接选择第一个
+    filteredKnowledgeBaseList.value = [...knowledgeBaseList.value];
+    selectKnowledgeBase(knowledgeBaseList.value[0]);
+  }
 });
 
 // 在组件销毁时移除事件监听
@@ -555,8 +592,8 @@ const goBack = () => {
   if (router.options.history.state.back && router.options.history.state.back.includes('/chat/')) {
     router.back()
   } else {
-    // 否则返回首页
-    router.push('/')
+    // 否则返回首页，但不触发重新加载
+    router.push({ path: '/', replace: true })
   }
 }
 
@@ -722,8 +759,53 @@ const uploadDocument = () => {
   // 显示上传成功提示
   alert('文档上传成功，正在处理中...');
 };
+
+// 过滤知识库列表
+const filteredKnowledgeBaseList = ref([]);
+
+// 搜索知识库
+const toggleSearch = () => {
+  isSearchActive.value = !isSearchActive.value;
+  if (isSearchActive.value) {
+    nextTick(() => {
+      searchInput.value.focus();
+    });
+  }
+};
+
+// 监听搜索关键词变化
+watch(searchQuery, (newVal) => {
+  if (newVal.trim() === '') {
+    filteredKnowledgeBaseList.value = [...knowledgeBaseList.value];
+  } else {
+    filteredKnowledgeBaseList.value = knowledgeBaseList.value.filter(kb => 
+      kb.kb_name.toLowerCase().includes(newVal.toLowerCase())
+    );
+  }
+});
+
+// 搜索框失去焦点
+const onSearchBlur = () => {
+  if (searchQuery.value.trim() === '') {
+    isSearchActive.value = false;
+  }
+};
 </script>
 
 <style scoped>
 /* 可以添加特定的样式 */
+.animate-slide-in {
+  animation: slideIn 0.3s ease-out forwards;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
 </style> 

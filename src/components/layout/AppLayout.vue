@@ -44,7 +44,8 @@
         <div class="flex items-center space-x-3">
           <!-- 知识库下拉列表 -->
           <knowledge-base-selector />
-          <language-switcher />
+          
+          <language-switcher class="hidden md:block" />
           <theme-switcher />
         </div>
       </header>

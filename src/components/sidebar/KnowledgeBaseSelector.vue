@@ -164,7 +164,7 @@ const router = useRouter();
 // 获取知识库数据
 const knowledgeBaseStore = useKnowledgeBase();
 const { getList } = knowledgeBaseStore;
-const { knowledgeBaseList, selectList } = storeToRefs(knowledgeBaseStore);
+const { knowledgeBaseList, selectList, hasLoadedData } = storeToRefs(knowledgeBaseStore);
 
 // 本地状态
 const isDropdownOpen = ref(false);
@@ -176,7 +176,11 @@ const personalDocuments = ref([]);
 
 // 初始化
 onMounted(() => {
-  getList();
+  // 只有当知识库列表为空或者未加载过数据时才获取列表
+  if (!hasLoadedData.value || knowledgeBaseList.value.length === 0) {
+    getList();
+  }
+  
   if (selectList.value && selectList.value.length > 0) {
     selectedKbs.value = [...selectList.value];
   }
