@@ -55,6 +55,7 @@
   "knowledge_base": {
     "manager_title": "知识库管理",
     "create_new": "新建知识库",
+    "search_kb": "搜索知识库",
     "kb_name": "知识库名称",
     "enter_kb_name": "请输入知识库名称",
     "rename_kb": "重命名知识库",
@@ -85,7 +86,16 @@
     "drag_drop": "拖拽文件到此处或",
     "browse_files": "浏览文件",
     "supported_formats": "支持的格式: PDF, DOCX, TXT, MD",
-    "upload": "上传"
+    "upload": "上传",
+    "showing": "显示",
+    "of": "共",
+    "items": "条",
+    "previous": "上一页",
+    "next": "下一页",
+    "go_to": "跳转到",
+    "page": "页",
+    "loading_more": "加载更多...",
+    "all_loaded": "已加载全部文档"
   },
   "common": {
     "cancel": "取消",

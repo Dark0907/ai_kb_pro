@@ -85,7 +85,16 @@
     "drag_drop": "Drag and drop file here or",
     "browse_files": "Browse Files",
     "supported_formats": "Supported formats: PDF, DOCX, TXT, MD",
-    "upload": "Upload"
+    "upload": "Upload",
+    "showing": "Showing",
+    "of": "of",
+    "items": "items",
+    "previous": "Previous",
+    "next": "Next",
+    "go_to": "Go to",
+    "page": "Page",
+    "loading_more": "Loading more...",
+    "all_loaded": "All documents loaded"
   },
   "common": {
     "cancel": "Cancel",

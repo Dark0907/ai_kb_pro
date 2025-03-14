@@ -21,8 +21,8 @@
       </div>
     </div>
     
-    <!-- 主内容区域 -->
-    <div class="flex flex-col md:flex-row flex-1 overflow-hidden">
+    <!-- 主内容区域 - 设置固定高度，防止整个页面滚动 -->
+    <div class="flex flex-col md:flex-row flex-1 overflow-hidden" style="height: calc(100vh - 4rem);">
       <!-- 移动端标签切换 -->
       <div class="md:hidden flex border-b border-law-200 dark:border-law-700 bg-white dark:bg-law-800">
         <button 
@@ -42,12 +42,13 @@
         </button>
       </div>
       
-      <!-- 左侧知识库列表 -->
+      <!-- 左侧知识库列表 - 添加overflow-y-auto使其在容器内滚动 -->
       <div 
         class="w-full md:w-64 border-b md:border-b-0 md:border-r border-law-200 dark:border-law-700 bg-law-50 dark:bg-law-800 overflow-y-auto"
         :class="{'hidden md:block': activeTab === 'doc', 'block': activeTab === 'kb' || !isMobile}"
+        style="max-height: calc(100vh - 4rem);"
       >
-        <div class="p-4 flex items-center space-x-2">
+        <div class="p-3 flex items-center space-x-2">
           <button 
             v-if="!isSearchActive"
             @click="showCreateKbModal = true" 
@@ -143,11 +144,16 @@
         </div>
         
         <div v-else class="flex-1 flex flex-col overflow-hidden">
-          <!-- 右侧文档列表 -->
+          <!-- 右侧文档列表 - 确保内容在容器内滚动 -->
           <div class="flex-1 overflow-y-auto bg-white dark:bg-law-900">
             <div v-if="selectedKb" class="p-4">
-              <div class="flex flex-col md:flex-row md:justify-between md:items-center mb-4">
-                <h2 class="text-lg font-semibold text-law-800 dark:text-white mb-2 md:mb-0">{{ selectedKb.kb_name }}</h2>
+              <div class="flex flex-col md:flex-row md:justify-between md:items-center mb-2">
+                <div class="flex items-center">
+                  <h2 class="text-lg font-semibold text-law-800 dark:text-white mb-2 md:mb-0">
+                    {{ selectedKb.kb_name }}
+                  </h2>
+                  <span class="text-sm text-law-500 dark:text-law-400 ml-2 mb-2 md:mb-0">{{ $t('knowledge_base.document_count', { count: documents.length }) || `共 ${documents.length} 个文档` }}</span>
+                </div>
                 <button 
                   @click="showUploadModal = true" 
                   class="flex items-center justify-center space-x-2 px-4 py-2 bg-accent text-white rounded-lg hover:bg-accent-dark transition-colors"
@@ -190,7 +196,7 @@
                     </tr>
                   </thead>
                   <tbody class="bg-white dark:bg-law-900 divide-y divide-law-200 dark:divide-law-700">
-                    <tr v-for="doc in documents" :key="doc.doc_id" class="hover:bg-law-50 dark:hover:bg-law-800 transition-colors">
+                    <tr v-for="doc in paginatedDocuments" :key="doc.doc_id" class="hover:bg-law-50 dark:hover:bg-law-800 transition-colors">
                       <td class="px-4 py-3 whitespace-nowrap text-sm text-law-500 dark:text-law-400">
                         {{ doc.doc_id }}
                       </td>
@@ -256,16 +262,108 @@
                     </tr>
                   </tbody>
                 </table>
+                
+                <!-- 分页导航（桌面端） -->
+                <div v-if="documents.length > 0" class="flex items-center justify-between px-4 py-3 bg-white dark:bg-law-900 border-t border-law-200 dark:border-law-700">
+                  <div class="flex items-center text-sm text-law-700 dark:text-law-300">
+                    {{ $t('knowledge_base.showing') || '显示' }} {{ (currentPage - 1) * pageSize + 1 }}-{{ Math.min(currentPage * pageSize, totalItems) }} {{ $t('knowledge_base.of') || '共' }} {{ totalItems }} {{ $t('knowledge_base.items') || '条' }}
+                  </div>
+                  
+                  <div class="flex items-center space-x-2">
+                    <!-- 上一页 -->
+                    <button 
+                      @click="changePage(currentPage - 1)" 
+                      :disabled="currentPage === 1"
+                      class="px-3 py-1 rounded-md border border-law-200 dark:border-law-700 bg-white dark:bg-law-800 text-law-700 dark:text-law-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {{ $t('knowledge_base.previous') || '上一页' }}
+                    </button>
+                    
+                    <!-- 页码 -->
+                    <div class="flex items-center space-x-1">
+                      <!-- 第一页 -->
+                      <button 
+                        v-if="currentPage > 3" 
+                        @click="changePage(1)"
+                        class="w-8 h-8 flex items-center justify-center rounded-md border border-law-200 dark:border-law-700 bg-white dark:bg-law-800 text-law-700 dark:text-law-300"
+                      >
+                        1
+                      </button>
+                      
+                      <!-- 省略号 -->
+                      <span v-if="currentPage > 3" class="text-law-500 dark:text-law-400">...</span>
+                      
+                      <!-- 当前页前一页 -->
+                      <button 
+                        v-if="currentPage > 1" 
+                        @click="changePage(currentPage - 1)"
+                        class="w-8 h-8 flex items-center justify-center rounded-md border border-law-200 dark:border-law-700 bg-white dark:bg-law-800 text-law-700 dark:text-law-300"
+                      >
+                        {{ currentPage - 1 }}
+                      </button>
+                      
+                      <!-- 当前页 -->
+                      <button 
+                        class="w-8 h-8 flex items-center justify-center rounded-md border border-accent bg-accent text-white"
+                      >
+                        {{ currentPage }}
+                      </button>
+                      
+                      <!-- 当前页后一页 -->
+                      <button 
+                        v-if="currentPage < totalPages" 
+                        @click="changePage(currentPage + 1)"
+                        class="w-8 h-8 flex items-center justify-center rounded-md border border-law-200 dark:border-law-700 bg-white dark:bg-law-800 text-law-700 dark:text-law-300"
+                      >
+                        {{ currentPage + 1 }}
+                      </button>
+                      
+                      <!-- 省略号 -->
+                      <span v-if="currentPage < totalPages - 2" class="text-law-500 dark:text-law-400">...</span>
+                      
+                      <!-- 最后一页 -->
+                      <button 
+                        v-if="currentPage < totalPages - 2" 
+                        @click="changePage(totalPages)"
+                        class="w-8 h-8 flex items-center justify-center rounded-md border border-law-200 dark:border-law-700 bg-white dark:bg-law-800 text-law-700 dark:text-law-300"
+                      >
+                        {{ totalPages }}
+                      </button>
+                    </div>
+                    
+                    <!-- 下一页 -->
+                    <button 
+                      @click="changePage(currentPage + 1)" 
+                      :disabled="currentPage === totalPages"
+                      class="px-3 py-1 rounded-md border border-law-200 dark:border-law-700 bg-white dark:bg-law-800 text-law-700 dark:text-law-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {{ $t('knowledge_base.next') || '下一页' }}
+                    </button>
+                    
+                    <!-- 跳转到指定页 -->
+                    <div class="flex items-center space-x-1">
+                      <span class="text-sm text-law-700 dark:text-law-300">{{ $t('knowledge_base.go_to') || '跳转到' }}</span>
+                      <input 
+                        type="number" 
+                        min="1" 
+                        :max="totalPages" 
+                        class="w-12 px-2 py-1 rounded-md border border-law-200 dark:border-law-700 bg-white dark:bg-law-800 text-law-700 dark:text-law-300 text-center"
+                        @keyup.enter="goToPage"
+                      />
+                      <span class="text-sm text-law-700 dark:text-law-300">{{ $t('knowledge_base.page') || '页' }}</span>
+                    </div>
+                  </div>
+                </div>
               </div>
               
-              <!-- 文档列表 - 卡片形式（移动端） -->
-              <div class="md:hidden">
+              <!-- 文档列表 - 卡片形式（移动端） - 修改滚动容器样式 -->
+              <div class="md:hidden mobile-document-container overflow-y-auto" style="height: calc(100vh - 12rem);">
                 <div v-if="documents.length === 0" class="py-8 text-center text-law-500 dark:text-law-400">
                   {{ $t('knowledge_base.no_documents') || '暂无文档，请上传新文档' }}
                 </div>
                 <div v-else class="space-y-4">
                   <div 
-                    v-for="doc in documents" 
+                    v-for="doc in paginatedDocuments" 
                     :key="doc.doc_id"
                     class="bg-law-50 dark:bg-law-800 rounded-lg border border-law-200 dark:border-law-700 p-4"
                   >
@@ -330,6 +428,20 @@
                       </div>
                     </div>
                   </div>
+                </div>
+                
+                <!-- 加载更多指示器（移动端） -->
+                <div v-if="isLoadingMore" class="py-4 text-center text-law-500 dark:text-law-400">
+                  <svg class="animate-spin h-5 w-5 mx-auto text-accent" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  <p class="mt-2">{{ $t('knowledge_base.loading_more') || '加载更多...' }}</p>
+                </div>
+                
+                <!-- 全部加载完毕提示（移动端） -->
+                <div v-if="!isLoadingMore && mobileLoadedItems >= documents.length && documents.length > 0" class="py-4 text-center text-law-500 dark:text-law-400">
+                  {{ $t('knowledge_base.all_loaded') || '已加载全部文档' }}
                 </div>
               </div>
             </div>
@@ -523,7 +635,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted, watch, nextTick } from 'vue';
+import { ref, onMounted, onUnmounted, watch, nextTick, computed } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { useKnowledgeBase } from '@/stores/useKnowledgeBase';
 import { storeToRefs } from 'pinia';
@@ -554,6 +666,78 @@ const isSearchActive = ref(false);
 const searchQuery = ref('');
 const searchInput = ref(null);
 
+// 分页相关
+const pageSize = ref(15); // 每页显示15条
+const currentPage = ref(1);
+const totalPages = computed(() => Math.ceil(documents.value.length / pageSize.value));
+const totalItems = computed(() => documents.value.length);
+
+// 移动端滚动加载
+const mobileLoadedItems = ref(10); // 移动端初始加载10条
+const isLoadingMore = ref(false);
+
+// 计算当前页显示的文档
+const paginatedDocuments = computed(() => {
+  if (isMobile.value) {
+    // 移动端滚动加载
+    return documents.value.slice(0, mobileLoadedItems.value);
+  } else {
+    // PC端分页
+    const start = (currentPage.value - 1) * pageSize.value;
+    const end = start + pageSize.value;
+    return documents.value.slice(start, end);
+  }
+});
+
+// 监听滚动事件（移动端）
+const handleScroll = (event) => {
+  if (!isMobile.value) return;
+  
+  const documentContainer = document.querySelector('.mobile-document-container');
+  if (!documentContainer) return;
+  
+  const { scrollTop, scrollHeight, clientHeight } = documentContainer;
+  
+  // 当滚动到距离底部50px时加载更多
+  if (scrollHeight - scrollTop - clientHeight < 50 && !isLoadingMore.value && mobileLoadedItems.value < documents.value.length) {
+    loadMoreDocuments();
+  }
+};
+
+// 加载更多文档（移动端）
+const loadMoreDocuments = () => {
+  if (isLoadingMore.value || mobileLoadedItems.value >= documents.value.length) return;
+  
+  isLoadingMore.value = true;
+  console.log('加载更多文档，当前已加载:', mobileLoadedItems.value);
+  
+  // 使用setTimeout模拟网络请求延迟
+  setTimeout(() => {
+    mobileLoadedItems.value += 10; // 每次加载10条
+    isLoadingMore.value = false;
+    console.log('加载完成，现在已加载:', mobileLoadedItems.value);
+  }, 500);
+};
+
+// 切换页码
+const changePage = (page) => {
+  currentPage.value = page;
+};
+
+// 跳转到指定页
+const goToPage = (event) => {
+  const page = parseInt(event.target.value);
+  if (page && page > 0 && page <= totalPages.value) {
+    currentPage.value = page;
+  }
+};
+
+// 重置分页状态
+const resetPagination = () => {
+  currentPage.value = 1;
+  mobileLoadedItems.value = 10;
+};
+
 // 检测设备类型
 const checkDeviceType = () => {
   isMobile.value = window.innerWidth < 768;
@@ -564,6 +748,15 @@ onMounted(() => {
   // 检测设备类型
   checkDeviceType();
   window.addEventListener('resize', checkDeviceType);
+  
+  // 延迟添加滚动事件监听（移动端），确保DOM已经渲染
+  setTimeout(() => {
+    const documentContainer = document.querySelector('.mobile-document-container');
+    if (documentContainer) {
+      documentContainer.addEventListener('scroll', handleScroll);
+      console.log('已添加滚动事件监听');
+    }
+  }, 500);
   
   // 只有当知识库列表为空或未加载过数据时才获取列表
   if (!hasLoadedData.value || !knowledgeBaseList.value || knowledgeBaseList.value.length === 0) {
@@ -584,6 +777,12 @@ onMounted(() => {
 // 在组件销毁时移除事件监听
 onUnmounted(() => {
   window.removeEventListener('resize', checkDeviceType);
+  
+  // 移除滚动事件监听（移动端）
+  const documentContainer = document.querySelector('.mobile-document-container');
+  if (documentContainer) {
+    documentContainer.removeEventListener('scroll', handleScroll);
+  }
 });
 
 // 修改返回函数，优先返回到之前的对话页面
@@ -616,8 +815,26 @@ const fetchDocuments = (kbId) => {
   documents.value = [
     { doc_id: 1, doc_name: '专利优先审查指南.pdf', created_at: '2025-03-12', file_size: 1024 * 1024 * 2.5, status: 'success' },
     { doc_id: 2, doc_name: '商标注册申请指南.docx', created_at: '2025-03-11', file_size: 1024 * 512, status: 'success' },
-    { doc_id: 3, doc_name: '著作权登记流程.pdf', created_at: '2025-03-10', file_size: 1024 * 1024 * 1.2, status: 'processing' }
+    { doc_id: 3, doc_name: '著作权登记流程.pdf', created_at: '2025-03-10', file_size: 1024 * 1024 * 1.2, status: 'processing' },
+    { doc_id: 4, doc_name: '专利优先审查指南.pdf', created_at: '2025-03-12', file_size: 1024 * 1024 * 2.5, status: 'success' },
+    { doc_id: 5, doc_name: '商标注册申请指南.docx', created_at: '2025-03-11', file_size: 1024 * 512, status: 'success' },
+    { doc_id: 6, doc_name: '著作权登记流程.pdf', created_at: '2025-03-10', file_size: 1024 * 1024 * 1.2, status: 'processing' },
+    { doc_id: 7, doc_name: '专利优先审查指南.pdf', created_at: '2025-03-12', file_size: 1024 * 1024 * 2.5, status: 'success' },
+    { doc_id: 8, doc_name: '商标注册申请指南.docx', created_at: '2025-03-11', file_size: 1024 * 512, status: 'success' },
+    { doc_id: 9, doc_name: '著作权登记流程.pdf', created_at: '2025-03-10', file_size: 1024 * 1024 * 1.2, status: 'processing' },
+    { doc_id: 10, doc_name: '专利优先审查指南.pdf', created_at: '2025-03-12', file_size: 1024 * 1024 * 2.5, status: 'success' },
+    { doc_id: 11, doc_name: '商标注册申请指南.docx', created_at: '2025-03-11', file_size: 1024 * 512, status: 'success' },
+    { doc_id: 12, doc_name: '著作权登记流程.pdf', created_at: '2025-03-10', file_size: 1024 * 1024 * 1.2, status: 'processing' },
+    { doc_id: 13, doc_name: '专利优先审查指南.pdf', created_at: '2025-03-12', file_size: 1024 * 1024 * 2.5, status: 'success' },
+    { doc_id: 14, doc_name: '商标注册申请指南.docx', created_at: '2025-03-11', file_size: 1024 * 512, status: 'success' },
+    { doc_id: 15, doc_name: '著作权登记流程.pdf', created_at: '2025-03-10', file_size: 1024 * 1024 * 1.2, status: 'processing' },
+    { doc_id: 16, doc_name: '专利优先审查指南.pdf', created_at: '2025-03-12', file_size: 1024 * 1024 * 2.5, status: 'success' },
+    { doc_id: 17, doc_name: '商标注册申请指南.docx', created_at: '2025-03-11', file_size: 1024 * 512, status: 'success' },
+    { doc_id: 18, doc_name: '著作权登记流程.pdf', created_at: '2025-03-10', file_size: 1024 * 1024 * 1.2, status: 'processing' }
   ];
+  
+  // 重置分页状态
+  resetPagination();
 };
 
 // 创建知识库
