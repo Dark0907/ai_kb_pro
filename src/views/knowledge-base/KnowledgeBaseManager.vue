@@ -147,7 +147,7 @@
           <div class="flex-1 overflow-y-auto bg-white dark:bg-law-900">
             <div v-if="selectedKb" class="p-4">
               <div class="flex flex-col md:flex-row md:justify-between md:items-center mb-4">
-                <h2 class="text-lg font-semibold text-law-800 dark:text-white mb-2 md:mb-0">{{ selectedKb.kb_name }} - {{ $t('knowledge_base.documents') || '文档列表' }}</h2>
+                <h2 class="text-lg font-semibold text-law-800 dark:text-white mb-2 md:mb-0">{{ selectedKb.kb_name }}</h2>
                 <button 
                   @click="showUploadModal = true" 
                   class="flex items-center justify-center space-x-2 px-4 py-2 bg-accent text-white rounded-lg hover:bg-accent-dark transition-colors"

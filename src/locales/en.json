@@ -54,7 +54,7 @@
   },
   "knowledge_base": {
     "manager_title": "Knowledge Base Management",
-    "create_new": "Create New Knowledge Base",
+    "create_new": "Create New",
     "kb_name": "Knowledge Base Name",
     "enter_kb_name": "Please enter knowledge base name",
     "rename_kb": "Rename Knowledge Base",
