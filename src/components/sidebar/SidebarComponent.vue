@@ -11,6 +11,7 @@
     
     <!-- 新建聊天按钮和搜索 -->
     <div class="p-3 flex items-center space-x-2">
+      <!-- 新建聊天按钮 -->
       <button 
         v-if="!isSearchActive"
         @click="createNewChat"
@@ -172,11 +173,12 @@ const togglePinChat = (chatId) => {
   chatStore.togglePinChat(chatId)
 }
 
-// 处理聊天删除
-const handleChatDeleted = (chatId) => {
+// 删除聊天
+const deleteChat = (chatId) => {
+  chatStore.deleteChat(chatId)
   // 如果删除的是当前活动的聊天，则切换到第一个聊天
-  if (chatId === activeChatId.value && chatStore.chatHistory.length > 0) {
-    emit('select-chat', chatStore.chatHistory[0].id)
+  if (chatId === currentChatId.value && chatStore.chatHistory.length > 0) {
+    selectChat(chatStore.chatHistory[0].id)
   }
 }
 

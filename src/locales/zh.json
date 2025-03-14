@@ -34,7 +34,14 @@
     "no_knowledge_base": "暂无知识库",
     "selected_count": "已选择 {count} 个知识库",
     "select_all": "全选",
-    "clear": "清空"
+    "clear": "清空",
+    "search_chats": "搜索聊天",
+    "chat_history": "聊天历史",
+    "no_chats": "暂无聊天记录",
+    "no_chats_found": "未找到匹配的聊天",
+    "older": "更早",
+    "collapse": "收起侧边栏",
+    "expand": "展开侧边栏"
   },
   "reference": {
     "title": "引用来源",

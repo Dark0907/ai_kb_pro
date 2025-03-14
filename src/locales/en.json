@@ -34,7 +34,14 @@
     "no_knowledge_base": "No knowledge base available",
     "selected_count": "{count} knowledge base(s) selected",
     "select_all": "Select All",
-    "clear": "Clear"
+    "clear": "Clear",
+    "search_chats": "Search chats",
+    "chat_history": "Chat History",
+    "no_chats": "No chats yet",
+    "no_chats_found": "No chats found",
+    "older": "Older",
+    "collapse": "Collapse sidebar",
+    "expand": "Expand sidebar"
   },
   "reference": {
     "title": "References",

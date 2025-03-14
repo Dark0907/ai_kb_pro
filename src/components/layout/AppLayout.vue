@@ -1,13 +1,62 @@
 <template>
   <div class="flex h-screen bg-law-100 dark:bg-law-900">
-    <!-- 左侧侧边栏 - 在移动端默认隐藏 -->
+    <!-- 左侧侧边栏 - 在移动端默认隐藏，添加收起/展开功能 -->
     <div 
+      v-if="!isSidebarCollapsed"
       :class="[
-        'fixed md:relative z-20 w-64 h-full transition-all duration-300 bg-law-50 dark:bg-law-800 shadow-law border-r border-law-200 dark:border-law-700',
+        'fixed md:relative z-20 h-full w-64 transition-all duration-300 bg-law-50 dark:bg-law-800 shadow-law border-r border-law-200 dark:border-law-700',
         isSidebarOpen ? 'left-0' : '-left-64 md:left-0'
       ]"
     >
-      <sidebar-component />
+      <!-- 侧边栏收起/展开按钮 - 放在侧边栏右侧边缘 -->
+      <button 
+        @click="toggleSidebarCollapse"
+        class="absolute -right-5 top-4 z-10 bg-white dark:bg-law-800 rounded-full p-1.5 shadow-md border border-law-200 dark:border-law-700 hover:bg-law-100 dark:hover:bg-law-700 transition-colors hidden md:block"
+        :title="$t('sidebar.collapse')"
+      >
+        <svg 
+          class="w-4 h-4 text-law-600 dark:text-law-300"
+          xmlns="http://www.w3.org/2000/svg" 
+          viewBox="0 0 24 24" 
+          fill="none" 
+          stroke="currentColor" 
+          stroke-width="2" 
+          stroke-linecap="round" 
+          stroke-linejoin="round"
+        >
+          <polyline points="15 18 9 12 15 6"></polyline>
+        </svg>
+      </button>
+      
+      <!-- 侧边栏内容 -->
+      <div class="h-full overflow-hidden">
+        <sidebar-component />
+      </div>
+    </div>
+    
+    <!-- 侧边栏展开按钮 - 仅在侧边栏收起时显示 -->
+    <div 
+      v-if="isSidebarCollapsed" 
+      class="fixed top-4 left-0 z-30 hidden md:block"
+    >
+      <button 
+        @click="toggleSidebarCollapse"
+        class="p-1.5 rounded-r-full bg-white dark:bg-law-800 shadow-md border border-law-200 dark:border-law-700 hover:bg-law-100 dark:hover:bg-law-700 transition-colors"
+        :title="$t('sidebar.expand')"
+      >
+        <svg 
+          class="w-4 h-4 text-law-600 dark:text-law-300"
+          xmlns="http://www.w3.org/2000/svg" 
+          viewBox="0 0 24 24" 
+          fill="none" 
+          stroke="currentColor" 
+          stroke-width="2" 
+          stroke-linecap="round" 
+          stroke-linejoin="round"
+        >
+          <polyline points="9 18 15 12 9 6"></polyline>
+        </svg>
+      </button>
     </div>
     
     <!-- 遮罩层 - 移动端侧边栏打开时显示 -->
@@ -34,7 +83,7 @@
           </button>
           
           <!-- 应用标题 -->
-          <div class="flex items-center">
+          <div class="flex items-center" :class="{ 'ml-4': isLargeScreen }">
             <span class="text-2xl mr-2">⚖️</span>
             <h1 class="text-xl font-bold text-law-800 dark:text-white">{{ $t('app.title') }}</h1>
           </div>
@@ -93,6 +142,7 @@ import KnowledgeBaseSelector from '../sidebar/KnowledgeBaseSelector.vue'
 
 // 状态
 const isSidebarOpen = ref(false)
+const isSidebarCollapsed = ref(false) // 侧边栏收起状态
 const windowWidth = ref(window.innerWidth)
 const settingsStore = useSettingsStore()
 const referenceStore = useReferenceStore()
@@ -105,9 +155,14 @@ const toggleSidebar = () => {
   isSidebarOpen.value = !isSidebarOpen.value
 }
 
+// 切换侧边栏收起/展开状态
+const toggleSidebarCollapse = () => {
+  isSidebarCollapsed.value = !isSidebarCollapsed.value
+  // 保存状态到本地存储
+  localStorage.setItem('sidebarCollapsed', isSidebarCollapsed.value)
+}
+
 const toggleReference = () => {
-  console.log('toggleReference',referenceStore.showReferencePanel)
-  console.log('toggleReference',isLargeScreen.value)
   referenceStore.setShowReferencePanel(!referenceStore.showReferencePanel)
 }
 
@@ -127,6 +182,12 @@ const handleResize = () => {
 onMounted(() => {
   window.addEventListener('resize', handleResize)
   settingsStore.initTheme()
+  
+  // 从本地存储中恢复侧边栏状态
+  const savedState = localStorage.getItem('sidebarCollapsed')
+  if (savedState !== null) {
+    isSidebarCollapsed.value = savedState === 'true'
+  }
 })
 
 onUnmounted(() => {
