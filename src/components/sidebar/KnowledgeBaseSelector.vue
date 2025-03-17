@@ -178,7 +178,7 @@ const personalDocuments = ref([]);
 onMounted(() => {
   // 只有当知识库列表为空或者未加载过数据时才获取列表
   if (!hasLoadedData.value || knowledgeBaseList.value.length === 0) {
-    getList();
+    // getList();
   }
   
   if (selectList.value && selectList.value.length > 0) {

@@ -153,6 +153,10 @@ const isLargeScreen = computed(() => windowWidth.value >= 1024) // lg breakpoint
 // 方法
 const toggleSidebar = () => {
   isSidebarOpen.value = !isSidebarOpen.value
+  // 如果侧边栏打开，则确保不收起
+  if (isSidebarOpen.value) {
+    isSidebarCollapsed.value = false
+  }
 }
 
 // 切换侧边栏收起/展开状态
