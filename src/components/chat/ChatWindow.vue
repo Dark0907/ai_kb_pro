@@ -66,7 +66,7 @@
       </div>
       
       <div class="mt-2 flex justify-between items-center text-xs text-law-500 dark:text-law-400 px-1">
-        <div>
+        <div class="hidden md:block">
           <span>按 Enter 发送消息，Shift+Enter 换行</span>
         </div>
         <div>
@@ -78,7 +78,7 @@
 </template>
 
 <script setup>
-import { ref, watch, nextTick, onMounted, defineProps, inject } from 'vue'
+import { ref, watch, nextTick, onMounted, defineProps, inject, computed } from 'vue'
 import { useChatStore } from '../../stores/chat'
 import { useReferenceStore } from '../../stores/reference'
 import MessageItem from './MessageItem.vue'
@@ -248,7 +248,14 @@ const handleKeyDown = (e) => {
 
 // 发送消息
 const sendMessage = async () => {
-  if (!messageInput.value.trim() || chatStore.isLoading) return
+  // 检查是否有输入内容
+  if (!messageInput.value.trim()) {
+    // 显示提示信息
+    message.warning('请输入您的法律问题');
+    return;
+  }
+  
+  if (chatStore.isLoading) return;
   
   const q = messageInput.value // 用户输入的问题
   messageInput.value = ''
@@ -443,11 +450,15 @@ const sendApiRequest = async (question) => {
 // 处理引用点击
 const handleReferenceClick = (references) => {
   if (references && references.length > 0) {
-    referenceStore.fetchReferences(references)
-    // 引用面板的显示现在由 referenceStore.showReferencePanel 控制
-    // 如果在小屏幕上，可能还需要调用 appLayout.toggleReference()
+    // 先获取引用数据
+    referenceStore.fetchReferences(references);
+    
+    // 确保引用面板显示
+    referenceStore.setShowReferencePanel(true);
+    
+    // 在小屏幕上，调用 appLayout.toggleReference()
     if (window.innerWidth < 1024 && appLayout) {
-      appLayout.toggleReference()
+      appLayout.toggleReference();
     }
   }
 }
@@ -460,4 +471,89 @@ const scrollToBottom = () => {
     }
   })
 }
+
+// 在script setup部分添加isMobile计算属性
+const isMobile = computed(() => {
+  return window.innerWidth < 768;
+});
+
+// 在script setup部分添加message对象
+const message = {
+  warning: (text) => {
+    // 创建一个更美观的消息提示元素
+    const messageDiv = document.createElement('div');
+    messageDiv.className = 'fixed top-4 left-1/2 transform -translate-x-1/2 bg-yellow-50 border-l-4 border-yellow-400 text-yellow-700 p-3 rounded shadow-md z-50 flex items-center max-w-md';
+    
+    // 添加警告图标
+    const iconSpan = document.createElement('span');
+    iconSpan.className = 'mr-2 text-yellow-500';
+    iconSpan.innerHTML = `
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+        <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+      </svg>
+    `;
+    
+    // 添加文本内容
+    const textSpan = document.createElement('span');
+    textSpan.textContent = text;
+    
+    // 组合元素
+    messageDiv.appendChild(iconSpan);
+    messageDiv.appendChild(textSpan);
+    document.body.appendChild(messageDiv);
+    
+    // 添加淡入效果
+    messageDiv.style.opacity = '0';
+    messageDiv.style.transition = 'opacity 0.3s ease-in-out';
+    setTimeout(() => {
+      messageDiv.style.opacity = '1';
+    }, 10);
+    
+    // 2秒后淡出并移除
+    setTimeout(() => {
+      messageDiv.style.opacity = '0';
+      setTimeout(() => {
+        document.body.removeChild(messageDiv);
+      }, 300);
+    }, 2000);
+  },
+  error: (text) => {
+    // 创建一个更美观的错误消息提示元素
+    const messageDiv = document.createElement('div');
+    messageDiv.className = 'fixed top-4 left-1/2 transform -translate-x-1/2 bg-red-50 border-l-4 border-red-400 text-red-700 p-3 rounded shadow-md z-50 flex items-center max-w-md';
+    
+    // 添加错误图标
+    const iconSpan = document.createElement('span');
+    iconSpan.className = 'mr-2 text-red-500';
+    iconSpan.innerHTML = `
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+      </svg>
+    `;
+    
+    // 添加文本内容
+    const textSpan = document.createElement('span');
+    textSpan.textContent = text;
+    
+    // 组合元素
+    messageDiv.appendChild(iconSpan);
+    messageDiv.appendChild(textSpan);
+    document.body.appendChild(messageDiv);
+    
+    // 添加淡入效果
+    messageDiv.style.opacity = '0';
+    messageDiv.style.transition = 'opacity 0.3s ease-in-out';
+    setTimeout(() => {
+      messageDiv.style.opacity = '1';
+    }, 10);
+    
+    // 2秒后淡出并移除
+    setTimeout(() => {
+      messageDiv.style.opacity = '0';
+      setTimeout(() => {
+        document.body.removeChild(messageDiv);
+      }, 300);
+    }, 2000);
+  }
+};
 </script>

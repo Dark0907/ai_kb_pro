@@ -175,6 +175,7 @@ const createNewChat = () => {
 }
 
 const toggleReference = () => {
+  console.log('toggleReference',isLargeScreen.value);
   referenceStore.setShowReferencePanel(!referenceStore.showReferencePanel)
 }
 
@@ -193,6 +194,12 @@ const handleResize = () => {
 // 生命周期钩子
 onMounted(() => {
   window.addEventListener('resize', handleResize)
+  
+  // 监听关闭侧边栏事件
+  window.addEventListener('close-sidebar', () => {
+    isSidebarOpen.value = false
+  })
+  
   settingsStore.initTheme()
   
   // 从本地存储中恢复侧边栏状态
@@ -209,6 +216,9 @@ onMounted(() => {
 
 onUnmounted(() => {
   window.removeEventListener('resize', handleResize)
+  window.removeEventListener('close-sidebar', () => {
+    isSidebarOpen.value = false
+  })
 })
 
 // 暴露方法给父组件

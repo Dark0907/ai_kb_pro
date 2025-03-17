@@ -186,12 +186,22 @@ const hasSearchResults = computed(() => {
 const selectChat = (chatId) => {
   currentChatId.value = chatId
   router.push(`/chat/${chatId}`)
+  
+  // 在移动端关闭侧边栏
+  if (window.innerWidth < 768) {
+    closeSidebar()
+  }
 }
 
 // 创建新聊天
 const createNewChat = () => {
   // 不再直接创建对话，而是跳转到新对话页面
   router.push('/chat/new')
+  
+  // 在移动端关闭侧边栏
+  if (window.innerWidth < 768) {
+    closeSidebar()
+  }
 }
 
 // 固定/取消固定聊天
@@ -224,6 +234,13 @@ const onSearchBlur = () => {
   if (!searchQuery.value.trim()) {
     isSearchActive.value = false;
   }
+}
+
+// 关闭侧边栏（移动端）
+const closeSidebar = () => {
+  // 通过事件触发父组件中的关闭侧边栏方法
+  const event = new CustomEvent('close-sidebar')
+  window.dispatchEvent(event)
 }
 </script>
 

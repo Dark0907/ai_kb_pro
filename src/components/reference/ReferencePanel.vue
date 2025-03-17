@@ -117,10 +117,11 @@ const closeActiveReference = () => {
 
 // 关闭引用面板
 const closeReferencePanel = () => {
+  console.log('ReferencePanel - closeReferencePanel');
   // 关闭模态框
-  closeActiveReference()
-  // 发送事件给父组件
-  referenceStore.setShowReferencePanel(false)
+  closeActiveReference();
+  // 设置引用面板显示状态为false
+  referenceStore.setShowReferencePanel(false);
 }
 </script>
 
