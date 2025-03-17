@@ -13,6 +13,7 @@
   },
   "chat": {
     "placeholder": "Enter your legal question...",
+    "new_placeholder": "Please enter your legal question, press Enter to send, Shift+Enter or Ctrl+Enter for new line...",
     "send": "Send",
     "thinking": "Thinking...",
     "copy": "Copy",
@@ -41,7 +42,8 @@
     "no_chats_found": "No chats found",
     "older": "Older",
     "collapse": "Collapse sidebar",
-    "expand": "Expand sidebar"
+    "expand": "Expand sidebar",
+    "start_new_chat_tip": "Click \"New Chat\" above to start chatting"
   },
   "reference": {
     "title": "References",

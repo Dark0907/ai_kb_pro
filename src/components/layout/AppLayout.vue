@@ -132,6 +132,7 @@
 
 <script setup>
 import { ref, onMounted, onUnmounted, computed, watch } from 'vue'
+import { useRouter } from 'vue-router'
 import SidebarComponent from '../sidebar/SidebarComponent.vue'
 import ReferencePanel from '../reference/ReferencePanel.vue'
 import LanguageSwitcher from './LanguageSwitcher.vue'
@@ -139,6 +140,8 @@ import ThemeSwitcher from './ThemeSwitcher.vue'
 import { useSettingsStore } from '../../stores/settings'
 import { useReferenceStore } from '../../stores/reference'
 import KnowledgeBaseSelector from '../sidebar/KnowledgeBaseSelector.vue'
+
+const router = useRouter()
 
 // 状态
 const isSidebarOpen = ref(false)
@@ -164,6 +167,11 @@ const toggleSidebarCollapse = () => {
   isSidebarCollapsed.value = !isSidebarCollapsed.value
   // 保存状态到本地存储
   localStorage.setItem('sidebarCollapsed', isSidebarCollapsed.value)
+}
+
+// 创建新对话 - 修改为跳转到新对话页面，而不是直接创建对话
+const createNewChat = () => {
+  router.push('/chat/new')
 }
 
 const toggleReference = () => {
@@ -192,6 +200,11 @@ onMounted(() => {
   if (savedState !== null) {
     isSidebarCollapsed.value = savedState === 'true'
   }
+  
+  // 如果当前是首页，则重定向到新对话页面
+  if (router.currentRoute.value.path === '/') {
+    router.push('/chat/new')
+  }
 })
 
 onUnmounted(() => {
@@ -200,7 +213,8 @@ onUnmounted(() => {
 
 // 暴露方法给父组件
 defineExpose({
-  toggleReference
+  toggleReference,
+  createNewChat
 })
 </script>
 

@@ -350,19 +350,56 @@ export const useChatStore = defineStore('chat', () => {
   // 初始化时从本地存储加载聊天历史
   fetchChatHistory()
 
+  // 创建新对话并设置为当前对话
+  const createNewChat = async () => {
+    const newChatId = await createChat()
+    if (newChatId) {
+      currentChat.value = getLocalCurrentChat(newChatId)
+      return newChatId
+    }
+    return null
+  }
+
+  // 添加消息到当前对话
+  const pushMessage = (message) => {
+    if (!currentChat.value) return
+    
+    currentChat.value.messages.push({
+      id: Date.now().toString(),
+      ...message,
+      timestamp: new Date().toISOString()
+    })
+  }
+
+  // 保存当前对话到本地存储
+  const saveCurrentChatToLocalStorage = () => {
+    if (currentChat.value) {
+      saveCurrentChatToLocal(currentChat.value)
+    }
+  }
+
+  // 获取当前对话ID
+  const currentChatId = computed(() => {
+    return currentChat.value ? currentChat.value.id : null
+  })
+
   return {
     chatHistory,
     currentChat,
+    currentChatId,
     isLoading,
     fetchChatHistory,
     fetchChat,
     sendMessage,
     createChat,
+    createNewChat,
+    pushMessage,
     togglePinChat,
     formatTime,
     groupedChats,
     updateChatTitle,
     saveCurrentChatToLocal,
+    saveCurrentChatToLocalStorage,
     getLocalCurrentChat,
     deleteChat
   }

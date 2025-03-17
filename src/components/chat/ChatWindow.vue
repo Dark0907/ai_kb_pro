@@ -46,7 +46,7 @@
           :placeholder="$t('chat.placeholder')"
           class="w-full pl-4 pr-12 py-3 bg-white dark:bg-law-800 border border-law-300 dark:border-law-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent text-law-800 dark:text-law-100 resize-none shadow-sm min-h-[60px] max-h-[120px]"
           rows="2"
-          @keydown.enter.prevent="sendMessage"
+          @keydown="handleKeyDown"
         ></textarea>
         
         <button 
@@ -67,7 +67,7 @@
       
       <div class="mt-2 flex justify-between items-center text-xs text-law-500 dark:text-law-400 px-1">
         <div>
-          <span>按 Enter 发送消息</span>
+          <span>按 Enter 发送消息，Shift+Enter 换行</span>
         </div>
         <div>
           <span>法律AI助手提供的信息仅供参考，不构成法律建议</span>
@@ -86,6 +86,7 @@ import { apiBase } from '@services/index';
 import { userId } from '@services/urlConfig'; // 引入 userId
 import { fetchEventSource } from '@microsoft/fetch-event-source';
 import { Typewriter } from '@utils/typewriter';
+import { useRouter } from 'vue-router';
 
 const props = defineProps({
   chatId: {
@@ -100,6 +101,7 @@ const referenceStore = useReferenceStore()
 const messageInput = ref('')
 const messagesContainer = ref(null)
 const appLayout = inject('appLayout')
+const router = useRouter()
 
 // 从本地存储获取聊天历史
 const getLocalChatHistory = () => {
@@ -204,17 +206,27 @@ let currentMessageId = null; // 用于存储当前消息的ID
 
 // 获取聊天数据
 onMounted(async () => {
-  if (props.chatId) {
+  if (props.chatId && props.chatId !== 'new') {
     await chatStore.fetchChat(props.chatId);
     scrollToBottom();
+  } else if (props.chatId === 'new') {
+    // 处理新对话页面的情况
+    if (chatStore.currentChat) {
+      chatStore.currentChat = null;
+    }
   }
 })
 
 // 监听聊天ID变化
 watch(() => props.chatId, async (newChatId) => {
-  if (newChatId) {
+  if (newChatId && newChatId !== 'new') {
     await chatStore.fetchChat(newChatId);
     scrollToBottom();
+  } else if (newChatId === 'new') {
+    // 处理新对话页面的情况
+    if (chatStore.currentChat) {
+      chatStore.currentChat = null;
+    }
   }
 })
 
@@ -222,6 +234,17 @@ watch(() => props.chatId, async (newChatId) => {
 watch(() => chatStore.currentChat?.messages.length, () => {
   scrollToBottom();
 })
+
+// 处理键盘事件
+const handleKeyDown = (e) => {
+  // 如果按下Enter键，且没有同时按下Shift或Ctrl键，则发送消息
+  if (e.key === 'Enter' && !e.shiftKey && !e.ctrlKey) {
+    e.preventDefault(); // 阻止默认的换行行为
+    sendMessage();
+  }
+  // 如果按下Enter键，且同时按下Shift或Ctrl键，则允许换行
+  // 不需要特殊处理，因为这是textarea的默认行为
+}
 
 // 发送消息
 const sendMessage = async () => {
@@ -232,6 +255,31 @@ const sendMessage = async () => {
   
   try {
     chatStore.isLoading = true
+    
+    // 如果是新对话页面，先创建新对话
+    if (props.chatId === 'new') {
+      await chatStore.createNewChat();
+      await chatStore.fetchChat(chatStore.currentChatId);
+      
+      // 添加用户消息
+      chatStore.pushMessage({
+        role: 'user',
+        content: q.trim()
+      });
+      
+      // 更新对话标题
+      chatStore.updateChatTitle(chatStore.currentChatId, q.trim());
+      
+      // 保存当前对话到本地存储
+      chatStore.saveCurrentChatToLocalStorage();
+      
+      // 发送API请求
+      await sendApiRequest(q.trim());
+      
+      // 导航到新对话页面
+      router.push(`/chat/${chatStore.currentChatId}`);
+      return;
+    }
     
     // 添加用户消息
     chatStore.currentChat.messages.push({
@@ -247,12 +295,23 @@ const sendMessage = async () => {
     // 保存当前聊天到本地存储
     chatStore.saveCurrentChatToLocal(chatStore.currentChat);
 
-    // 重置完整响应内容
-    fullResponse = '';
+    // 发送API请求
+    await sendApiRequest(q);
+  } catch (error) {
+    console.error('发送消息失败:', error);
+    chatStore.isLoading = false;
+  }
+}
 
-    // 使用 fetchEventSource 发送请求
-    const ctrl = new AbortController(); // 创建一个 AbortController 实例
+// 发送API请求
+const sendApiRequest = async (question) => {
+  // 重置完整响应内容
+  fullResponse = '';
 
+  // 使用 fetchEventSource 发送请求
+  const ctrl = new AbortController(); // 创建一个 AbortController 实例
+
+  try {
     fetchEventSource(apiBase + '/kb_api/local_doc_qa/local_doc_chat', {
       method: 'POST',
       headers: {
@@ -264,7 +323,7 @@ const sendMessage = async () => {
         user_id: userId,
         kb_ids: selectList.value,
         history: history.value,
-        question: q,
+        question: question,
         streaming: true,
         networking: false,
         product_source: 'saas',
@@ -326,7 +385,7 @@ const sendMessage = async () => {
             // 如果有引用文档，更新引用
             if (res.source_documents && res.source_documents.length > 0) { 
               // 确保不重复添加相同的引用
-              const existingIds = new Set(currentMessage.references.map(ref => ref.id));
+              const existingIds = new Set(currentMessage.references.map(ref => ref.file_id));
               
               const newReferences = res.source_documents
                 .filter(doc => !existingIds.has(doc.file_id))
@@ -376,7 +435,7 @@ const sendMessage = async () => {
       },
     });
   } catch (error) {
-    console.error('发送消息失败:', error);
+    console.error('API请求失败:', error);
     chatStore.isLoading = false;
   }
 }

@@ -49,52 +49,72 @@
     
     <!-- 聊天历史列表 -->
     <div class="flex-1 overflow-y-auto p-2">
+      <!-- 无聊天历史数据时显示提示 -->
+      <div v-if="chatStore.chatHistory.length === 0" class="flex flex-col items-center justify-center h-full text-center p-4">
+        <div class="w-16 h-16 rounded-full bg-law-100 dark:bg-law-700 flex items-center justify-center mb-4">
+          <span class="text-2xl">💬</span>
+        </div>
+        <p class="text-law-600 dark:text-law-400 mb-2">{{ $t('sidebar.no_chats') }}</p>
+        <p class="text-xs text-law-500 dark:text-law-500">{{ $t('sidebar.start_new_chat_tip') || '点击上方"新建对话"开始聊天' }}</p>
+      </div>
+
+      <!-- 有聊天历史但搜索无结果时显示提示 -->
+      <div v-else-if="searchQuery && !hasSearchResults" class="flex flex-col items-center justify-center h-full text-center p-4">
+        <div class="w-16 h-16 rounded-full bg-law-100 dark:bg-law-700 flex items-center justify-center mb-4">
+          <span class="text-2xl">🔍</span>
+        </div>
+        <p class="text-law-600 dark:text-law-400">{{ $t('sidebar.no_chats_found') }}</p>
+        <p class="text-xs text-law-500 dark:text-law-500">{{ searchQuery }}</p>
+      </div>
+
       <!-- 今天 -->
-      <div v-if="filteredChats.today.length > 0" class="mb-4">
-        <h3 class="px-2 py-1 text-xs font-semibold text-primary dark:text-accent uppercase tracking-wider">
-          {{ $t('sidebar.today') }}
-        </h3>
-        <chat-item 
-          v-for="chat in filteredChats.today" 
-          :key="chat.id"
-          :chat="chat"
-          :is-active="currentChatId === chat.id"
-          @click="selectChat(chat.id)"
-          @toggle-pin="togglePinChat(chat.id)"
-          @delete="deleteChat(chat.id)"
-        />
-      </div>
-      
-      <!-- 最近7天 -->
-      <div v-if="filteredChats.last7Days.length > 0" class="mb-4">
-        <h3 class="px-2 py-1 text-xs font-semibold text-primary dark:text-accent uppercase tracking-wider">
-          {{ $t('sidebar.last_7_days') }}
-        </h3>
-        <chat-item 
-          v-for="chat in filteredChats.last7Days" 
-          :key="chat.id"
-          :chat="chat"
-          :is-active="currentChatId === chat.id"
-          @click="selectChat(chat.id)"
-          @toggle-pin="togglePinChat(chat.id)"
-          @delete="deleteChat(chat.id)"
-        />
-      </div>
-      
-      <!-- 最近30天 -->
-      <div v-if="filteredChats.last30Days.length > 0" class="mb-4">
-        <h3 class="px-2 py-1 text-xs font-semibold text-primary dark:text-accent uppercase tracking-wider">
-          {{ $t('sidebar.last_30_days') }}
-        </h3>
-        <chat-item 
-          v-for="chat in filteredChats.last30Days" 
-          :key="chat.id"
-          :chat="chat"
-          :is-active="currentChatId === chat.id"
-          @click="selectChat(chat.id)"
-          @toggle-pin="togglePinChat(chat.id)"
-          @delete="deleteChat(chat.id)"
-        />
+      <div v-else>
+        <div v-if="filteredChats.today.length > 0" class="mb-4">
+          <h3 class="px-2 py-1 text-xs font-semibold text-primary dark:text-accent uppercase tracking-wider">
+            {{ $t('sidebar.today') }}
+          </h3>
+          <chat-item 
+            v-for="chat in filteredChats.today" 
+            :key="chat.id"
+            :chat="chat"
+            :is-active="currentChatId === chat.id"
+            @click="selectChat(chat.id)"
+            @toggle-pin="togglePinChat(chat.id)"
+            @delete="deleteChat(chat.id)"
+          />
+        </div>
+        
+        <!-- 最近7天 -->
+        <div v-if="filteredChats.last7Days.length > 0" class="mb-4">
+          <h3 class="px-2 py-1 text-xs font-semibold text-primary dark:text-accent uppercase tracking-wider">
+            {{ $t('sidebar.last_7_days') }}
+          </h3>
+          <chat-item 
+            v-for="chat in filteredChats.last7Days" 
+            :key="chat.id"
+            :chat="chat"
+            :is-active="currentChatId === chat.id"
+            @click="selectChat(chat.id)"
+            @toggle-pin="togglePinChat(chat.id)"
+            @delete="deleteChat(chat.id)"
+          />
+        </div>
+        
+        <!-- 最近30天 -->
+        <div v-if="filteredChats.last30Days.length > 0" class="mb-4">
+          <h3 class="px-2 py-1 text-xs font-semibold text-primary dark:text-accent uppercase tracking-wider">
+            {{ $t('sidebar.last_30_days') }}
+          </h3>
+          <chat-item 
+            v-for="chat in filteredChats.last30Days" 
+            :key="chat.id"
+            :chat="chat"
+            :is-active="currentChatId === chat.id"
+            @click="selectChat(chat.id)"
+            @toggle-pin="togglePinChat(chat.id)"
+            @delete="deleteChat(chat.id)"
+          />
+        </div>
       </div>
     </div>
     
@@ -154,6 +174,14 @@ const filteredChats = computed(() => {
   }
 })
 
+// 判断搜索结果是否为空
+const hasSearchResults = computed(() => {
+  return filteredChats.value.today.length > 0 || 
+         filteredChats.value.last7Days.length > 0 || 
+         filteredChats.value.last30Days.length > 0 || 
+         filteredChats.value.older.length > 0
+})
+
 // 选择聊天
 const selectChat = (chatId) => {
   currentChatId.value = chatId
@@ -161,11 +189,9 @@ const selectChat = (chatId) => {
 }
 
 // 创建新聊天
-const createNewChat = async () => {
-  const newChatId = await chatStore.createChat()
-  if (newChatId) {
-    selectChat(newChatId)
-  }
+const createNewChat = () => {
+  // 不再直接创建对话，而是跳转到新对话页面
+  router.push('/chat/new')
 }
 
 // 固定/取消固定聊天
