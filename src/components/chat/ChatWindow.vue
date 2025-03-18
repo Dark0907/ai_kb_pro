@@ -455,11 +455,6 @@ const handleReferenceClick = (references) => {
     
     // 确保引用面板显示
     referenceStore.setShowReferencePanel(true);
-    
-    // 在小屏幕上，调用 appLayout.toggleReference()
-    if (window.innerWidth < 1024 && appLayout) {
-      appLayout.toggleReference();
-    }
   }
 }
 

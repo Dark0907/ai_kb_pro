@@ -174,11 +174,6 @@ const createNewChat = () => {
   router.push('/chat/new')
 }
 
-const toggleReference = () => {
-  console.log('toggleReference',isLargeScreen.value);
-  referenceStore.setShowReferencePanel(!referenceStore.showReferencePanel)
-}
-
 const closeReferencePanel = () => {
   referenceStore.setShowReferencePanel(false)
 }
@@ -223,7 +218,6 @@ onUnmounted(() => {
 
 // 暴露方法给父组件
 defineExpose({
-  toggleReference,
   createNewChat
 })
 </script>
