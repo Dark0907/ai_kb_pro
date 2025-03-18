@@ -72,6 +72,10 @@
     "delete_kb_confirm": "确定要删除知识库 \"{name}\" 吗？此操作不可恢复。",
     "document_count": "共 {count} 个文档",
     "upload_document": "上传文档",
+    "selected_files": "已选择文件",
+    "upload_failed": "上传失败",
+    "upload_success": "上传成功",
+    "upload_progress": "上传进度",
     "documents": "文档列表",
     "knowledge_bases": "知识库列表",
     "no_documents": "暂无文档，请上传新文档",
@@ -110,7 +114,8 @@
     "cancel": "取消",
     "confirm": "确认",
     "delete": "删除",
-    "save": "保存"
+    "save": "保存",
+    "close": "关闭"
   },
   "notFound": {
     "title": "页面未找到",

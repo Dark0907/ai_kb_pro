@@ -71,6 +71,9 @@
     "delete_kb_confirm": "Are you sure you want to delete knowledge base \"{name}\"? This action cannot be undone.",
     "document_count": "{count} documents in total",
     "upload_document": "Upload Document",
+    "selected_files": "Selected Files",
+    "upload_failed": "Upload Failed",
+    "upload_progress": "Upload Progress",
     "documents": "Document List",
     "knowledge_bases": "Knowledge Base List",
     "no_documents": "No documents yet, please upload new documents",
@@ -109,7 +112,8 @@
     "cancel": "Cancel",
     "confirm": "Confirm",
     "delete": "Delete",
-    "save": "Save"
+    "save": "Save",
+    "close": "Close"
   },
   "notFound": {
     "title": "Page Not Found",

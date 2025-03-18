@@ -567,7 +567,10 @@
         <div class="p-5">
           <div class="mb-4">
             <label class="block text-sm font-medium text-law-700 dark:text-law-300 mb-2">{{ $t('knowledge_base.select_kb') || '选择知识库' }}</label>
-            <select class="w-full px-3 py-2 border border-law-300 dark:border-law-600 rounded-md bg-white dark:bg-law-700 text-law-700 dark:text-law-300 focus:outline-none focus:ring-2 focus:ring-accent">
+            <select 
+              v-model="uploadKbId" 
+              class="w-full px-3 py-2 border border-law-300 dark:border-law-600 rounded-md bg-white dark:bg-law-700 text-law-700 dark:text-law-300 focus:outline-none focus:ring-2 focus:ring-accent"
+            >
               <option v-for="kb in knowledgeBaseList" :key="kb.kb_id" :value="kb.kb_id" :selected="selectedKb && kb.kb_id === selectedKb.kb_id">
                 {{ kb.kb_name }}
               </option>
@@ -575,23 +578,65 @@
           </div>
           <div class="mb-4">
             <label class="block text-sm font-medium text-law-700 dark:text-law-300 mb-2">{{ $t('knowledge_base.upload_file') || '上传文件' }}</label>
-            <div class="border-2 border-dashed border-law-300 dark:border-law-600 rounded-md p-6 text-center">
+            <div 
+              class="border-2 border-dashed border-law-300 dark:border-law-600 rounded-md p-6 text-center"
+              @dragover.prevent="onDragOver" 
+              @dragleave.prevent="onDragLeave" 
+              @drop.prevent="onDrop"
+              :class="{'border-accent bg-accent bg-opacity-5': isDragging}"
+            >
+              <input 
+                type="file" 
+                ref="fileInput" 
+                multiple 
+                class="hidden" 
+                @change="onFileSelected" 
+                accept=".pdf,.docx,.txt,.md"
+              />
               <svg class="w-12 h-12 mx-auto text-law-400 dark:text-law-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
                 <polyline points="17 8 12 3 7 8"></polyline>
                 <line x1="12" y1="3" x2="12" y2="15"></line>
               </svg>
               <p class="mt-2 text-sm text-law-600 dark:text-law-400">{{ $t('knowledge_base.drag_drop') || '拖拽文件到此处或' }}</p>
-              <button class="mt-2 px-4 py-2 bg-accent text-white rounded-md hover:bg-accent-dark transition-colors">
+              <button 
+                @click.prevent="$refs.fileInput.click()" 
+                class="mt-2 px-4 py-2 bg-accent text-white rounded-md hover:bg-accent-dark transition-colors"
+              >
                 {{ $t('knowledge_base.browse_files') || '浏览文件' }}
               </button>
               <p class="mt-2 text-xs text-law-500 dark:text-law-400">{{ $t('knowledge_base.supported_formats') || '支持的格式: PDF, DOCX, TXT, MD' }}</p>
             </div>
           </div>
+          
+          <!-- 选择的文件列表 -->
+          <div v-if="selectedFiles.length > 0" class="mt-4">
+            <h4 class="text-sm font-medium text-law-700 dark:text-law-300 mb-2">{{ $t('knowledge_base.selected_files') || '已选择文件' }}</h4>
+            <ul class="max-h-40 overflow-y-auto bg-law-50 dark:bg-law-700 rounded-md p-2">
+              <li v-for="(file, index) in selectedFiles" :key="index" class="flex justify-between items-center py-1">
+                <div class="flex items-center truncate">
+                  <svg class="w-4 h-4 mr-2 text-law-500 dark:text-law-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                    <polyline points="14 2 14 8 20 8"></polyline>
+                    <line x1="16" y1="13" x2="8" y2="13"></line>
+                    <line x1="16" y1="17" x2="8" y2="17"></line>
+                    <polyline points="10 9 9 9 8 9"></polyline>
+                  </svg>
+                  <span class="text-sm text-law-700 dark:text-law-300 truncate">{{ file.name }}</span>
+                </div>
+                <button @click="removeFile(index)" class="text-red-500 hover:text-red-600">
+                  <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                  </svg>
+                </button>
+              </li>
+            </ul>
+          </div>
         </div>
         <div class="p-4 flex justify-end space-x-3 border-t border-law-200 dark:border-law-700">
           <button 
-            @click="showUploadModal = false" 
+            @click="closeUploadModal" 
             class="px-4 py-2 text-law-700 dark:text-law-300 hover:bg-law-100 dark:hover:bg-law-700 rounded-md transition-colors"
           >
             {{ $t('common.cancel') || '取消' }}
@@ -599,8 +644,61 @@
           <button 
             @click="uploadDocument" 
             class="px-4 py-2 bg-accent text-white rounded-md hover:bg-accent-dark transition-colors"
+            :disabled="selectedFiles.length === 0 || isUploading"
           >
-            {{ $t('knowledge_base.upload') || '上传' }}
+            <span v-if="isUploading" class="flex items-center">
+              <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+              {{ $t('knowledge_base.uploading') || '上传中...' }}
+            </span>
+            <span v-else>{{ $t('knowledge_base.upload') || '上传' }}</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 上传进度显示模态框 -->
+    <div v-if="showUploadProgressModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+      <div class="bg-white dark:bg-law-800 rounded-lg shadow-xl w-full max-w-md mx-4">
+        <div class="p-5 border-b border-law-200 dark:border-law-700">
+          <h3 class="text-lg font-semibold text-law-800 dark:text-white">{{ $t('knowledge_base.upload_progress') || '上传进度' }}</h3>
+        </div>
+        <div class="p-5">
+          <div class="space-y-4">
+            <div v-for="(file, index) in uploadingFiles" :key="index" class="w-full">
+              <div class="flex justify-between items-center mb-1">
+                <span class="text-sm text-law-700 dark:text-law-300 truncate">{{ file.name }}</span>
+                <span class="text-xs text-law-500 dark:text-law-400">
+                  {{ 
+                    file.status === 'loading' ? ($t('knowledge_base.uploading') || '上传中...') :
+                    file.status === 'success' ? ($t('knowledge_base.upload_success') || '上传成功') :
+                    ($t('knowledge_base.upload_failed') || '上传失败')
+                  }}
+                </span>
+              </div>
+              <div class="w-full h-2 bg-law-200 dark:bg-law-700 rounded-full overflow-hidden">
+                <div 
+                  class="h-full transition-all duration-300 ease-out rounded-full"
+                  :class="{
+                    'bg-accent': file.status === 'loading',
+                    'bg-green-500': file.status === 'success',
+                    'bg-red-500': file.status === 'error'
+                  }"
+                  :style="{ width: file.status === 'loading' ? '90%' : (file.status === 'success' ? '100%' : '30%') }"
+                ></div>
+              </div>
+              <p v-if="file.status === 'error'" class="text-xs text-red-500 mt-1">{{ file.errorText || '上传失败，请重试' }}</p>
+            </div>
+          </div>
+        </div>
+        <div class="p-4 flex justify-end space-x-3 border-t border-law-200 dark:border-law-700">
+          <button 
+            @click="closeUploadProgressModal" 
+            class="px-4 py-2 bg-accent text-white rounded-md hover:bg-accent-dark transition-colors"
+          >
+            {{ $t('common.close') || '关闭' }}
           </button>
         </div>
       </div>
@@ -628,7 +726,8 @@ import ThemeSwitcher from '../../components/layout/ThemeSwitcher.vue'
 import ReferenceModal from '../../components/reference/ReferenceModal.vue'
 import urlRequest from '@/services/urlConfig'
 import ipsResquest from '@/services/ipsConfig'
-
+import axios from 'axios';
+import { apiBase } from '@/services';
 
 const router = useRouter();
 const route = useRoute();
@@ -1024,62 +1123,182 @@ const formatFileSize = (bytes) => {
   return (bytes / (1024 * 1024 * 1024)).toFixed(2) + ' GB';
 };
 
-// 上传文档
-const uploadDocument = async () => {
-  const list = [];
-  showUploadModal.value = false; // 关闭上传模态框
-  showUploadList.value = true; // 显示上传列表
+// 文件上传相关
+const fileInput = ref(null);
+const uploadKbId = ref('');
+const selectedFiles = ref([]);
+const isDragging = ref(false);
+const isUploading = ref(false);
+const showUploadProgressModal = ref(false);
+const uploadingFiles = ref([]);
 
-  // 遍历待上传文件列表，筛选出状态为'loading'的文件
-  uploadFileList.value.forEach((file) => {
-    if (file.status === 'loading') {
-      list.push(file);
-    }
-  });
-
-  const formData = new FormData();
-  for (let i = 0; i < list.length; i++) {
-    formData.append('files', list[i]?.file); // 添加文件到FormData
+// 初始设置上传知识库ID为当前选中的知识库
+watch(selectedKb, (newValue) => {
+  if (newValue) {
+    uploadKbId.value = newValue.kb_id;
   }
-  formData.append('kb_id', currentId.value); // 添加知识库ID
-  formData.append('user_id', userId); // 添加用户ID
-  formData.append('mode', 'strong'); // 上传模式
+});
 
-  try {
-    const response = await urlRequest.uploadFile({
-      method: 'POST',
-      body: formData,
-    });
+// 打开上传模态框
+const openUploadModal = () => {
+  // 设置默认上传的知识库为当前选中的知识库
+  if (selectedKb.value) {
+    uploadKbId.value = selectedKb.value.kb_id;
+  }
+  selectedFiles.value = [];
+  showUploadModal.value = true;
+};
 
-    if (response.ok) {
-      const data = await response.json(); // 解析响应为JSON
-      if (data.code === 200) {
-        list.forEach((item, index) => {
-          let status = data.data[index].status;
-          if (status === 'green' || status === 'gray') {
-            status = 'success';
-          } else {
-            status = 'error';
-          }
-          uploadFileList.value[item.order].status = status; // 更新文件状态
-          uploadFileList.value[item.order].errorText = common.upSucceeded; // 成功提示
-        });
-      } else {
-        message.error(data.msg || '出错了');
-        list.forEach(item => {
-          uploadFileList.value[item.order].status = 'error'; // 更新为错误状态
-          uploadFileList.value[item.order].errorText = data?.msg || common.upFailed; // 错误提示
-        });
+// 关闭上传模态框
+const closeUploadModal = () => {
+  if (!isUploading.value) {
+    showUploadModal.value = false;
+    selectedFiles.value = [];
+  }
+};
+
+// 文件拖拽相关方法
+const onDragOver = () => {
+  isDragging.value = true;
+};
+
+const onDragLeave = () => {
+  isDragging.value = false;
+};
+
+const onDrop = (event) => {
+  isDragging.value = false;
+  const files = event.dataTransfer.files;
+  if (files.length > 0) {
+    addFiles(files);
+  }
+};
+
+// 文件选择
+const onFileSelected = (event) => {
+  const files = event.target.files;
+  if (files.length > 0) {
+    addFiles(files);
+  }
+  // 重置文件输入，以便可以重新选择相同的文件
+  event.target.value = '';
+};
+
+// 添加文件到选择列表
+const addFiles = (files) => {
+  for (let i = 0; i < files.length; i++) {
+    const file = files[i];
+    const fileExtension = file.name.split('.').pop().toLowerCase();
+    
+    // 检查文件类型是否支持
+    if (['pdf', 'docx', 'txt', 'md'].includes(fileExtension)) {
+      // 检查文件是否已经在列表中
+      const isDuplicate = selectedFiles.value.some(existingFile => 
+        existingFile.name === file.name && existingFile.size === file.size
+      );
+      
+      if (!isDuplicate) {
+        selectedFiles.value.push(file);
       }
-    } else {
-      throw new Error('上传失败');
     }
-  } catch (error) {
-    list.forEach(item => {
-      uploadFileList.value[item.order].status = 'error'; // 更新为错误状态
-      uploadFileList.value[item.order].errorText = error?.msg || common.upFailed; // 错误提示
-    });
-    message.error(JSON.stringify(error?.msg) || '出错了');
+  }
+};
+
+// 从选择列表中移除文件
+const removeFile = (index) => {
+  selectedFiles.value.splice(index, 1);
+};
+
+// 关闭上传进度模态框
+const closeUploadProgressModal = () => {
+  showUploadProgressModal.value = false;
+  uploadingFiles.value = [];
+  // 重新获取文档列表
+  if (selectedKb.value) {
+    fetchDocuments(selectedKb.value.kb_id);
+  }
+};
+
+// 上传文档函数
+const uploadDocument = async () => {
+  if (selectedFiles.value.length === 0 || !uploadKbId.value) return;
+  
+  isUploading.value = true;
+  showUploadModal.value = false;
+  showUploadProgressModal.value = true;
+  
+  // 准备上传文件列表
+  uploadingFiles.value = selectedFiles.value.map((file, index) => ({
+    name: file.name,
+    file: file,
+    status: 'loading',
+    order: index,
+    errorText: ''
+  }));
+  
+  // 为每个文件单独发起上传请求
+  for (let i = 0; i < uploadingFiles.value.length; i++) {
+    const fileItem = uploadingFiles.value[i];
+    if (fileItem.status === 'loading') {
+      try {
+        // 创建FormData对象并添加文件和参数
+        const formData = new FormData();
+        formData.append('files', fileItem.file);
+        formData.append('kb_id', uploadKbId.value);
+        formData.append('user_id', 'zzp');
+        formData.append('mode', 'strong');
+        
+        // 直接使用axios发送请求
+        const response = await axios.post(
+          `${apiBase}kb_api/local_doc_qa/upload_files`, 
+          formData,
+          {
+            headers: {
+              'Content-Type': 'multipart/form-data'
+            }
+          }
+        );
+        
+        // 获取响应数据
+        const data = response.data;
+        
+        if (data && data.code === 200) {
+          // 获取上传结果并更新状态
+          const result = data.data[0];
+          if (result.status !== 'red' && result.status !== 'yellow') {
+            // 上传成功
+            uploadingFiles.value[i].status = 'success';
+            uploadingFiles.value[i].file_id = result.file_id;
+          } else {
+            // 上传状态异常
+            uploadingFiles.value[i].status = 'error';
+            uploadingFiles.value[i].errorText = '上传失败';
+          }
+        } else {
+          // API返回错误
+          uploadingFiles.value[i].status = 'error';
+          uploadingFiles.value[i].errorText = data?.msg || '上传失败';
+        }
+      } catch (error) {
+        console.error('上传文档出错:', error);
+        // 标记文件为上传失败
+        uploadingFiles.value[i].status = 'error';
+        uploadingFiles.value[i].errorText = error.message || '上传失败';
+      }
+    }
+  }
+  
+  isUploading.value = false;
+  
+  // 如果全部上传结束，刷新文档列表
+  const successCount = uploadingFiles.value.filter(file => file.status === 'success').length;
+  if (successCount > 0 && selectedKb.value) {
+    // 重置移动端页码
+    mobilePage.value = 1;
+    // 延迟一下再刷新文档列表，确保服务器处理完成
+    setTimeout(() => {
+      fetchDocuments(selectedKb.value.kb_id);
+    }, 1000);
   }
 };
 
