@@ -22,7 +22,7 @@
     </div>
     
     <!-- 主内容区域 - 设置固定高度，防止整个页面滚动 -->
-    <div class="flex flex-col md:flex-row flex-1 overflow-hidden" style="height: calc(100vh - 4rem);">
+    <div class="flex flex-col h-full md:flex-row flex-1 overflow-hidden" style="height: calc(100vh - 4rem);">
       <!-- 移动端标签切换 -->
       <div class="md:hidden flex border-b border-law-200 dark:border-law-700 bg-white dark:bg-law-800">
         <button 
@@ -654,6 +654,7 @@ import LanguageSwitcher from '../../components/layout/LanguageSwitcher.vue'
 import ThemeSwitcher from '../../components/layout/ThemeSwitcher.vue'
 import ReferenceModal from '../../components/reference/ReferenceModal.vue'
 import urlRequest from '@/services/urlConfig'
+import ipsResquest from '@/services/ipsConfig'
 
 
 const router = useRouter();
@@ -878,23 +879,34 @@ const fetchDocuments = async (kbId) => {
 };
 
 // 创建知识库
-const createKnowledgeBase = () => {
+const createKnowledgeBase = async () => {
   if (!newKbName.value.trim()) return;
-  
-  // 这里应该调用API创建知识库
-  // 模拟创建
-  const newKb = {
-    kb_id: Date.now().toString(),
-    kb_name: newKbName.value.trim(),
-    type: 'local'
-  };
-  
-  knowledgeBaseList.value.push(newKb);
-  showCreateKbModal.value = false;
-  newKbName.value = '';
-  
-  // 选择新创建的知识库
-  selectKnowledgeBase(newKb);
+
+  try {
+    // 调用API创建知识库
+    const response = await urlRequest.createKb({ kb_name: newKbName.value.trim() });
+    
+    if (response.code === 200) {
+      // 使用API返回的kb_id
+      await ipsResquest.ipsCreateKb({ kb_id: response.data.kb_id, kb_name: response.data.kb_name });
+      const newKb = {
+        kb_id: response.data.kb_id,
+        kb_name: response.data.kb_name,
+      };
+      knowledgeBaseList.value.push(newKb); // 更新知识库列表
+      showCreateKbModal.value = false; // 关闭模态框
+      newKbName.value = ''; // 清空输入框
+
+      filteredKnowledgeBaseList.value = [...knowledgeBaseList.value];
+      // 选择新创建的知识库
+      selectKnowledgeBase(newKb);
+    } else {
+      message.error(response.msg || '创建知识库失败'); // 显示错误信息
+    }
+  } catch (error) {
+    console.error(error);
+    message.error(error.msg || '创建知识库时发生错误'); // 错误处理
+  }
 };
 
 // 显示重命名模态框
@@ -905,21 +917,24 @@ const showRenameKbModal = (kb) => {
 };
 
 // 重命名知识库
-const renameKnowledgeBase = () => {
+const renameKnowledgeBase = async () => {
   if (!renameKbName.value.trim() || !kbToRename.value) return;
   
-  // 这里应该调用API重命名知识库
-  // 模拟重命名
-  const index = knowledgeBaseList.value.findIndex(kb => kb.kb_id === kbToRename.value.kb_id);
-  if (index !== -1) {
-    knowledgeBaseList.value[index].kb_name = renameKbName.value.trim();
-    
-    // 如果当前选中的是被重命名的知识库，更新选中的知识库
-    if (selectedKb.value && selectedKb.value.kb_id === kbToRename.value.kb_id) {
-      selectedKb.value = { ...knowledgeBaseList.value[index] };
+  // 调用API重命名知识库
+  const response = await urlRequest.kbConfig({ kb_id: kbToRename.value.kb_id, new_kb_name: renameKbName.value.trim()});
+  if (response.code === 200) {
+    await ipsResquest.ipsKbConfig({ kb_id: kbToRename.value.kb_id, kb_name: renameKbName.value.trim()});
+    // 更新列表数据
+    const index = knowledgeBaseList.value.findIndex(kb => kb.kb_id === kbToRename.value.kb_id);
+    if (index !== -1) {
+      knowledgeBaseList.value[index].kb_name = renameKbName.value.trim();
+      
+      // 如果当前选中的是被重命名的知识库，更新选中的知识库
+      if (selectedKb.value && selectedKb.value.kb_id === kbToRename.value.kb_id) {
+        selectedKb.value = { ...knowledgeBaseList.value[index] };
+      }
     }
-  }
-  
+  }  
   showRenameModal.value = false;
   kbToRename.value = null;
   renameKbName.value = '';
@@ -932,21 +947,24 @@ const showDeleteKbModal = (kb) => {
 };
 
 // 删除知识库
-const deleteKnowledgeBase = () => {
+const deleteKnowledgeBase = async() => {
   if (!kbToDelete.value) return;
-  
-  // 这里应该调用API删除知识库
-  // 模拟删除
-  const index = knowledgeBaseList.value.findIndex(kb => kb.kb_id === kbToDelete.value.kb_id);
-  if (index !== -1) {
-    knowledgeBaseList.value.splice(index, 1);
-    
-    // 如果当前选中的是被删除的知识库，清空选中状态
-    if (selectedKb.value && selectedKb.value.kb_id === kbToDelete.value.kb_id) {
-      selectedKb.value = null;
-      documents.value = [];
-    }
+
+  // 调用API删除知识库
+  const response = await urlRequest.deleteKB({ kb_ids: [kbToDelete.value.kb_id] });
+  if (response.code === 200) {
+    await ipsResquest.ipsDeleteKB({ kb_idList: [kbToDelete.value.kb_id] });
+    // 删除成功，重新获取知识库列表
+    knowledgeBaseStore.getList(true).then(() => {
+      // 自动选择第一个知识库
+      if (knowledgeBaseList.value && knowledgeBaseList.value.length > 0) {
+        filteredKnowledgeBaseList.value = [...knowledgeBaseList.value];
+        selectKnowledgeBase(knowledgeBaseList.value[0]);
+      }
+    });
   }
+  console.log(response)
+
   
   showDeleteKbConfirm.value = false;
   kbToDelete.value = null;

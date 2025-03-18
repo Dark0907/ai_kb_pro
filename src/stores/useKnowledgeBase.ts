@@ -61,28 +61,13 @@ export const useKnowledgeBase = defineStore('knowledgeBase', () => {
   };
 
   //获取知识库列表
-  const getList = async () => {
-    // 如果已经加载过数据且列表不为空，则直接返回
-    if (hasLoadedData.value && knowledgeBaseList.value.length > 0) {
+  const getList = async (forceLoad = false) => {
+    // 如果已经加载过数据且列表不为空，并且没有强制加载，则直接返回
+    if (!forceLoad && hasLoadedData.value && knowledgeBaseList.value.length > 0) {
       return;
     }
     
     try {
-      // 原获取列表
-      // const res: any = await urlResquest.kbList();
-      // if (+res.code === 200) {
-      //   if (res?.data?.length > 0) {
-      //     const list = res.data.filter(item => !/.*_FAQ$/.test(item.kb_name));
-      //     setKnowledgeBaseList(list);
-      //     setDefault(pageStatus.normal);
-
-      //     if (!selectList.value.length) {
-      //       selectList.value.push(list[0].kb_id);
-      //     }
-      //   } else {
-      //     setDefault(pageStatus.default);
-      //   }
-      // }
       // 改为获取ips数据
       const res: any = await ipsResquest.ipsKbList();
       if (res.success) {
