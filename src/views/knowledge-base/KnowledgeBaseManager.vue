@@ -196,37 +196,37 @@
                     </tr>
                   </thead>
                   <tbody class="bg-white dark:bg-law-900 divide-y divide-law-200 dark:divide-law-700">
-                    <tr v-for="doc in paginatedDocuments" :key="doc.doc_id" class="hover:bg-law-50 dark:hover:bg-law-800 transition-colors">
+                    <tr v-for="(doc, index) in paginatedDocuments" :key="doc.file_id" class="hover:bg-law-50 dark:hover:bg-law-800 transition-colors">
                       <td class="px-4 py-3 whitespace-nowrap text-sm text-law-500 dark:text-law-400">
-                        {{ doc.doc_id }}
+                        {{ totalItems - ((currentPage - 1) * pageSize) - index }}
                       </td>
                       <td class="px-4 py-3 whitespace-nowrap text-sm font-medium text-law-800 dark:text-white">
-                        {{ doc.doc_name }}
+                        {{ doc.file_name }}
                       </td>
                       <td class="px-4 py-3 whitespace-nowrap text-sm">
                         <span 
                           class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full"
                           :class="{
-                            'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200': doc.status === 'success',
-                            'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200': doc.status === 'processing',
-                            'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200': doc.status === 'failed'
+                            'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200': doc.status === 'green',
+                            'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200': doc.status === 'yellow',
+                            'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200': doc.status === 'red'
                           }"
                         >
                           {{ 
-                            doc.status === 'success' ? ($t('knowledge_base.status_success') || '已完成') : 
-                            doc.status === 'processing' ? ($t('knowledge_base.status_processing') || '处理中') : 
+                            doc.status === 'green' ? ($t('knowledge_base.status_success') || '已完成') : 
+                            doc.status === 'yellow' ? ($t('knowledge_base.status_processing') || '处理中') : 
                             ($t('knowledge_base.status_failed') || '失败') 
                           }}
                         </span>
                       </td>
                       <td class="px-4 py-3 whitespace-nowrap text-sm text-law-500 dark:text-law-400">
-                        {{ formatFileSize(doc.file_size) }}
+                        {{ formatFileSize(doc.bytes) }}
                       </td>
                       <td class="px-4 py-3 whitespace-nowrap text-sm text-law-500 dark:text-law-400">
-                        {{ formatDate(doc.created_at) }}
+                        {{ formatDate(doc.timestamp) }}
                       </td>
                       <td class="px-4 py-3 whitespace-nowrap text-sm text-law-500 dark:text-law-400">
-                        {{ doc.remarks || '-' }}
+                        {{ doc.msg || '-' }}
                       </td>
                       <td class="px-4 py-3 whitespace-nowrap text-sm text-law-500 dark:text-law-400">
                         <div class="flex space-x-2">
@@ -347,7 +347,8 @@
                         type="number" 
                         min="1" 
                         :max="totalPages" 
-                        class="w-12 px-2 py-1 rounded-md border border-law-200 dark:border-law-700 bg-white dark:bg-law-800 text-law-700 dark:text-law-300 text-center"
+                        v-model="currentPage"
+                        class="w-16 px-2 py-1 rounded-md border border-law-200 dark:border-law-700 bg-white dark:bg-law-800 text-law-700 dark:text-law-300 text-center"
                         @keyup.enter="goToPage"
                       />
                       <span class="text-sm text-law-700 dark:text-law-300">{{ $t('knowledge_base.page') || '页' }}</span>
@@ -363,42 +364,42 @@
                 </div>
                 <div v-else class="space-y-4">
                   <div 
-                    v-for="doc in paginatedDocuments" 
-                    :key="doc.doc_id"
+                    v-for="(doc, index) in paginatedDocuments" 
+                    :key="doc.file_id"
                     class="bg-law-50 dark:bg-law-800 rounded-lg border border-law-200 dark:border-law-700 p-4"
                   >
                     <div class="flex justify-between items-start">
                       <div class="flex-1">
-                        <h3 class="font-medium text-law-800 dark:text-white">{{ doc.doc_name }}</h3>
+                        <h3 class="font-medium text-law-800 dark:text-white">{{ doc.file_name }}</h3>
                         <div class="mt-2 space-y-1">
                           <p class="text-xs text-law-500 dark:text-law-400 flex items-center">
-                            <span class="font-medium mr-2">ID:</span> {{ doc.doc_id }}
+                            <span class="font-medium mr-2">ID:</span> {{ totalItems - (isMobile ? mobileLoadedItems.value : (currentPage - 1) * pageSize) - index }}
                           </p>
                           <p class="text-xs text-law-500 dark:text-law-400 flex items-center">
                             <span class="font-medium mr-2">{{ $t('knowledge_base.status') || '状态' }}:</span>
                             <span 
                               class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full"
                               :class="{
-                                'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200': doc.status === 'success',
-                                'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200': doc.status === 'processing',
-                                'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200': doc.status === 'failed'
+                                'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200': doc.status === 'green',
+                                'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200': doc.status === 'yellow',
+                                'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200': doc.status === 'red'
                               }"
                             >
                               {{ 
-                                doc.status === 'success' ? ($t('knowledge_base.status_success') || '已完成') : 
-                                doc.status === 'processing' ? ($t('knowledge_base.status_processing') || '处理中') : 
+                                doc.status === 'green' ? ($t('knowledge_base.status_success') || '已完成') : 
+                                doc.status === 'yellow' ? ($t('knowledge_base.status_processing') || '处理中') : 
                                 ($t('knowledge_base.status_failed') || '失败') 
                               }}
                             </span>
                           </p>
                           <p class="text-xs text-law-500 dark:text-law-400 flex items-center">
-                            <span class="font-medium mr-2">{{ $t('knowledge_base.file_size') || '文件大小' }}:</span> {{ formatFileSize(doc.file_size) }}
+                            <span class="font-medium mr-2">{{ $t('knowledge_base.file_size') || '文件大小' }}:</span> {{ formatFileSize(doc.bytes) }}
                           </p>
                           <p class="text-xs text-law-500 dark:text-law-400 flex items-center">
-                            <span class="font-medium mr-2">{{ $t('knowledge_base.created_at') || '创建日期' }}:</span> {{ formatDate(doc.created_at) }}
+                            <span class="font-medium mr-2">{{ $t('knowledge_base.created_at') || '创建日期' }}:</span> {{ formatDate(doc.timestamp) }}
                           </p>
                           <p class="text-xs text-law-500 dark:text-law-400 flex items-center">
-                            <span class="font-medium mr-2">{{ $t('knowledge_base.remarks') || '备注' }}:</span> {{ doc.remarks || '-' }}
+                            <span class="font-medium mr-2">{{ $t('knowledge_base.remarks') || '备注' }}:</span> {{ doc.msg || '-' }}
                           </p>
                         </div>
                       </div>
@@ -561,7 +562,7 @@
           <h3 class="text-lg font-semibold text-law-800 dark:text-white">{{ $t('knowledge_base.delete_document') || '删除文档' }}</h3>
         </div>
         <div class="p-5">
-          <p class="text-law-700 dark:text-law-300">{{ $t('knowledge_base.delete_document_confirm', { name: docToDelete?.doc_name }) || `确定要删除文档 "${docToDelete?.doc_name}" 吗？此操作不可恢复。` }}</p>
+          <p class="text-law-700 dark:text-law-300">{{ $t('knowledge_base.delete_document_confirm', { name: docToDelete?.file_name }) || `确定要删除文档 "${docToDelete?.file_name}" 吗？此操作不可恢复。` }}</p>
         </div>
         <div class="p-4 flex justify-end space-x-3 border-t border-law-200 dark:border-law-700">
           <button 
@@ -652,6 +653,7 @@ import { storeToRefs } from 'pinia';
 import LanguageSwitcher from '../../components/layout/LanguageSwitcher.vue'
 import ThemeSwitcher from '../../components/layout/ThemeSwitcher.vue'
 import ReferenceModal from '../../components/reference/ReferenceModal.vue'
+import urlRequest from '@/services/urlConfig'
 
 
 const router = useRouter();
@@ -686,8 +688,8 @@ const activeIndex = ref(0)
 // 分页相关
 const pageSize = ref(15); // 每页显示15条
 const currentPage = ref(1);
-const totalPages = computed(() => Math.ceil(documents.value.length / pageSize.value));
-const totalItems = computed(() => documents.value.length);
+const totalItems = ref(0); // 修改为总条数
+const totalPages = ref(0); // 修改为总页数
 
 // 移动端滚动加载
 const mobileLoadedItems = ref(10); // 移动端初始加载10条
@@ -699,10 +701,8 @@ const paginatedDocuments = computed(() => {
     // 移动端滚动加载
     return documents.value.slice(0, mobileLoadedItems.value);
   } else {
-    // PC端分页
-    const start = (currentPage.value - 1) * pageSize.value;
-    const end = start + pageSize.value;
-    return documents.value.slice(start, end);
+    // PC端分页 - 当使用API分页时直接返回documents
+    return documents.value;
   }
 });
 
@@ -722,23 +722,41 @@ const handleScroll = (event) => {
 };
 
 // 加载更多文档（移动端）
-const loadMoreDocuments = () => {
-  if (isLoadingMore.value || mobileLoadedItems.value >= documents.value.length) return;
+const loadMoreDocuments = async () => {
+  if (isLoadingMore.value || mobileLoadedItems.value >= totalItems.value) return;
   
   isLoadingMore.value = true;
   console.log('加载更多文档，当前已加载:', mobileLoadedItems.value);
   
-  // 使用setTimeout模拟网络请求延迟
-  setTimeout(() => {
-    mobileLoadedItems.value += 10; // 每次加载10条
+  try {
+    // 计算下一页
+    const nextPage = Math.floor(mobileLoadedItems.value / pageSize.value) + 1;
+    
+    // 调用API获取下一页数据
+    const response = await urlRequest.fileList({
+      kb_id: selectedKb.value.kb_id,
+      page: nextPage,
+      page_size: pageSize.value
+    });
+    
+    if (response && response.data && response.data.details) {
+      // 将新数据追加到现有数据
+      documents.value = [...documents.value, ...response.data.details];
+      // 更新已加载条数
+      mobileLoadedItems.value = Math.min(mobileLoadedItems.value + response.data.details.length, totalItems.value);
+    }
+  } catch (error) {
+    console.error('加载更多文档失败:', error);
+  } finally {
     isLoadingMore.value = false;
-    console.log('加载完成，现在已加载:', mobileLoadedItems.value);
-  }, 500);
+  }
 };
 
-// 切换页码
+// 切换页码，更新为调用API获取数据
 const changePage = (page) => {
   currentPage.value = page;
+  // 重新获取当前页的数据
+  fetchDocuments(selectedKb.value.kb_id);
 };
 
 // 跳转到指定页
@@ -746,6 +764,8 @@ const goToPage = (event) => {
   const page = parseInt(event.target.value);
   if (page && page > 0 && page <= totalPages.value) {
     currentPage.value = page;
+    // 重新获取当前页的数据
+    fetchDocuments(selectedKb.value.kb_id);
   }
 };
 
@@ -826,32 +846,36 @@ const selectKnowledgeBase = (kb) => {
 };
 
 // 获取文档列表
-const fetchDocuments = (kbId) => {
-  // 这里应该调用API获取文档列表
-  // 模拟数据
-  documents.value = [
-    { doc_id: 1, doc_name: '专利优先审查指南.pdf', created_at: '2025-03-12', file_size: 1024 * 1024 * 2.5, status: 'success' },
-    { doc_id: 2, doc_name: '商标注册申请指南.docx', created_at: '2025-03-11', file_size: 1024 * 512, status: 'success' },
-    { doc_id: 3, doc_name: '著作权登记流程.pdf', created_at: '2025-03-10', file_size: 1024 * 1024 * 1.2, status: 'processing' },
-    { doc_id: 4, doc_name: '专利优先审查指南.pdf', created_at: '2025-03-12', file_size: 1024 * 1024 * 2.5, status: 'success' },
-    { doc_id: 5, doc_name: '商标注册申请指南.docx', created_at: '2025-03-11', file_size: 1024 * 512, status: 'success' },
-    { doc_id: 6, doc_name: '著作权登记流程.pdf', created_at: '2025-03-10', file_size: 1024 * 1024 * 1.2, status: 'processing' },
-    { doc_id: 7, doc_name: '专利优先审查指南.pdf', created_at: '2025-03-12', file_size: 1024 * 1024 * 2.5, status: 'success' },
-    { doc_id: 8, doc_name: '商标注册申请指南.docx', created_at: '2025-03-11', file_size: 1024 * 512, status: 'success' },
-    { doc_id: 9, doc_name: '著作权登记流程.pdf', created_at: '2025-03-10', file_size: 1024 * 1024 * 1.2, status: 'processing' },
-    { doc_id: 10, doc_name: '专利优先审查指南.pdf', created_at: '2025-03-12', file_size: 1024 * 1024 * 2.5, status: 'success' },
-    { doc_id: 11, doc_name: '商标注册申请指南.docx', created_at: '2025-03-11', file_size: 1024 * 512, status: 'success' },
-    { doc_id: 12, doc_name: '著作权登记流程.pdf', created_at: '2025-03-10', file_size: 1024 * 1024 * 1.2, status: 'processing' },
-    { doc_id: 13, doc_name: '专利优先审查指南.pdf', created_at: '2025-03-12', file_size: 1024 * 1024 * 2.5, status: 'success' },
-    { doc_id: 14, doc_name: '商标注册申请指南.docx', created_at: '2025-03-11', file_size: 1024 * 512, status: 'success' },
-    { doc_id: 15, doc_name: '著作权登记流程.pdf', created_at: '2025-03-10', file_size: 1024 * 1024 * 1.2, status: 'processing' },
-    { doc_id: 16, doc_name: '专利优先审查指南.pdf', created_at: '2025-03-12', file_size: 1024 * 1024 * 2.5, status: 'success' },
-    { doc_id: 17, doc_name: '商标注册申请指南.docx', created_at: '2025-03-11', file_size: 1024 * 512, status: 'success' },
-    { doc_id: 18, doc_name: '著作权登记流程.pdf', created_at: '2025-03-10', file_size: 1024 * 1024 * 1.2, status: 'processing' }
-  ];
+const fetchDocuments = async (kbId) => {
+  try {
+    // 调用API获取文档列表
+    const response = await urlRequest.fileList({
+      kb_id: kbId,
+      page: currentPage.value,
+      page_size: pageSize.value
+    });
+    
+    if (response && response.data) {
+      // 更新文档列表
+      documents.value = response.data.details || [];
+      // 更新分页信息
+      totalItems.value = response.data.total || 0;
+      totalPages.value = response.data.total_pages || 1;
+    } else {
+      documents.value = [];
+      totalItems.value = 0;
+      totalPages.value = 1;
+    }
+  } catch (error) {
+    console.error('获取文档列表失败:', error);
+    documents.value = [];
+    totalItems.value = 0;
+    totalPages.value = 1;
+  }
   
-  // 重置分页状态
-  resetPagination();
+  // 重置移动端加载状态
+  mobileLoadedItems.value = Math.min(10, documents.value.length);
+  isLoadingMore.value = false;
 };
 
 // 创建知识库
@@ -952,24 +976,50 @@ const confirmDeleteDocument = (doc) => {
 };
 
 // 删除文档
-const deleteDocument = () => {
+const deleteDocument = async () => {
   if (!docToDelete.value) return;
   
-  // 这里应该调用API删除文档
-  // 模拟删除
-  const index = documents.value.findIndex(doc => doc.doc_id === docToDelete.value.doc_id);
-  if (index !== -1) {
-    documents.value.splice(index, 1);
+  try {
+    // 调用API删除文档
+    const response = await urlRequest.deleteFile({
+      kb_id: selectedKb.value.kb_id,
+      file_ids: [docToDelete.value.file_id]
+    });
+    
+    if (response && response.code === 200) {
+      // 删除成功，重新获取文档列表
+      fetchDocuments(selectedKb.value.kb_id);
+      // 显示成功提示
+      alert('文档删除成功');
+    } else {
+      // 显示失败提示
+      alert('文档删除失败：' + (response?.msg || '未知错误'));
+    }
+  } catch (error) {
+    console.error('删除文档失败:', error);
+    alert('文档删除失败：' + error.message);
+  } finally {
+    showDeleteDocConfirm.value = false;
+    docToDelete.value = null;
   }
-  
-  showDeleteDocConfirm.value = false;
-  docToDelete.value = null;
 };
 
-// 格式化日期
-const formatDate = (dateString) => {
-  const date = new Date(dateString);
-  return date.toLocaleDateString();
+// 格式化日期 - 修改为处理timestamp格式
+const formatDate = (timestamp) => {
+  if (!timestamp) return '-';
+  
+  try {
+    // 处理格式为"202503121229"的时间戳
+    const year = timestamp.substring(0, 4);
+    const month = timestamp.substring(4, 6);
+    const day = timestamp.substring(6, 8);
+    const hour = timestamp.substring(8, 10);
+    const minute = timestamp.substring(10, 12);
+    
+    return `${year}-${month}-${day} ${hour}:${minute}`;
+  } catch (e) {
+    return timestamp;
+  }
 };
 
 // 格式化文件大小
