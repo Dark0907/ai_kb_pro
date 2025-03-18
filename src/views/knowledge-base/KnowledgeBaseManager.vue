@@ -1,7 +1,7 @@
 <template>
-  <div class="knowledge-base-manager h-full flex flex-col">
+  <div class="knowledge-base-manager h-screen flex flex-col">
     <!-- 顶部标题栏 -->
-    <div class="flex items-center justify-between h-16 bg-white p-4 border-b border-law-200 dark:border-law-700 dark:bg-law-800">
+    <div class="flex items-center justify-between h-16 flex-shrink-0 bg-white p-4 border-b border-law-200 dark:border-law-700 dark:bg-law-800">
       <div class="flex items-center">
         <button 
           @click="goBack" 
@@ -21,8 +21,8 @@
       </div>
     </div>
     
-    <!-- 主内容区域 - 设置固定高度，防止整个页面滚动 -->
-    <div class="flex flex-col h-full md:flex-row flex-1 overflow-hidden" style="height: calc(100vh - 4rem);">
+    <!-- 主内容区域 - 移除固定高度，使用flex布局自动填充剩余空间 -->
+    <div class="flex flex-col md:flex-row flex-1 overflow-hidden">
       <!-- 移动端标签切换 -->
       <div class="md:hidden flex border-b border-law-200 dark:border-law-700 bg-white dark:bg-law-800">
         <button 
@@ -42,11 +42,10 @@
         </button>
       </div>
       
-      <!-- 左侧知识库列表 - 添加overflow-y-auto使其在容器内滚动 -->
+      <!-- 左侧知识库列表 - 移除固定高度计算，使用flex布局 -->
       <div 
-        class="w-full md:w-64 border-b md:border-b-0 md:border-r border-law-200 dark:border-law-700 bg-law-50 dark:bg-law-800 overflow-y-auto"
+        class="w-full md:w-64 border-b md:border-b-0 md:border-r border-law-200 dark:border-law-700 bg-law-50 dark:bg-law-800 overflow-y-auto flex-shrink-0"
         :class="{'hidden md:block': activeTab === 'doc', 'block': activeTab === 'kb' || !isMobile}"
-        style="max-height: calc(100vh - 4rem);"
       >
         <div class="p-3 flex items-center space-x-2">
           <button 
@@ -129,11 +128,12 @@
         </div>
       </div>
       
-      <!-- 右侧知识库详情 -->
+      <!-- 右侧知识库详情 - 完全重构这部分布局 -->
       <div 
-        class="flex-1 overflow-hidden flex flex-col"
+        class="flex-1 flex flex-col overflow-hidden"
         :class="{'hidden md:flex': activeTab === 'kb' && isMobile, 'flex': activeTab === 'doc' || !isMobile}"
       >
+        <!-- 无选中知识库时的提示 -->
         <div v-if="!selectedKb" class="flex-1 flex items-center justify-center text-law-500 dark:text-law-400">
           <div class="text-center">
             <svg class="w-16 h-16 mx-auto mb-4 text-law-300 dark:text-law-600" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round">
@@ -143,266 +143,95 @@
           </div>
         </div>
         
+        <!-- 有选中知识库时的详情区域 -->
         <div v-else class="flex-1 flex flex-col overflow-hidden">
-          <!-- 右侧文档列表 - 确保内容在容器内滚动 -->
-          <div class="flex-1 overflow-y-auto bg-white dark:bg-law-900">
-            <div v-if="selectedKb" class="p-4">
-              <div class="flex flex-col md:flex-row md:justify-between md:items-center mb-2">
-                <div class="flex items-center">
-                  <h2 class="text-lg font-semibold text-law-800 dark:text-white mb-2 md:mb-0">
-                    {{ selectedKb.kb_name }}
-                  </h2>
-                  <span class="text-sm text-law-500 dark:text-law-400 ml-2 mb-2 md:mb-0">{{ $t('knowledge_base.document_count', { count: documents.length }) || `共 ${documents.length} 个文档` }}</span>
-                </div>
-                <button 
-                  @click="showUploadModal = true" 
-                  class="flex items-center justify-center space-x-2 px-4 py-2 bg-accent text-white rounded-lg hover:bg-accent-dark transition-colors"
-                >
-                  <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                    <polyline points="17 8 12 3 7 8"></polyline>
-                    <line x1="12" y1="3" x2="12" y2="15"></line>
-                  </svg>
-                  <span>{{ $t('knowledge_base.upload_document') || '上传文档' }}</span>
-                </button>
+          <!-- 头部信息区域 - 固定不滚动 -->
+          <div class="flex-shrink-0 p-4 border-b border-law-200 dark:border-law-700 bg-white dark:bg-law-900">
+            <div class="flex flex-col md:flex-row md:justify-between md:items-center">
+              <div class="flex items-center">
+                <h2 class="text-lg font-semibold text-law-800 dark:text-white mb-2 md:mb-0">
+                  {{ selectedKb.kb_name }}
+                </h2>
+                <span class="text-sm text-law-500 dark:text-law-400 ml-2 mb-2 md:mb-0">{{ $t('knowledge_base.document_count', { count: documents.length }) || `共 ${documents.length} 个文档` }}</span>
               </div>
-              
-              <!-- 文档列表 - 表格形式（桌面端） -->
-              <div class="hidden md:block overflow-x-auto">
-                <table class="min-w-full divide-y divide-law-200 dark:divide-law-700">
-                  <thead class="bg-law-50 dark:bg-law-800">
-                    <tr>
-                      <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-law-500 dark:text-law-400 uppercase tracking-wider">
-                        {{ $t('knowledge_base.doc_id') || '文档ID' }}
-                      </th>
-                      <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-law-500 dark:text-law-400 uppercase tracking-wider">
-                        {{ $t('knowledge_base.doc_name') || '文档名称' }}
-                      </th>
-                      <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-law-500 dark:text-law-400 uppercase tracking-wider">
-                        {{ $t('knowledge_base.status') || '状态' }}
-                      </th>
-                      <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-law-500 dark:text-law-400 uppercase tracking-wider">
-                        {{ $t('knowledge_base.file_size') || '文件大小' }}
-                      </th>
-                      <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-law-500 dark:text-law-400 uppercase tracking-wider">
-                        {{ $t('knowledge_base.created_at') || '创建日期' }}
-                      </th>
-                      <!-- <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-law-500 dark:text-law-400 uppercase tracking-wider">
-                        {{ $t('knowledge_base.remarks') || '备注' }}
-                      </th> -->
-                      <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-law-500 dark:text-law-400 uppercase tracking-wider">
-                        {{ $t('knowledge_base.actions') || '操作' }}
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody class="bg-white dark:bg-law-900 divide-y divide-law-200 dark:divide-law-700">
-                    <tr v-for="(doc, index) in paginatedDocuments" :key="doc.file_id" class="hover:bg-law-50 dark:hover:bg-law-800 transition-colors">
-                      <td class="px-4 py-3 whitespace-nowrap text-sm text-law-500 dark:text-law-400">
-                        {{ totalItems - ((currentPage - 1) * pageSize) - index }}
-                      </td>
-                      <td class="px-4 py-3 whitespace-nowrap text-sm font-medium text-law-800 dark:text-white">
-                        {{ doc.file_name }}
-                      </td>
-                      <td class="px-4 py-3 whitespace-nowrap text-sm">
-                        <span 
-                          class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full"
-                          :class="{
-                            'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200': doc.status === 'green',
-                            'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200': doc.status === 'yellow',
-                            'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200': doc.status === 'red'
-                          }"
-                        >
-                          {{ 
-                            doc.status === 'green' ? ($t('knowledge_base.status_success') || '已完成') : 
-                            doc.status === 'yellow' ? ($t('knowledge_base.status_processing') || '处理中') : 
-                            ($t('knowledge_base.status_failed') || '失败') 
-                          }}
-                        </span>
-                      </td>
-                      <td class="px-4 py-3 whitespace-nowrap text-sm text-law-500 dark:text-law-400">
-                        {{ formatFileSize(doc.bytes) }}
-                      </td>
-                      <td class="px-4 py-3 whitespace-nowrap text-sm text-law-500 dark:text-law-400">
-                        {{ formatDate(doc.timestamp) }}
-                      </td>
-                      <td class="px-4 py-3 whitespace-nowrap text-sm text-law-500 dark:text-law-400">
-                        {{ doc.msg || '-' }}
-                      </td>
-                      <td class="px-4 py-3 whitespace-nowrap text-sm text-law-500 dark:text-law-400">
-                        <div class="flex space-x-2">
-                          <button 
-                            @click="viewDocument(doc)" 
-                            class="text-accent hover:text-accent-dark transition-colors"
-                            :title="$t('knowledge_base.view') || '查看'"
-                          >
-                            <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                              <circle cx="12" cy="12" r="3"></circle>
-                            </svg>
-                          </button>
-                          <button 
-                            @click="confirmDeleteDocument(doc)" 
-                            class="text-red-500 hover:text-red-600 transition-colors"
-                            :title="$t('knowledge_base.delete') || '删除'"
-                          >
-                            <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                              <path d="M3 6h18"></path>
-                              <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-                              <line x1="10" y1="11" x2="10" y2="17"></line>
-                              <line x1="14" y1="11" x2="14" y2="17"></line>
-                            </svg>
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                    <tr v-if="documents.length === 0">
-                      <td colspan="7" class="px-4 py-8 text-center text-law-500 dark:text-law-400">
-                        {{ $t('knowledge_base.no_documents') || '暂无文档，请上传新文档' }}
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
-                
-                <!-- 分页导航（桌面端） -->
-                <div v-if="documents.length > 0" class="flex items-center justify-between px-4 py-3 bg-white dark:bg-law-900 border-t border-law-200 dark:border-law-700">
-                  <div class="flex items-center text-sm text-law-700 dark:text-law-300">
-                    {{ $t('knowledge_base.showing') || '显示' }} {{ (currentPage - 1) * pageSize + 1 }}-{{ Math.min(currentPage * pageSize, totalItems) }} {{ $t('knowledge_base.of') || '共' }} {{ totalItems }} {{ $t('knowledge_base.items') || '条' }}
-                  </div>
-                  
-                  <div class="flex items-center space-x-2">
-                    <!-- 上一页 -->
-                    <button 
-                      @click="changePage(currentPage - 1)" 
-                      :disabled="currentPage === 1"
-                      class="px-3 py-1 rounded-md border border-law-200 dark:border-law-700 bg-white dark:bg-law-800 text-law-700 dark:text-law-300 disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      {{ $t('knowledge_base.previous') || '上一页' }}
-                    </button>
-                    
-                    <!-- 页码 -->
-                    <div class="flex items-center space-x-1">
-                      <!-- 第一页 -->
-                      <button 
-                        v-if="currentPage > 3" 
-                        @click="changePage(1)"
-                        class="w-8 h-8 flex items-center justify-center rounded-md border border-law-200 dark:border-law-700 bg-white dark:bg-law-800 text-law-700 dark:text-law-300"
+              <button 
+                @click="showUploadModal = true" 
+                class="flex items-center justify-center space-x-2 px-4 py-2 bg-accent text-white rounded-lg hover:bg-accent-dark transition-colors"
+              >
+                <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                  <polyline points="17 8 12 3 7 8"></polyline>
+                  <line x1="12" y1="3" x2="12" y2="15"></line>
+                </svg>
+                <span>{{ $t('knowledge_base.upload_document') || '上传文档' }}</span>
+              </button>
+            </div>
+          </div>
+          
+          <!-- PC端表格区域 - 自适应剩余空间并滚动 -->
+          <div class="hidden md:flex md:flex-col flex-1 overflow-hidden">
+            <!-- 表格头部 - 固定不滚动 -->
+            <div class="flex-shrink-0 bg-law-50 dark:bg-law-800">
+              <table class="min-w-full divide-y divide-law-200 dark:divide-law-700">
+                <thead>
+                  <tr>
+                    <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-law-500 dark:text-law-400 uppercase tracking-wider">
+                      {{ $t('knowledge_base.doc_id') || '文档ID' }}
+                    </th>
+                    <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-law-500 dark:text-law-400 uppercase tracking-wider">
+                      {{ $t('knowledge_base.doc_name') || '文档名称' }}
+                    </th>
+                    <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-law-500 dark:text-law-400 uppercase tracking-wider">
+                      {{ $t('knowledge_base.status') || '状态' }}
+                    </th>
+                    <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-law-500 dark:text-law-400 uppercase tracking-wider">
+                      {{ $t('knowledge_base.file_size') || '文件大小' }}
+                    </th>
+                    <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-law-500 dark:text-law-400 uppercase tracking-wider">
+                      {{ $t('knowledge_base.created_at') || '创建日期' }}
+                    </th>
+                    <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-law-500 dark:text-law-400 uppercase tracking-wider">
+                      {{ $t('knowledge_base.actions') || '操作' }}
+                    </th>
+                  </tr>
+                </thead>
+              </table>
+            </div>
+            
+            <!-- 表格内容区域 - 自适应剩余空间并滚动 -->
+            <div class="flex-1 overflow-y-auto bg-white dark:bg-law-900">
+              <table class="min-w-full divide-y divide-law-200 dark:divide-law-700">
+                <tbody class="divide-y divide-law-200 dark:divide-law-700">
+                  <tr v-for="(doc, index) in paginatedDocuments" :key="doc.file_id" class="hover:bg-law-50 dark:hover:bg-law-800 transition-colors">
+                    <td class="px-4 py-3 whitespace-nowrap text-sm text-law-500 dark:text-law-400">
+                      {{ totalItems - ((currentPage - 1) * pageSize) - index }}
+                    </td>
+                    <td class="px-4 py-3 whitespace-nowrap text-sm font-medium text-law-800 dark:text-white">
+                      {{ doc.file_name }}
+                    </td>
+                    <td class="px-4 py-3 whitespace-nowrap text-sm">
+                      <span 
+                        class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full"
+                        :class="{
+                          'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200': doc.status === 'green',
+                          'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200': doc.status === 'yellow',
+                          'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200': doc.status === 'red'
+                        }"
                       >
-                        1
-                      </button>
-                      
-                      <!-- 省略号 -->
-                      <span v-if="currentPage > 3" class="text-law-500 dark:text-law-400">...</span>
-                      
-                      <!-- 当前页前一页 -->
-                      <button 
-                        v-if="currentPage > 1" 
-                        @click="changePage(currentPage - 1)"
-                        class="w-8 h-8 flex items-center justify-center rounded-md border border-law-200 dark:border-law-700 bg-white dark:bg-law-800 text-law-700 dark:text-law-300"
-                      >
-                        {{ currentPage - 1 }}
-                      </button>
-                      
-                      <!-- 当前页 -->
-                      <button 
-                        class="w-8 h-8 flex items-center justify-center rounded-md border border-accent bg-accent text-white"
-                      >
-                        {{ currentPage }}
-                      </button>
-                      
-                      <!-- 当前页后一页 -->
-                      <button 
-                        v-if="currentPage < totalPages" 
-                        @click="changePage(currentPage + 1)"
-                        class="w-8 h-8 flex items-center justify-center rounded-md border border-law-200 dark:border-law-700 bg-white dark:bg-law-800 text-law-700 dark:text-law-300"
-                      >
-                        {{ currentPage + 1 }}
-                      </button>
-                      
-                      <!-- 省略号 -->
-                      <span v-if="currentPage < totalPages - 2" class="text-law-500 dark:text-law-400">...</span>
-                      
-                      <!-- 最后一页 -->
-                      <button 
-                        v-if="currentPage < totalPages - 2" 
-                        @click="changePage(totalPages)"
-                        class="w-8 h-8 flex items-center justify-center rounded-md border border-law-200 dark:border-law-700 bg-white dark:bg-law-800 text-law-700 dark:text-law-300"
-                      >
-                        {{ totalPages }}
-                      </button>
-                    </div>
-                    
-                    <!-- 下一页 -->
-                    <button 
-                      @click="changePage(currentPage + 1)" 
-                      :disabled="currentPage === totalPages"
-                      class="px-3 py-1 rounded-md border border-law-200 dark:border-law-700 bg-white dark:bg-law-800 text-law-700 dark:text-law-300 disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      {{ $t('knowledge_base.next') || '下一页' }}
-                    </button>
-                    
-                    <!-- 跳转到指定页 -->
-                    <div class="flex items-center space-x-1">
-                      <span class="text-sm text-law-700 dark:text-law-300">{{ $t('knowledge_base.go_to') || '跳转到' }}</span>
-                      <input 
-                        type="number" 
-                        min="1" 
-                        :max="totalPages" 
-                        v-model="currentPage"
-                        class="w-16 px-2 py-1 rounded-md border border-law-200 dark:border-law-700 bg-white dark:bg-law-800 text-law-700 dark:text-law-300 text-center"
-                        @keyup.enter="goToPage"
-                      />
-                      <span class="text-sm text-law-700 dark:text-law-300">{{ $t('knowledge_base.page') || '页' }}</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              
-              <!-- 文档列表 - 卡片形式（移动端） - 修改滚动容器样式 -->
-              <div class="md:hidden mobile-document-container overflow-y-auto" style="height: calc(100vh - 12rem);">
-                <div v-if="documents.length === 0" class="py-8 text-center text-law-500 dark:text-law-400">
-                  {{ $t('knowledge_base.no_documents') || '暂无文档，请上传新文档' }}
-                </div>
-                <div v-else class="space-y-4">
-                  <div 
-                    v-for="(doc, index) in paginatedDocuments" 
-                    :key="doc.file_id"
-                    class="bg-law-50 dark:bg-law-800 rounded-lg border border-law-200 dark:border-law-700 p-4"
-                  >
-                    <div class="flex justify-between items-start">
-                      <div class="flex-1">
-                        <h3 class="font-medium text-law-800 dark:text-white">{{ doc.file_name }}</h3>
-                        <div class="mt-2 space-y-1">
-                          <p class="text-xs text-law-500 dark:text-law-400 flex items-center">
-                            <span class="font-medium mr-2">ID:</span> {{ totalItems - (isMobile ? mobileLoadedItems.value : (currentPage - 1) * pageSize) - index }}
-                          </p>
-                          <p class="text-xs text-law-500 dark:text-law-400 flex items-center">
-                            <span class="font-medium mr-2">{{ $t('knowledge_base.status') || '状态' }}:</span>
-                            <span 
-                              class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full"
-                              :class="{
-                                'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200': doc.status === 'green',
-                                'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200': doc.status === 'yellow',
-                                'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200': doc.status === 'red'
-                              }"
-                            >
-                              {{ 
-                                doc.status === 'green' ? ($t('knowledge_base.status_success') || '已完成') : 
-                                doc.status === 'yellow' ? ($t('knowledge_base.status_processing') || '处理中') : 
-                                ($t('knowledge_base.status_failed') || '失败') 
-                              }}
-                            </span>
-                          </p>
-                          <p class="text-xs text-law-500 dark:text-law-400 flex items-center">
-                            <span class="font-medium mr-2">{{ $t('knowledge_base.file_size') || '文件大小' }}:</span> {{ formatFileSize(doc.bytes) }}
-                          </p>
-                          <p class="text-xs text-law-500 dark:text-law-400 flex items-center">
-                            <span class="font-medium mr-2">{{ $t('knowledge_base.created_at') || '创建日期' }}:</span> {{ formatDate(doc.timestamp) }}
-                          </p>
-                          <!-- <p class="text-xs text-law-500 dark:text-law-400 flex items-center">
-                            <span class="font-medium mr-2">{{ $t('knowledge_base.remarks') || '备注' }}:</span> {{ doc.msg || '-' }}
-                          </p> -->
-                        </div>
-                      </div>
+                        {{ 
+                          doc.status === 'green' ? ($t('knowledge_base.status_success') || '已完成') : 
+                          doc.status === 'yellow' ? ($t('knowledge_base.status_processing') || '处理中') : 
+                          ($t('knowledge_base.status_failed') || '失败') 
+                        }}
+                      </span>
+                    </td>
+                    <td class="px-4 py-3 whitespace-nowrap text-sm text-law-500 dark:text-law-400">
+                      {{ formatFileSize(doc.bytes) }}
+                    </td>
+                    <td class="px-4 py-3 whitespace-nowrap text-sm text-law-500 dark:text-law-400">
+                      {{ formatDate(doc.timestamp) }}
+                    </td>
+                    <td class="px-4 py-3 whitespace-nowrap text-sm text-law-500 dark:text-law-400">
                       <div class="flex space-x-2">
                         <button 
                           @click="viewDocument(doc)" 
@@ -427,31 +256,179 @@
                           </svg>
                         </button>
                       </div>
-                    </div>
-                  </div>
+                    </td>
+                  </tr>
+                  <tr v-if="documents.length === 0">
+                    <td colspan="6" class="px-4 py-8 text-center text-law-500 dark:text-law-400">
+                      {{ $t('knowledge_base.no_documents') || '暂无文档，请上传新文档' }}
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            
+            <!-- 分页导航（桌面端） - 固定在底部 -->
+            <div v-if="documents.length > 0" class="flex-shrink-0 flex items-center justify-between px-4 py-3 bg-white dark:bg-law-900 border-t border-law-200 dark:border-law-700">
+              <div class="flex items-center text-sm text-law-700 dark:text-law-300">
+                {{ $t('knowledge_base.showing') || '显示' }} {{ (currentPage - 1) * pageSize + 1 }}-{{ Math.min(currentPage * pageSize, totalItems) }} {{ $t('knowledge_base.of') || '共' }} {{ totalItems }} {{ $t('knowledge_base.items') || '条' }}
+              </div>
+              
+              <div class="flex items-center space-x-2">
+                <!-- 上一页 -->
+                <button 
+                  @click="changePage(currentPage - 1)" 
+                  :disabled="currentPage === 1"
+                  class="px-3 py-1 rounded-md border border-law-200 dark:border-law-700 bg-white dark:bg-law-800 text-law-700 dark:text-law-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {{ $t('knowledge_base.previous') || '上一页' }}
+                </button>
+                
+                <!-- 页码 -->
+                <div class="flex items-center space-x-1">
+                  <!-- 第一页 -->
+                  <button 
+                    v-if="currentPage > 3" 
+                    @click="changePage(1)"
+                    class="w-8 h-8 flex items-center justify-center rounded-md border border-law-200 dark:border-law-700 bg-white dark:bg-law-800 text-law-700 dark:text-law-300"
+                  >
+                    1
+                  </button>
+                  
+                  <!-- 省略号 -->
+                  <span v-if="currentPage > 3" class="text-law-500 dark:text-law-400">...</span>
+                  
+                  <!-- 当前页前一页 -->
+                  <button 
+                    v-if="currentPage > 1" 
+                    @click="changePage(currentPage - 1)"
+                    class="w-8 h-8 flex items-center justify-center rounded-md border border-law-200 dark:border-law-700 bg-white dark:bg-law-800 text-law-700 dark:text-law-300"
+                  >
+                    {{ currentPage - 1 }}
+                  </button>
+                  
+                  <!-- 当前页 -->
+                  <button 
+                    class="w-8 h-8 flex items-center justify-center rounded-md border border-accent bg-accent text-white"
+                  >
+                    {{ currentPage }}
+                  </button>
+                  
+                  <!-- 当前页后一页 -->
+                  <button 
+                    v-if="currentPage < totalPages" 
+                    @click="changePage(currentPage + 1)"
+                    class="w-8 h-8 flex items-center justify-center rounded-md border border-law-200 dark:border-law-700 bg-white dark:bg-law-800 text-law-700 dark:text-law-300"
+                  >
+                    {{ currentPage + 1 }}
+                  </button>
+                  
+                  <!-- 省略号 -->
+                  <span v-if="currentPage < totalPages - 2" class="text-law-500 dark:text-law-400">...</span>
+                  
+                  <!-- 最后一页 -->
+                  <button 
+                    v-if="currentPage < totalPages - 2" 
+                    @click="changePage(totalPages)"
+                    class="w-8 h-8 flex items-center justify-center rounded-md border border-law-200 dark:border-law-700 bg-white dark:bg-law-800 text-law-700 dark:text-law-300"
+                  >
+                    {{ totalPages }}
+                  </button>
                 </div>
                 
-                <!-- 加载更多指示器（移动端） -->
-                <div v-if="isLoadingMore" class="py-4 text-center text-law-500 dark:text-law-400">
-                  <svg class="animate-spin h-5 w-5 mx-auto text-accent" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                  </svg>
-                  <p class="mt-2">{{ $t('knowledge_base.loading_more') || '加载更多...' }}</p>
-                </div>
+                <!-- 下一页 -->
+                <button 
+                  @click="changePage(currentPage + 1)" 
+                  :disabled="currentPage === totalPages"
+                  class="px-3 py-1 rounded-md border border-law-200 dark:border-law-700 bg-white dark:bg-law-800 text-law-700 dark:text-law-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {{ $t('knowledge_base.next') || '下一页' }}
+                </button>
                 
-                <!-- 全部加载完毕提示（移动端） -->
-                <div v-if="!isLoadingMore && mobileLoadedItems >= documents.length && documents.length > 0" class="py-4 text-center text-law-500 dark:text-law-400">
-                  {{ $t('knowledge_base.all_loaded') || '已加载全部文档' }}
+                <!-- 跳转到指定页 -->
+                <div class="flex items-center space-x-1">
+                  <span class="text-sm text-law-700 dark:text-law-300">{{ $t('knowledge_base.go_to') || '跳转到' }}</span>
+                  <input 
+                    type="number" 
+                    min="1" 
+                    :max="totalPages" 
+                    v-model="currentPage"
+                    class="w-16 px-2 py-1 rounded-md border border-law-200 dark:border-law-700 bg-white dark:bg-law-800 text-law-700 dark:text-law-300 text-center"
+                    @keyup.enter="goToPage"
+                  />
+                  <span class="text-sm text-law-700 dark:text-law-300">{{ $t('knowledge_base.page') || '页' }}</span>
                 </div>
               </div>
             </div>
-            <div v-else class="flex items-center justify-center h-full">
-              <div class="text-center text-law-500 dark:text-law-400">
-                <svg class="w-16 h-16 mx-auto mb-4 text-law-300 dark:text-law-600" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"></path>
-                </svg>
-                <p>{{ $t('knowledge_base.select_kb_tip') || '请选择一个知识库' }}</p>
+          </div>
+          
+          <!-- 移动端文档列表 - 自适应高度 -->
+          <div class="md:hidden mobile-document-container flex-1 overflow-y-auto">
+            <div v-if="documents.length === 0" class="py-8 text-center text-law-500 dark:text-law-400">
+              {{ $t('knowledge_base.no_documents') || '暂无文档，请上传新文档' }}
+            </div>
+            <div v-else class="space-y-4">
+              <div 
+                v-for="(doc, index) in paginatedDocuments" 
+                :key="doc.file_id"
+                class="bg-law-50 dark:bg-law-800 rounded-lg border border-law-200 dark:border-law-700 p-4"
+              >
+                <div class="flex justify-between items-start">
+                  <div class="flex-1">
+                    <h3 class="font-medium text-law-800 dark:text-white">{{ doc.file_name }}</h3>
+                    <div class="mt-2 space-y-1">
+                      <p class="text-xs text-law-500 dark:text-law-400 flex items-center">
+                        <span class="font-medium mr-2">ID:</span> {{ totalItems - ((currentPage - 1) * pageSize) - index }}
+                      </p>
+                      <p class="text-xs text-law-500 dark:text-law-400 flex items-center">
+                        <span class="font-medium mr-2">{{ $t('knowledge_base.status') || '状态' }}:</span>
+                        <span 
+                          class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full"
+                          :class="{
+                            'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200': doc.status === 'green',
+                            'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200': doc.status === 'yellow',
+                            'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200': doc.status === 'red'
+                          }"
+                        >
+                          {{ 
+                            doc.status === 'green' ? ($t('knowledge_base.status_success') || '已完成') : 
+                            doc.status === 'yellow' ? ($t('knowledge_base.status_processing') || '处理中') : 
+                            ($t('knowledge_base.status_failed') || '失败') 
+                          }}
+                        </span>
+                      </p>
+                      <p class="text-xs text-law-500 dark:text-law-400 flex items-center">
+                        <span class="font-medium mr-2">{{ $t('knowledge_base.file_size') || '文件大小' }}:</span> {{ formatFileSize(doc.bytes) }}
+                      </p>
+                      <p class="text-xs text-law-500 dark:text-law-400 flex items-center">
+                        <span class="font-medium mr-2">{{ $t('knowledge_base.created_at') || '创建日期' }}:</span> {{ formatDate(doc.timestamp) }}
+                      </p>
+                    </div>
+                  </div>
+                  <div class="flex space-x-2">
+                    <button 
+                      @click="viewDocument(doc)" 
+                      class="text-accent hover:text-accent-dark transition-colors"
+                      :title="$t('knowledge_base.view') || '查看'"
+                    >
+                      <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                        <circle cx="12" cy="12" r="3"></circle>
+                      </svg>
+                    </button>
+                    <button 
+                      @click="confirmDeleteDocument(doc)" 
+                      class="text-red-500 hover:text-red-600 transition-colors"
+                      :title="$t('knowledge_base.delete') || '删除'"
+                    >
+                      <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M3 6h18"></path>
+                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                        <line x1="10" y1="11" x2="10" y2="17"></line>
+                        <line x1="14" y1="11" x2="14" y2="17"></line>
+                      </svg>
+                    </button>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -611,10 +588,6 @@
               <p class="mt-2 text-xs text-law-500 dark:text-law-400">{{ $t('knowledge_base.supported_formats') || '支持的格式: PDF, DOCX, TXT, MD' }}</p>
             </div>
           </div>
-          <!-- <div class="mb-4">
-            <label class="block text-sm font-medium text-law-700 dark:text-law-300 mb-2">{{ $t('knowledge_base.remarks') || '备注' }}</label>
-            <textarea class="w-full px-3 py-2 border border-law-300 dark:border-law-600 rounded-md bg-white dark:bg-law-700 text-law-700 dark:text-law-300 focus:outline-none focus:ring-2 focus:ring-accent" rows="3" placeholder="添加备注信息（可选）"></textarea>
-          </div> -->
         </div>
         <div class="p-4 flex justify-end space-x-3 border-t border-law-200 dark:border-law-700">
           <button 
@@ -692,8 +665,9 @@ const totalItems = ref(0); // 修改为总条数
 const totalPages = ref(0); // 修改为总页数
 
 // 移动端滚动加载
-const mobileLoadedItems = ref(10); // 移动端初始加载10条
+const mobileLoadedItems = ref(15); // 移动端初始加载10条
 const isLoadingMore = ref(false);
+const mobilePage = ref(1); // 添加移动端专用的页码计数器
 
 // 计算当前页显示的文档
 const paginatedDocuments = computed(() => {
@@ -729,13 +703,13 @@ const loadMoreDocuments = async () => {
   console.log('加载更多文档，当前已加载:', mobileLoadedItems.value);
   
   try {
-    // 计算下一页
-    const nextPage = Math.floor(mobileLoadedItems.value / pageSize.value) + 1;
+    // 使用移动端专用页码，递增页码
+    mobilePage.value += 1;
     
     // 调用API获取下一页数据
     const response = await urlRequest.fileList({
       kb_id: selectedKb.value.kb_id,
-      page: nextPage,
+      page: mobilePage.value,
       page_size: pageSize.value
     });
     
@@ -851,7 +825,7 @@ const fetchDocuments = async (kbId) => {
     // 调用API获取文档列表
     const response = await urlRequest.fileList({
       kb_id: kbId,
-      page: currentPage.value,
+      page: isMobile.value ? mobilePage.value : currentPage.value,
       page_size: pageSize.value
     });
     
