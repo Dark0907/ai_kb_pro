@@ -187,9 +187,9 @@
                       <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-law-500 dark:text-law-400 uppercase tracking-wider">
                         {{ $t('knowledge_base.created_at') || '创建日期' }}
                       </th>
-                      <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-law-500 dark:text-law-400 uppercase tracking-wider">
+                      <!-- <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-law-500 dark:text-law-400 uppercase tracking-wider">
                         {{ $t('knowledge_base.remarks') || '备注' }}
-                      </th>
+                      </th> -->
                       <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-law-500 dark:text-law-400 uppercase tracking-wider">
                         {{ $t('knowledge_base.actions') || '操作' }}
                       </th>
@@ -398,9 +398,9 @@
                           <p class="text-xs text-law-500 dark:text-law-400 flex items-center">
                             <span class="font-medium mr-2">{{ $t('knowledge_base.created_at') || '创建日期' }}:</span> {{ formatDate(doc.timestamp) }}
                           </p>
-                          <p class="text-xs text-law-500 dark:text-law-400 flex items-center">
+                          <!-- <p class="text-xs text-law-500 dark:text-law-400 flex items-center">
                             <span class="font-medium mr-2">{{ $t('knowledge_base.remarks') || '备注' }}:</span> {{ doc.msg || '-' }}
-                          </p>
+                          </p> -->
                         </div>
                       </div>
                       <div class="flex space-x-2">
@@ -611,10 +611,10 @@
               <p class="mt-2 text-xs text-law-500 dark:text-law-400">{{ $t('knowledge_base.supported_formats') || '支持的格式: PDF, DOCX, TXT, MD' }}</p>
             </div>
           </div>
-          <div class="mb-4">
+          <!-- <div class="mb-4">
             <label class="block text-sm font-medium text-law-700 dark:text-law-300 mb-2">{{ $t('knowledge_base.remarks') || '备注' }}</label>
             <textarea class="w-full px-3 py-2 border border-law-300 dark:border-law-600 rounded-md bg-white dark:bg-law-700 text-law-700 dark:text-law-300 focus:outline-none focus:ring-2 focus:ring-accent" rows="3" placeholder="添加备注信息（可选）"></textarea>
-          </div>
+          </div> -->
         </div>
         <div class="p-4 flex justify-end space-x-3 border-t border-law-200 dark:border-law-700">
           <button 
@@ -683,7 +683,6 @@ const showModal = ref(false)
 const activeReferenceId = ref('')
 const activeReferenceTitle = ref('')
 const activeReferenceSection = ref('')
-const activeIndex = ref(0)
 
 // 分页相关
 const pageSize = ref(15); // 每页显示15条
@@ -956,18 +955,21 @@ const deleteKnowledgeBase = () => {
 // 查看文档
 const viewDocument = (doc) => {
   console.log('查看文档', doc);
-  // if (showModal.value && activeReferenceId.value === reference.file_id) {
-  //   closeActiveReference()
-  // } else {
-  //   // 否则设置为新的活动引用
-  //   activeReferenceId.value = reference.file_id
-  //   activeReferenceTitle.value = reference.title
-  //   activeReferenceSection.value = reference.section
-  //   activeIndex.value = index ? index : 0
-  //   showModal.value = true
-  //   referenceStore.setActiveReference(reference)
-  // }
+  if (showModal.value && activeReferenceId.value === doc.file_id) {
+    closeActiveReference()
+  } else {
+    // 否则设置为新的活动引用
+    activeReferenceId.value = doc.file_id
+    activeReferenceTitle.value = doc.file_name
+    activeReferenceSection.value = ''
+    showModal.value = true
+  }
 };
+
+// 关闭文档
+const closeActiveReference = () => {
+  showModal.value = false
+}
 
 // 确认删除文档
 const confirmDeleteDocument = (doc) => {
@@ -1031,25 +1033,62 @@ const formatFileSize = (bytes) => {
 };
 
 // 上传文档
-const uploadDocument = () => {
-  // 这里应该实现上传文档的逻辑
-  // 模拟上传成功
-  showUploadModal.value = false;
-  
-  // 模拟添加一个新文档
-  const newDoc = {
-    doc_id: Date.now(),
-    doc_name: '新上传文档.pdf',
-    created_at: new Date().toISOString().split('T')[0],
-    file_size: 1024 * 1024 * 1.5,
-    status: 'processing',
-    remarks: '用户上传的文档'
-  };
-  
-  documents.value.unshift(newDoc);
-  
-  // 显示上传成功提示
-  alert('文档上传成功，正在处理中...');
+const uploadDocument = async () => {
+  const list = [];
+  showUploadModal.value = false; // 关闭上传模态框
+  showUploadList.value = true; // 显示上传列表
+
+  // 遍历待上传文件列表，筛选出状态为'loading'的文件
+  uploadFileList.value.forEach((file) => {
+    if (file.status === 'loading') {
+      list.push(file);
+    }
+  });
+
+  const formData = new FormData();
+  for (let i = 0; i < list.length; i++) {
+    formData.append('files', list[i]?.file); // 添加文件到FormData
+  }
+  formData.append('kb_id', currentId.value); // 添加知识库ID
+  formData.append('user_id', userId); // 添加用户ID
+  formData.append('mode', 'strong'); // 上传模式
+
+  try {
+    const response = await urlRequest.uploadFile({
+      method: 'POST',
+      body: formData,
+    });
+
+    if (response.ok) {
+      const data = await response.json(); // 解析响应为JSON
+      if (data.code === 200) {
+        list.forEach((item, index) => {
+          let status = data.data[index].status;
+          if (status === 'green' || status === 'gray') {
+            status = 'success';
+          } else {
+            status = 'error';
+          }
+          uploadFileList.value[item.order].status = status; // 更新文件状态
+          uploadFileList.value[item.order].errorText = common.upSucceeded; // 成功提示
+        });
+      } else {
+        message.error(data.msg || '出错了');
+        list.forEach(item => {
+          uploadFileList.value[item.order].status = 'error'; // 更新为错误状态
+          uploadFileList.value[item.order].errorText = data?.msg || common.upFailed; // 错误提示
+        });
+      }
+    } else {
+      throw new Error('上传失败');
+    }
+  } catch (error) {
+    list.forEach(item => {
+      uploadFileList.value[item.order].status = 'error'; // 更新为错误状态
+      uploadFileList.value[item.order].errorText = error?.msg || common.upFailed; // 错误提示
+    });
+    message.error(JSON.stringify(error?.msg) || '出错了');
+  }
 };
 
 // 过滤知识库列表
