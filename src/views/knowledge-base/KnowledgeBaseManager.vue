@@ -631,6 +631,16 @@
         </div>
       </div>
     </div>
+
+    <!-- 文档详情模态框 -->
+    <reference-modal
+      v-if="showModal"
+      :isVisible="showModal" 
+      :referenceId="activeReferenceId"
+      :referenceTitle="activeReferenceTitle"
+      :referenceSection="activeReferenceSection"
+      @close="closeActiveReference"
+    />
   </div>
 </template>
 
@@ -641,6 +651,8 @@ import { useKnowledgeBase } from '@/stores/useKnowledgeBase';
 import { storeToRefs } from 'pinia';
 import LanguageSwitcher from '../../components/layout/LanguageSwitcher.vue'
 import ThemeSwitcher from '../../components/layout/ThemeSwitcher.vue'
+import ReferenceModal from '../../components/reference/ReferenceModal.vue'
+
 
 const router = useRouter();
 const route = useRoute();
@@ -665,6 +677,11 @@ const isMobile = ref(false); // 是否为移动设备
 const isSearchActive = ref(false);
 const searchQuery = ref('');
 const searchInput = ref(null);
+const showModal = ref(false)
+const activeReferenceId = ref('')
+const activeReferenceTitle = ref('')
+const activeReferenceSection = ref('')
+const activeIndex = ref(0)
 
 // 分页相关
 const pageSize = ref(15); // 每页显示15条
@@ -914,10 +931,18 @@ const deleteKnowledgeBase = () => {
 
 // 查看文档
 const viewDocument = (doc) => {
-  // 这里应该实现查看文档的逻辑
-  // 可以打开一个新窗口或者模态框显示文档内容
   console.log('查看文档', doc);
-  alert(`查看文档: ${doc.doc_name}`);
+  // if (showModal.value && activeReferenceId.value === reference.file_id) {
+  //   closeActiveReference()
+  // } else {
+  //   // 否则设置为新的活动引用
+  //   activeReferenceId.value = reference.file_id
+  //   activeReferenceTitle.value = reference.title
+  //   activeReferenceSection.value = reference.section
+  //   activeIndex.value = index ? index : 0
+  //   showModal.value = true
+  //   referenceStore.setActiveReference(reference)
+  // }
 };
 
 // 确认删除文档

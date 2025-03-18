@@ -94,7 +94,6 @@ const lawReferences = computed(() => {
 
 // 设置活动引用
 const setActiveReference = (reference, index) => {
-  console.log('reference', reference)
   // 如果点击的是当前活动引用，则隐藏模态框
   if (showModal.value && activeReferenceId.value === reference.file_id) {
     closeActiveReference()
