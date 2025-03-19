@@ -98,7 +98,7 @@
     "upload_file": "上传文件",
     "drag_drop": "拖拽文件到此处或",
     "browse_files": "浏览文件",
-    "supported_formats": "支持的格式: PDF, DOCX, TXT, MD",
+    "supported_formats": "支持的格式: PDF, DOCX, DOC, TXT, MD, EML, MSG, XLSX, XLS",
     "upload": "上传",
     "showing": "显示",
     "of": "共",

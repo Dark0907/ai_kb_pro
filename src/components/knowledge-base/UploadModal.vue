@@ -32,7 +32,7 @@
               multiple 
               class="hidden" 
               @change="onFileSelected" 
-              accept=".pdf,.docx,.txt,.md"
+              accept=".pdf,.docx,.doc,.txt,.md,.eml,.msg,.xlsx,.xls"
             />
             <svg class="w-12 h-12 mx-auto text-law-400 dark:text-law-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
               <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
@@ -46,7 +46,7 @@
             >
               {{ $t('knowledge_base.browse_files') || '浏览文件' }}
             </button>
-            <p class="mt-2 text-xs text-law-500 dark:text-law-400">{{ $t('knowledge_base.supported_formats') || '支持的格式: PDF, DOCX, TXT, MD' }}</p>
+            <p class="mt-2 text-xs text-law-500 dark:text-law-400">{{ $t('knowledge_base.supported_formats') || '支持的格式: PDF, DOCX, DOC, TXT, MD, EML, MSG, XLSX, XLS' }}</p>
           </div>
         </div>
         
@@ -168,7 +168,7 @@ const addFiles = (files) => {
     const fileExtension = file.name.split('.').pop().toLowerCase();
     
     // 检查文件类型是否支持
-    if (['pdf', 'docx', 'txt', 'md'].includes(fileExtension)) {
+    if (['pdf', 'docx', 'doc', 'txt', 'md', 'eml', 'msg', 'xlsx', 'xls'].includes(fileExtension)) {
       // 检查文件是否已经在列表中
       const isDuplicate = selectedFiles.value.some(existingFile => 
         existingFile.name === file.name && existingFile.size === file.size

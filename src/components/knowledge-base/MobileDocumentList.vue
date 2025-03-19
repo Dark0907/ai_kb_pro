@@ -29,7 +29,7 @@
                   {{ 
                     doc.status === 'green' ? ($t('knowledge_base.status_success') || '已完成') : 
                     doc.status === 'yellow' ? ($t('knowledge_base.status_processing') || '处理中') : 
-                    ($t('knowledge_base.status_failed') || '失败') 
+                    ($t('knowledge_base.status_failed') || '处理中') 
                   }}
                 </span>
               </p>
