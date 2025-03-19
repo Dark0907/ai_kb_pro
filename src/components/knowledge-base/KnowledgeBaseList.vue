@@ -48,33 +48,33 @@
           v-for="kb in filteredList" 
           :key="kb.kb_id"
           @click="$emit('select-kb', kb)"
-          class="flex items-center justify-between p-3 mb-2 rounded-lg cursor-pointer transition-colors"
+          class="flex items-center justify-between p-2.5 mb-2 rounded-lg cursor-pointer transition-colors"
           :class="selectedKb && selectedKb.kb_id === kb.kb_id ? 'bg-accent bg-opacity-10 text-accent' : 'hover:bg-law-100 dark:hover:bg-law-700 text-law-700 dark:text-law-300'"
         >
-          <div class="flex items-center space-x-3">
-            <svg class="w-5 h-5 flex-shrink-0" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <div class="flex items-center space-x-2 mr-1 flex-1 min-w-0">
+            <svg class="w-4 h-4 flex-shrink-0" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"></path>
             </svg>
-            <span class="font-medium truncate">{{ kb.kb_name }}</span>
+            <span class="text-sm font-medium truncate" :title="kb.kb_name">{{ kb.kb_name }}</span>
           </div>
           
-          <div class="flex items-center" v-if="kb.delPermission">
+          <div class="flex items-center flex-shrink-0 ml-auto" v-if="kb.delPermission">
             <button 
               @click.stop="$emit('rename-kb', kb)" 
-              class="p-1.5 rounded-full hover:bg-law-200 dark:hover:bg-law-600 transition-colors"
+              class="p-1 rounded-full hover:bg-law-200 dark:hover:bg-law-600 transition-colors"
               title="重命名"
             >
-              <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <svg class="w-3.5 h-3.5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M12 20h9"></path>
                 <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
               </svg>
             </button>
             <button 
               @click.stop="$emit('delete-kb', kb)" 
-              class="p-1.5 rounded-full hover:bg-law-200 dark:hover:bg-law-600 transition-colors ml-1"
+              class="p-1 rounded-full hover:bg-law-200 dark:hover:bg-law-600 transition-colors ml-0.5"
               title="删除"
             >
-              <svg class="w-4 h-4 text-red-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <svg class="w-3.5 h-3.5 text-red-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M3 6h18"></path>
                 <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"></path>
                 <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
