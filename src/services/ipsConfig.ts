@@ -37,7 +37,7 @@ const ipsConfig: IIpsConfig = {
   // 获取用户操作知识库的权限
   ipsKbLibPermission: {
     type: EUrlType.POST,
-    url: 'ip_service/interface/kbmg/queryKbLibPermission',
+    url: '/ip_service/interface/kbmg/queryKbLibPermission',
     showLoading: true,
     param: {
       tokenID: ipsToken,
@@ -55,7 +55,7 @@ const ipsConfig: IIpsConfig = {
   // 新建知识库
   ipsCreateKb: {
     type: EUrlType.POST,
-    url: 'ip_service/interface/kbmg/addKbLib',
+    url: '/ip_service/interface/kbmg/addKbLib',
     showLoading: true,
     param: {
       tokenID: ipsToken,
@@ -64,7 +64,7 @@ const ipsConfig: IIpsConfig = {
   // 删除知识库
   ipsDeleteKB: {
     type: EUrlType.POST,
-    url: 'ip_service/interface/kbmg/deleteKbLib',
+    url: '/ip_service/interface/kbmg/deleteKbLib',
     param: {
       tokenID: ipsToken,
     },
@@ -72,7 +72,7 @@ const ipsConfig: IIpsConfig = {
   // 重命名知识库
   ipsKbConfig: {
     type: EUrlType.POST,
-    url: 'ip_service/interface/kbmg/reNameKbLib',
+    url: '/ip_service/interface/kbmg/reNameKbLib',
     param: {
       tokenID: ipsToken,
     },
@@ -80,7 +80,7 @@ const ipsConfig: IIpsConfig = {
   // 用户正式库，勾选保存
   ipsKbCheck: {
     type: EUrlType.POST,
-    url: 'ip_service/interface/kbmg/updateUserCheck',
+    url: '/ip_service/interface/kbmg/updateUserCheck',
     param: {
       tokenID: ipsToken,
     },

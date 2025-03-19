@@ -30,6 +30,12 @@ export const useKnowledgeBase = defineStore('knowledgeBase', () => {
     currentKbName.value = id;
   };
 
+  // 知识库库权限
+  const kbLibPermission = ref(0);
+  const setPermission = state => {
+    kbLibPermission.value = state;
+  };
+
   // ips 当前库操作权限 上传文件
   const upPermission = ref(0);
   const setUpPermission = state => {
@@ -60,6 +66,18 @@ export const useKnowledgeBase = defineStore('knowledgeBase', () => {
     showDeleteModal.value = flag;
   };
 
+  // 获取知识库库权限
+  const ipsKbLibPermission = async () => {
+    try {
+      const res: any = await ipsResquest.ipsKbLibPermission();
+      if (res.success) {
+        setPermission(res.data.KbLibPermission);
+      }
+    } catch (e) {
+      console.log(e.msg);
+    }
+  };
+
   //获取知识库列表
   const getList = async (forceLoad = false) => {
     // 如果已经加载过数据且列表不为空，并且没有强制加载，则直接返回
@@ -68,6 +86,9 @@ export const useKnowledgeBase = defineStore('knowledgeBase', () => {
     }
     
     try {
+      // 先获取知识库库权限
+      await ipsKbLibPermission();
+      
       // 改为获取ips数据
       const res: any = await ipsResquest.ipsKbList();
       if (res.success) {
@@ -119,5 +140,8 @@ export const useKnowledgeBase = defineStore('knowledgeBase', () => {
     setDelPermission,
     selectList,
     setSelectList,
+    kbLibPermission,
+    setPermission,
+    ipsKbLibPermission,
   };
 });

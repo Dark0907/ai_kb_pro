@@ -75,7 +75,8 @@
                   <circle cx="12" cy="12" r="3"></circle>
                 </svg>
               </button>
-              <button 
+              <button
+                v-if="selectedKb.delPermission"
                 @click="$emit('delete-document', doc)" 
                 class="text-red-500 hover:text-red-600 p-1.5 rounded-full hover:bg-law-100 dark:hover:bg-law-800"
                 :title="$t('knowledge_base.delete') || '删除'"
@@ -218,6 +219,10 @@ const props = defineProps({
   pageSize: {
     type: Number,
     default: 15
+  },
+  selectedKb: {
+    type: Object,
+    default: null
   }
 });
 

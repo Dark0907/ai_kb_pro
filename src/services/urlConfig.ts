@@ -103,14 +103,6 @@ const urlConfig: IUrlConfig = {
       page: 1,
     },
   },
-  //上传faq
-  uploadFaqs: {
-    type: EUrlType.POST,
-    url: 'kb_api/local_doc_qa/upload_faqs',
-    param: {
-      user_id: userId,
-    },
-  },
   //获取文件base64
   getFile: {
     type: EUrlType.POST,

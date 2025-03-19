@@ -52,7 +52,8 @@
                 <circle cx="12" cy="12" r="3"></circle>
               </svg>
             </button>
-            <button 
+            <button
+              v-if="selectedKb.delPermission"
               @click="$emit('delete-document', doc)" 
               class="text-red-500 hover:text-red-600 transition-colors"
               :title="$t('knowledge_base.delete') || '删除'"
@@ -102,7 +103,11 @@ const props = defineProps({
   isLoadingMore: {
     type: Boolean,
     default: false
-  }
+  },
+  selectedKb: {
+    type: Object,
+    default: null
+  },
 });
 
 const emit = defineEmits(['load-more', 'view-document', 'delete-document']);

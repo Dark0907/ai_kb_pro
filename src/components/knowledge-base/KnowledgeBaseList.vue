@@ -4,7 +4,7 @@
     <div class="p-3 flex items-center space-x-2 flex-shrink-0 border-b border-law-200 dark:border-law-700">
       <!-- 新建知识库按钮 -->
       <button 
-        v-if="!isSearchActive"
+        v-if="!isSearchActive && kbLibPermission"
         @click="$emit('create-kb')" 
         class="flex-1 flex items-center justify-center space-x-2 px-4 py-2 bg-accent text-white rounded-lg hover:bg-accent-dark transition-colors"
       >
@@ -58,7 +58,7 @@
             <span class="font-medium truncate">{{ kb.kb_name }}</span>
           </div>
           
-          <div class="flex items-center">
+          <div class="flex items-center" v-if="kb.delPermission">
             <button 
               @click.stop="$emit('rename-kb', kb)" 
               class="p-1.5 rounded-full hover:bg-law-200 dark:hover:bg-law-600 transition-colors"
@@ -92,7 +92,10 @@
 
 <script setup>
 import { ref, computed, watch, nextTick, onMounted, onUnmounted } from 'vue';
-
+import { useKnowledgeBase } from '@/stores/useKnowledgeBase';
+const knowledgeBaseStore = useKnowledgeBase();
+const { kbLibPermission } = storeToRefs(knowledgeBaseStore);
+console.log('kbLibPermission',kbLibPermission.value)
 const props = defineProps({
   knowledgeBaseList: {
     type: Array,
