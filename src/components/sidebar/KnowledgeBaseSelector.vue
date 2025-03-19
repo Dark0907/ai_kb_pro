@@ -113,7 +113,7 @@
               </div>
             </div>
 
-            <hr class="my-4 border-law-200 dark:border-law-700" />
+            <!-- <hr class="my-4 border-law-200 dark:border-law-700" />
 
             <div class="flex items-center justify-between">
               <h4 class="ml-2.5 font-semibold text-law-600 dark:text-law-100 text-sm">个人文档库</h4>
@@ -144,7 +144,7 @@
                   </label>
                 </div>
               </div>
-            </div>
+            </div> -->
           </div>
         </div>
       </div>
