@@ -77,23 +77,28 @@
           <div class="flex-shrink-0 p-4 border-b border-law-200 dark:border-law-700 bg-white dark:bg-law-900">
             <div class="flex flex-col md:flex-row md:justify-between md:items-center">
               <div class="flex items-center">
-                <h2 class="text-lg font-semibold text-law-800 dark:text-white mb-2 md:mb-0">
+                <h2 class="text-base font-semibold text-law-800 dark:text-white mb-2 md:mb-0">
                   {{ selectedKb.kb_name }}
                 </h2>
-                <span class="text-sm text-law-500 dark:text-law-400 ml-2 mb-2 md:mb-0">{{ $t('knowledge_base.document_count', { count: documents.length }) || `共 ${documents.length} 个文档` }}</span>
+                <span class="text-sm text-law-500 dark:text-law-400 ml-2 mb-2 md:mb-0">
+                  {{ $t('knowledge_base.document_count', { count: documents.length }) || `共 ${documents.length} 个文档` }}
+                </span>
               </div>
               <button 
                 v-if="selectedKb.upPermission"
                 @click="showUploadModal = true" 
-                class="flex items-center justify-center space-x-2 px-4 py-2 bg-accent text-white rounded-lg hover:bg-accent-dark transition-colors"
+                class="flex items-center justify-center space-x-2 px-3 py-1.5 bg-accent text-white rounded-lg hover:bg-accent-dark transition-colors"
               >
-                <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <svg class="w-3.5 h-3.5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                   <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
                   <polyline points="17 8 12 3 7 8"></polyline>
                   <line x1="12" y1="3" x2="12" y2="15"></line>
                 </svg>
                 <span>{{ $t('knowledge_base.upload_document') || '上传文档' }}</span>
               </button>
+              <div v-else class="flex items-center justify-center space-x-2 px-3 py-1.5 bg-transparent" style="visibility: hidden;">
+                <span class="text-gray-500 dark:text-gray-400">暂未开放</span>
+              </div>
             </div>
           </div>
           
