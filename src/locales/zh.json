@@ -115,7 +115,8 @@
     "confirm": "确认",
     "delete": "删除",
     "save": "保存",
-    "close": "关闭"
+    "close": "关闭",
+    "pagination_info": "显示 {from} - {to} 条，共 {total} 条"
   },
   "notFound": {
     "title": "页面未找到",

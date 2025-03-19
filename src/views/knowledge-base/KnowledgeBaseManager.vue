@@ -21,7 +21,7 @@
       </div>
     </div>
     
-    <!-- 主内容区域 - 移除固定高度，使用flex布局自动填充剩余空间 -->
+    <!-- 主内容区域 -->
     <div class="flex flex-col md:flex-row flex-1 overflow-hidden">
       <!-- 移动端标签切换 -->
       <div class="md:hidden flex border-b border-law-200 dark:border-law-700 bg-white dark:bg-law-800">
@@ -42,93 +42,21 @@
         </button>
       </div>
       
-      <!-- 左侧知识库列表 - 移除固定高度计算，使用flex布局 -->
+      <!-- 左侧知识库列表 -->
       <div 
-        class="w-full md:w-64 border-b md:border-b-0 md:border-r border-law-200 dark:border-law-700 bg-law-50 dark:bg-law-800 overflow-y-auto flex-shrink-0"
         :class="{'hidden md:block': activeTab === 'doc', 'block': activeTab === 'kb' || !isMobile}"
       >
-        <div class="p-3 flex items-center space-x-2">
-          <button 
-            v-if="!isSearchActive"
-            @click="showCreateKbModal = true" 
-            class="flex-1 flex items-center justify-center space-x-2 px-4 py-2 bg-accent text-white rounded-lg hover:bg-accent-dark transition-colors"
-          >
-            <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <line x1="12" y1="5" x2="12" y2="19"></line>
-              <line x1="5" y1="12" x2="19" y2="12"></line>
-            </svg>
-            <span>{{ $t('knowledge_base.create_new') || '新建知识库' }}</span>
-          </button>
-          
-          <!-- 搜索图标按钮 -->
-          <button 
-            @click="toggleSearch" 
-            class="p-2 bg-law-100 dark:bg-law-700 text-law-900 dark:text-law-100 rounded-md hover:bg-law-200 dark:hover:bg-law-600 transition-all duration-200"
-            :class="{ 'hidden': isSearchActive }"
-          >
-            <span class="text-lg">🔍</span>
-          </button>
-          
-          <!-- 搜索框 -->
-          <div 
-            v-if="isSearchActive" 
-            class="flex-1 relative animate-slide-in"
-          >
-            <input 
-              v-model="searchQuery"
-              type="text"
-              :placeholder="$t('knowledge_base.search_kb') || '搜索知识库'"
-              class="w-full pl-10 pr-4 py-2 bg-law-100 dark:bg-law-700 text-law-900 dark:text-law-100 rounded-md focus:outline-none focus:ring-2 focus:ring-accent border border-law-200 dark:border-law-600"
-              @blur="onSearchBlur"
-              ref="searchInput"
-            />
-            <span class="absolute left-3 top-2.5 text-lg">🔍</span>
-          </div>
-        </div>
-        
-        <div class="px-2 pb-4">
-          <div 
-            v-for="kb in filteredKnowledgeBaseList" 
-            :key="kb.kb_id"
-            @click="selectKnowledgeBase(kb)"
-            class="flex items-center justify-between p-3 mb-1 rounded-lg cursor-pointer transition-colors"
-            :class="selectedKb && selectedKb.kb_id === kb.kb_id ? 'bg-accent bg-opacity-10 text-accent' : 'hover:bg-law-100 dark:hover:bg-law-700 text-law-700 dark:text-law-300'"
-          >
-            <div class="flex items-center space-x-3">
-              <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"></path>
-              </svg>
-              <span class="font-medium truncate">{{ kb.kb_name }}</span>
-            </div>
-            
-            <div class="flex items-center">
-              <button 
-                @click.stop="showRenameKbModal(kb)" 
-                class="p-1 rounded-full hover:bg-law-200 dark:hover:bg-law-600 transition-colors"
-                title="重命名"
-              >
-                <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M12 20h9"></path>
-                  <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
-                </svg>
-              </button>
-              <button 
-                @click.stop="showDeleteKbModal(kb)" 
-                class="p-1 rounded-full hover:bg-law-200 dark:hover:bg-law-600 transition-colors"
-                title="删除"
-              >
-                <svg class="w-4 h-4 text-red-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M3 6h18"></path>
-                  <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"></path>
-                  <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-                </svg>
-              </button>
-            </div>
-          </div>
-        </div>
+        <knowledge-base-list
+          :knowledge-base-list="filteredKnowledgeBaseList"
+          :selected-kb="selectedKb"
+          @select-kb="selectKnowledgeBase"
+          @create-kb="showCreateKbModal = true"
+          @rename-kb="showRenameKbModal"
+          @delete-kb="showDeleteKbModal"
+        />
       </div>
       
-      <!-- 右侧知识库详情 - 完全重构这部分布局 -->
+      <!-- 右侧知识库详情 -->
       <div 
         class="flex-1 flex flex-col overflow-hidden"
         :class="{'hidden md:flex': activeTab === 'kb' && isMobile, 'flex': activeTab === 'doc' || !isMobile}"
@@ -168,541 +96,103 @@
             </div>
           </div>
           
-          <!-- PC端表格区域 - 自适应剩余空间并滚动 -->
-          <div class="hidden md:flex md:flex-col flex-1 overflow-hidden">
-            <!-- 表格头部 - 固定不滚动 -->
-            <div class="flex-shrink-0 bg-law-50 dark:bg-law-800">
-              <table class="min-w-full divide-y divide-law-200 dark:divide-law-700">
-                <thead>
-                  <tr>
-                    <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-law-500 dark:text-law-400 uppercase tracking-wider">
-                      {{ $t('knowledge_base.doc_id') || '文档ID' }}
-                    </th>
-                    <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-law-500 dark:text-law-400 uppercase tracking-wider">
-                      {{ $t('knowledge_base.doc_name') || '文档名称' }}
-                    </th>
-                    <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-law-500 dark:text-law-400 uppercase tracking-wider">
-                      {{ $t('knowledge_base.status') || '状态' }}
-                    </th>
-                    <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-law-500 dark:text-law-400 uppercase tracking-wider">
-                      {{ $t('knowledge_base.file_size') || '文件大小' }}
-                    </th>
-                    <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-law-500 dark:text-law-400 uppercase tracking-wider">
-                      {{ $t('knowledge_base.created_at') || '创建日期' }}
-                    </th>
-                    <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-law-500 dark:text-law-400 uppercase tracking-wider">
-                      {{ $t('knowledge_base.actions') || '操作' }}
-                    </th>
-                  </tr>
-                </thead>
-              </table>
-            </div>
-            
-            <!-- 表格内容区域 - 自适应剩余空间并滚动 -->
-            <div class="flex-1 overflow-y-auto bg-white dark:bg-law-900">
-              <table class="min-w-full divide-y divide-law-200 dark:divide-law-700">
-                <tbody class="divide-y divide-law-200 dark:divide-law-700">
-                  <tr v-for="(doc, index) in paginatedDocuments" :key="doc.file_id" class="hover:bg-law-50 dark:hover:bg-law-800 transition-colors">
-                    <td class="px-4 py-3 whitespace-nowrap text-sm text-law-500 dark:text-law-400">
-                      {{ totalItems - ((currentPage - 1) * pageSize) - index }}
-                    </td>
-                    <td class="px-4 py-3 whitespace-nowrap text-sm font-medium text-law-800 dark:text-white">
-                      {{ doc.file_name }}
-                    </td>
-                    <td class="px-4 py-3 whitespace-nowrap text-sm">
-                      <span 
-                        class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full"
-                        :class="{
-                          'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200': doc.status === 'green',
-                          'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200': doc.status === 'yellow',
-                          'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200': doc.status === 'red'
-                        }"
-                      >
-                        {{ 
-                          doc.status === 'green' ? ($t('knowledge_base.status_success') || '已完成') : 
-                          doc.status === 'yellow' ? ($t('knowledge_base.status_processing') || '处理中') : 
-                          ($t('knowledge_base.status_failed') || '失败') 
-                        }}
-                      </span>
-                    </td>
-                    <td class="px-4 py-3 whitespace-nowrap text-sm text-law-500 dark:text-law-400">
-                      {{ formatFileSize(doc.bytes) }}
-                    </td>
-                    <td class="px-4 py-3 whitespace-nowrap text-sm text-law-500 dark:text-law-400">
-                      {{ formatDate(doc.timestamp) }}
-                    </td>
-                    <td class="px-4 py-3 whitespace-nowrap text-sm text-law-500 dark:text-law-400">
-                      <div class="flex space-x-2">
-                        <button 
-                          @click="viewDocument(doc)" 
-                          class="text-accent hover:text-accent-dark transition-colors"
-                          :title="$t('knowledge_base.view') || '查看'"
-                        >
-                          <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                            <circle cx="12" cy="12" r="3"></circle>
-                          </svg>
-                        </button>
-                        <button 
-                          @click="confirmDeleteDocument(doc)" 
-                          class="text-red-500 hover:text-red-600 transition-colors"
-                          :title="$t('knowledge_base.delete') || '删除'"
-                        >
-                          <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M3 6h18"></path>
-                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-                            <line x1="10" y1="11" x2="10" y2="17"></line>
-                            <line x1="14" y1="11" x2="14" y2="17"></line>
-                          </svg>
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                  <tr v-if="documents.length === 0">
-                    <td colspan="6" class="px-4 py-8 text-center text-law-500 dark:text-law-400">
-                      {{ $t('knowledge_base.no_documents') || '暂无文档，请上传新文档' }}
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-            
-            <!-- 分页导航（桌面端） - 固定在底部 -->
-            <div v-if="documents.length > 0" class="flex-shrink-0 flex items-center justify-between px-4 py-3 bg-white dark:bg-law-900 border-t border-law-200 dark:border-law-700">
-              <div class="flex items-center text-sm text-law-700 dark:text-law-300">
-                {{ $t('knowledge_base.showing') || '显示' }} {{ (currentPage - 1) * pageSize + 1 }}-{{ Math.min(currentPage * pageSize, totalItems) }} {{ $t('knowledge_base.of') || '共' }} {{ totalItems }} {{ $t('knowledge_base.items') || '条' }}
-              </div>
-              
-              <div class="flex items-center space-x-2">
-                <!-- 上一页 -->
-                <button 
-                  @click="changePage(currentPage - 1)" 
-                  :disabled="currentPage === 1"
-                  class="px-3 py-1 rounded-md border border-law-200 dark:border-law-700 bg-white dark:bg-law-800 text-law-700 dark:text-law-300 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {{ $t('knowledge_base.previous') || '上一页' }}
-                </button>
-                
-                <!-- 页码 -->
-                <div class="flex items-center space-x-1">
-                  <!-- 第一页 -->
-                  <button 
-                    v-if="currentPage > 3" 
-                    @click="changePage(1)"
-                    class="w-8 h-8 flex items-center justify-center rounded-md border border-law-200 dark:border-law-700 bg-white dark:bg-law-800 text-law-700 dark:text-law-300"
-                  >
-                    1
-                  </button>
-                  
-                  <!-- 省略号 -->
-                  <span v-if="currentPage > 3" class="text-law-500 dark:text-law-400">...</span>
-                  
-                  <!-- 当前页前一页 -->
-                  <button 
-                    v-if="currentPage > 1" 
-                    @click="changePage(currentPage - 1)"
-                    class="w-8 h-8 flex items-center justify-center rounded-md border border-law-200 dark:border-law-700 bg-white dark:bg-law-800 text-law-700 dark:text-law-300"
-                  >
-                    {{ currentPage - 1 }}
-                  </button>
-                  
-                  <!-- 当前页 -->
-                  <button 
-                    class="w-8 h-8 flex items-center justify-center rounded-md border border-accent bg-accent text-white"
-                  >
-                    {{ currentPage }}
-                  </button>
-                  
-                  <!-- 当前页后一页 -->
-                  <button 
-                    v-if="currentPage < totalPages" 
-                    @click="changePage(currentPage + 1)"
-                    class="w-8 h-8 flex items-center justify-center rounded-md border border-law-200 dark:border-law-700 bg-white dark:bg-law-800 text-law-700 dark:text-law-300"
-                  >
-                    {{ currentPage + 1 }}
-                  </button>
-                  
-                  <!-- 省略号 -->
-                  <span v-if="currentPage < totalPages - 2" class="text-law-500 dark:text-law-400">...</span>
-                  
-                  <!-- 最后一页 -->
-                  <button 
-                    v-if="currentPage < totalPages - 2" 
-                    @click="changePage(totalPages)"
-                    class="w-8 h-8 flex items-center justify-center rounded-md border border-law-200 dark:border-law-700 bg-white dark:bg-law-800 text-law-700 dark:text-law-300"
-                  >
-                    {{ totalPages }}
-                  </button>
-                </div>
-                
-                <!-- 下一页 -->
-                <button 
-                  @click="changePage(currentPage + 1)" 
-                  :disabled="currentPage === totalPages"
-                  class="px-3 py-1 rounded-md border border-law-200 dark:border-law-700 bg-white dark:bg-law-800 text-law-700 dark:text-law-300 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {{ $t('knowledge_base.next') || '下一页' }}
-                </button>
-                
-                <!-- 跳转到指定页 -->
-                <div class="flex items-center space-x-1">
-                  <span class="text-sm text-law-700 dark:text-law-300">{{ $t('knowledge_base.go_to') || '跳转到' }}</span>
-                  <input 
-                    type="number" 
-                    min="1" 
-                    :max="totalPages" 
-                    v-model="currentPage"
-                    class="w-16 px-2 py-1 rounded-md border border-law-200 dark:border-law-700 bg-white dark:bg-law-800 text-law-700 dark:text-law-300 text-center"
-                    @keyup.enter="goToPage"
-                  />
-                  <span class="text-sm text-law-700 dark:text-law-300">{{ $t('knowledge_base.page') || '页' }}</span>
-                </div>
-              </div>
-            </div>
-          </div>
+          <!-- PC端文档列表 -->
+          <document-list
+            :documents="documents"
+            :current-page="currentPage"
+            :total-items="totalItems"
+            :total-pages="totalPages"
+            :page-size="pageSize"
+            @change-page="changePage"
+            @view-document="viewDocument"
+            @delete-document="confirmDeleteDocument"
+          />
           
-          <!-- 移动端文档列表 - 自适应高度 -->
-          <div class="md:hidden mobile-document-container flex-1 overflow-y-auto">
-            <div v-if="documents.length === 0" class="py-8 text-center text-law-500 dark:text-law-400">
-              {{ $t('knowledge_base.no_documents') || '暂无文档，请上传新文档' }}
-            </div>
-            <div v-else class="space-y-4">
-              <div 
-                v-for="(doc, index) in paginatedDocuments" 
-                :key="doc.file_id"
-                class="bg-law-50 dark:bg-law-800 rounded-lg border border-law-200 dark:border-law-700 p-4"
-              >
-                <div class="flex justify-between items-start">
-                  <div class="flex-1">
-                    <h3 class="font-medium text-law-800 dark:text-white">{{ doc.file_name }}</h3>
-                    <div class="mt-2 space-y-1">
-                      <p class="text-xs text-law-500 dark:text-law-400 flex items-center">
-                        <span class="font-medium mr-2">ID:</span> {{ totalItems - ((currentPage - 1) * pageSize) - index }}
-                      </p>
-                      <p class="text-xs text-law-500 dark:text-law-400 flex items-center">
-                        <span class="font-medium mr-2">{{ $t('knowledge_base.status') || '状态' }}:</span>
-                        <span 
-                          class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full"
-                          :class="{
-                            'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200': doc.status === 'green',
-                            'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200': doc.status === 'yellow',
-                            'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200': doc.status === 'red'
-                          }"
-                        >
-                          {{ 
-                            doc.status === 'green' ? ($t('knowledge_base.status_success') || '已完成') : 
-                            doc.status === 'yellow' ? ($t('knowledge_base.status_processing') || '处理中') : 
-                            ($t('knowledge_base.status_failed') || '失败') 
-                          }}
-                        </span>
-                      </p>
-                      <p class="text-xs text-law-500 dark:text-law-400 flex items-center">
-                        <span class="font-medium mr-2">{{ $t('knowledge_base.file_size') || '文件大小' }}:</span> {{ formatFileSize(doc.bytes) }}
-                      </p>
-                      <p class="text-xs text-law-500 dark:text-law-400 flex items-center">
-                        <span class="font-medium mr-2">{{ $t('knowledge_base.created_at') || '创建日期' }}:</span> {{ formatDate(doc.timestamp) }}
-                      </p>
-                    </div>
-                  </div>
-                  <div class="flex space-x-2">
-                    <button 
-                      @click="viewDocument(doc)" 
-                      class="text-accent hover:text-accent-dark transition-colors"
-                      :title="$t('knowledge_base.view') || '查看'"
-                    >
-                      <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                        <circle cx="12" cy="12" r="3"></circle>
-                      </svg>
-                    </button>
-                    <button 
-                      @click="confirmDeleteDocument(doc)" 
-                      class="text-red-500 hover:text-red-600 transition-colors"
-                      :title="$t('knowledge_base.delete') || '删除'"
-                    >
-                      <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M3 6h18"></path>
-                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-                        <line x1="10" y1="11" x2="10" y2="17"></line>
-                        <line x1="14" y1="11" x2="14" y2="17"></line>
-                      </svg>
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
+          <!-- 移动端文档列表 -->
+          <mobile-document-list
+            :documents="documents"
+            :current-page="mobilePage"
+            :total-items="totalItems"
+            :page-size="pageSize"
+            :is-loading-more="isLoadingMore"
+            @load-more="loadMoreDocuments"
+            @view-document="viewDocument"
+            @delete-document="confirmDeleteDocument"
+          />
         </div>
       </div>
     </div>
     
+    <!-- 模态框组件 -->
     <!-- 新建知识库模态框 -->
-    <div v-if="showCreateKbModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-      <div class="bg-white dark:bg-law-800 rounded-lg shadow-xl w-full max-w-md mx-4">
-        <div class="p-5 border-b border-law-200 dark:border-law-700">
-          <h3 class="text-lg font-semibold text-law-800 dark:text-white">{{ $t('knowledge_base.create_new') || '新建知识库' }}</h3>
-        </div>
-        <div class="p-5">
-          <div class="mb-4">
-            <label class="block text-sm font-medium text-law-700 dark:text-law-300 mb-1">{{ $t('knowledge_base.kb_name') || '知识库名称' }}</label>
-            <input 
-              v-model="newKbName" 
-              type="text" 
-              class="w-full px-3 py-2 border border-law-300 dark:border-law-600 rounded-md focus:outline-none focus:ring-2 focus:ring-accent dark:bg-law-700 dark:text-white"
-              :placeholder="$t('knowledge_base.enter_kb_name') || '请输入知识库名称'"
-            />
-          </div>
-        </div>
-        <div class="p-4 flex justify-end space-x-3 border-t border-law-200 dark:border-law-700">
-          <button 
-            @click="showCreateKbModal = false" 
-            class="px-4 py-2 text-law-700 dark:text-law-300 hover:bg-law-100 dark:hover:bg-law-700 rounded-md transition-colors"
-          >
-            {{ $t('common.cancel') || '取消' }}
-          </button>
-          <button 
-            @click="createKnowledgeBase" 
-            class="px-4 py-2 bg-accent text-white rounded-md hover:bg-accent-dark transition-colors"
-            :disabled="!newKbName.trim()"
-          >
-            {{ $t('common.confirm') || '确认' }}
-          </button>
-        </div>
-      </div>
-    </div>
+    <dialog-modal
+      v-if="showCreateKbModal"
+      :title="$t('knowledge_base.create_new') || '新建知识库'"
+      content-type="input"
+      :input-label="$t('knowledge_base.kb_name') || '知识库名称'"
+      :input-placeholder="$t('knowledge_base.enter_kb_name') || '请输入知识库名称'"
+      :confirm-text="$t('common.confirm') || '确认'"
+      :cancel-text="$t('common.cancel') || '取消'"
+      @confirm="createKnowledgeBase"
+      @cancel="showCreateKbModal = false"
+    />
     
     <!-- 重命名知识库模态框 -->
-    <div v-if="showRenameModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-      <div class="bg-white dark:bg-law-800 rounded-lg shadow-xl w-full max-w-md mx-4">
-        <div class="p-5 border-b border-law-200 dark:border-law-700">
-          <h3 class="text-lg font-semibold text-law-800 dark:text-white">{{ $t('knowledge_base.rename_kb') || '重命名知识库' }}</h3>
-        </div>
-        <div class="p-5">
-          <div class="mb-4">
-            <label class="block text-sm font-medium text-law-700 dark:text-law-300 mb-1">{{ $t('knowledge_base.kb_name') || '知识库名称' }}</label>
-            <input 
-              v-model="renameKbName" 
-              type="text" 
-              class="w-full px-3 py-2 border border-law-300 dark:border-law-600 rounded-md focus:outline-none focus:ring-2 focus:ring-accent dark:bg-law-700 dark:text-white"
-              :placeholder="$t('knowledge_base.enter_kb_name') || '请输入知识库名称'"
-            />
-          </div>
-        </div>
-        <div class="p-4 flex justify-end space-x-3 border-t border-law-200 dark:border-law-700">
-          <button 
-            @click="showRenameModal = false" 
-            class="px-4 py-2 text-law-700 dark:text-law-300 hover:bg-law-100 dark:hover:bg-law-700 rounded-md transition-colors"
-          >
-            {{ $t('common.cancel') || '取消' }}
-          </button>
-          <button 
-            @click="renameKnowledgeBase" 
-            class="px-4 py-2 bg-accent text-white rounded-md hover:bg-accent-dark transition-colors"
-            :disabled="!renameKbName.trim()"
-          >
-            {{ $t('common.confirm') || '确认' }}
-          </button>
-        </div>
-      </div>
-    </div>
+    <dialog-modal
+      v-if="showRenameModal"
+      :title="$t('knowledge_base.rename_kb') || '重命名知识库'"
+      content-type="input"
+      :input-label="$t('knowledge_base.kb_name') || '知识库名称'"
+      :input-placeholder="$t('knowledge_base.enter_kb_name') || '请输入知识库名称'"
+      :default-input-value="renameKbName"
+      :confirm-text="$t('common.confirm') || '确认'"
+      :cancel-text="$t('common.cancel') || '取消'"
+      @confirm="renameKnowledgeBase"
+      @cancel="showRenameModal = false"
+    />
     
     <!-- 删除知识库确认模态框 -->
-    <div v-if="showDeleteKbConfirm" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-      <div class="bg-white dark:bg-law-800 rounded-lg shadow-xl w-full max-w-md mx-4">
-        <div class="p-5 border-b border-law-200 dark:border-law-700">
-          <h3 class="text-lg font-semibold text-law-800 dark:text-white">{{ $t('knowledge_base.delete_kb') || '删除知识库' }}</h3>
-        </div>
-        <div class="p-5">
-          <p class="text-law-700 dark:text-law-300">{{ $t('knowledge_base.delete_kb_confirm', { name: kbToDelete?.kb_name }) || `确定要删除知识库 "${kbToDelete?.kb_name}" 吗？此操作不可恢复。` }}</p>
-        </div>
-        <div class="p-4 flex justify-end space-x-3 border-t border-law-200 dark:border-law-700">
-          <button 
-            @click="showDeleteKbConfirm = false" 
-            class="px-4 py-2 text-law-700 dark:text-law-300 hover:bg-law-100 dark:hover:bg-law-700 rounded-md transition-colors"
-          >
-            {{ $t('common.cancel') || '取消' }}
-          </button>
-          <button 
-            @click="deleteKnowledgeBase" 
-            class="px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 transition-colors"
-          >
-            {{ $t('common.delete') || '删除' }}
-          </button>
-        </div>
-      </div>
-    </div>
+    <dialog-modal
+      v-if="showDeleteKbConfirm"
+      :title="$t('knowledge_base.delete_kb') || '删除知识库'"
+      content-type="text"
+      :content="$t('knowledge_base.delete_kb_confirm', { name: kbToDelete?.kb_name }) || `确定要删除知识库 '${kbToDelete?.kb_name}' 吗？此操作不可恢复。`"
+      :confirm-text="$t('common.delete') || '删除'"
+      :cancel-text="$t('common.cancel') || '取消'"
+      :confirm-danger="true"
+      @confirm="deleteKnowledgeBase"
+      @cancel="showDeleteKbConfirm = false"
+    />
     
     <!-- 删除文档确认模态框 -->
-    <div v-if="showDeleteDocConfirm" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-      <div class="bg-white dark:bg-law-800 rounded-lg shadow-xl w-full max-w-md mx-4">
-        <div class="p-5 border-b border-law-200 dark:border-law-700">
-          <h3 class="text-lg font-semibold text-law-800 dark:text-white">{{ $t('knowledge_base.delete_document') || '删除文档' }}</h3>
-        </div>
-        <div class="p-5">
-          <p class="text-law-700 dark:text-law-300">{{ $t('knowledge_base.delete_document_confirm', { name: docToDelete?.file_name }) || `确定要删除文档 "${docToDelete?.file_name}" 吗？此操作不可恢复。` }}</p>
-        </div>
-        <div class="p-4 flex justify-end space-x-3 border-t border-law-200 dark:border-law-700">
-          <button 
-            @click="showDeleteDocConfirm = false" 
-            class="px-4 py-2 text-law-700 dark:text-law-300 hover:bg-law-100 dark:hover:bg-law-700 rounded-md transition-colors"
-          >
-            {{ $t('common.cancel') || '取消' }}
-          </button>
-          <button 
-            @click="deleteDocument" 
-            class="px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 transition-colors"
-          >
-            {{ $t('common.delete') || '删除' }}
-          </button>
-        </div>
-      </div>
-    </div>
+    <dialog-modal
+      v-if="showDeleteDocConfirm"
+      :title="$t('knowledge_base.delete_document') || '删除文档'"
+      content-type="text"
+      :content="$t('knowledge_base.delete_document_confirm', { name: docToDelete?.file_name }) || `确定要删除文档 '${docToDelete?.file_name}' 吗？此操作不可恢复。`"
+      :confirm-text="$t('common.delete') || '删除'"
+      :cancel-text="$t('common.cancel') || '取消'"
+      :confirm-danger="true"
+      @confirm="deleteDocument"
+      @cancel="showDeleteDocConfirm = false"
+    />
     
     <!-- 上传文档模态框 -->
-    <div v-if="showUploadModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-      <div class="bg-white dark:bg-law-800 rounded-lg shadow-xl w-full max-w-md mx-4">
-        <div class="p-5 border-b border-law-200 dark:border-law-700">
-          <h3 class="text-lg font-semibold text-law-800 dark:text-white">{{ $t('knowledge_base.upload_document') || '上传文档' }}</h3>
-        </div>
-        <div class="p-5">
-          <div class="mb-4">
-            <label class="block text-sm font-medium text-law-700 dark:text-law-300 mb-2">{{ $t('knowledge_base.select_kb') || '选择知识库' }}</label>
-            <select 
-              v-model="uploadKbId" 
-              class="w-full px-3 py-2 border border-law-300 dark:border-law-600 rounded-md bg-white dark:bg-law-700 text-law-700 dark:text-law-300 focus:outline-none focus:ring-2 focus:ring-accent"
-            >
-              <option v-for="kb in knowledgeBaseList" :key="kb.kb_id" :value="kb.kb_id" :selected="selectedKb && kb.kb_id === selectedKb.kb_id">
-                {{ kb.kb_name }}
-              </option>
-            </select>
-          </div>
-          <div class="mb-4">
-            <label class="block text-sm font-medium text-law-700 dark:text-law-300 mb-2">{{ $t('knowledge_base.upload_file') || '上传文件' }}</label>
-            <div 
-              class="border-2 border-dashed border-law-300 dark:border-law-600 rounded-md p-6 text-center"
-              @dragover.prevent="onDragOver" 
-              @dragleave.prevent="onDragLeave" 
-              @drop.prevent="onDrop"
-              :class="{'border-accent bg-accent bg-opacity-5': isDragging}"
-            >
-              <input 
-                type="file" 
-                ref="fileInput" 
-                multiple 
-                class="hidden" 
-                @change="onFileSelected" 
-                accept=".pdf,.docx,.txt,.md"
-              />
-              <svg class="w-12 h-12 mx-auto text-law-400 dark:text-law-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                <polyline points="17 8 12 3 7 8"></polyline>
-                <line x1="12" y1="3" x2="12" y2="15"></line>
-              </svg>
-              <p class="mt-2 text-sm text-law-600 dark:text-law-400">{{ $t('knowledge_base.drag_drop') || '拖拽文件到此处或' }}</p>
-              <button 
-                @click.prevent="$refs.fileInput.click()" 
-                class="mt-2 px-4 py-2 bg-accent text-white rounded-md hover:bg-accent-dark transition-colors"
-              >
-                {{ $t('knowledge_base.browse_files') || '浏览文件' }}
-              </button>
-              <p class="mt-2 text-xs text-law-500 dark:text-law-400">{{ $t('knowledge_base.supported_formats') || '支持的格式: PDF, DOCX, TXT, MD' }}</p>
-            </div>
-          </div>
-          
-          <!-- 选择的文件列表 -->
-          <div v-if="selectedFiles.length > 0" class="mt-4">
-            <h4 class="text-sm font-medium text-law-700 dark:text-law-300 mb-2">{{ $t('knowledge_base.selected_files') || '已选择文件' }}</h4>
-            <ul class="max-h-40 overflow-y-auto bg-law-50 dark:bg-law-700 rounded-md p-2">
-              <li v-for="(file, index) in selectedFiles" :key="index" class="flex justify-between items-center py-1">
-                <div class="flex items-center truncate">
-                  <svg class="w-4 h-4 mr-2 text-law-500 dark:text-law-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-                    <polyline points="14 2 14 8 20 8"></polyline>
-                    <line x1="16" y1="13" x2="8" y2="13"></line>
-                    <line x1="16" y1="17" x2="8" y2="17"></line>
-                    <polyline points="10 9 9 9 8 9"></polyline>
-                  </svg>
-                  <span class="text-sm text-law-700 dark:text-law-300 truncate">{{ file.name }}</span>
-                </div>
-                <button @click="removeFile(index)" class="text-red-500 hover:text-red-600">
-                  <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <line x1="18" y1="6" x2="6" y2="18"></line>
-                    <line x1="6" y1="6" x2="18" y2="18"></line>
-                  </svg>
-                </button>
-              </li>
-            </ul>
-          </div>
-        </div>
-        <div class="p-4 flex justify-end space-x-3 border-t border-law-200 dark:border-law-700">
-          <button 
-            @click="closeUploadModal" 
-            class="px-4 py-2 text-law-700 dark:text-law-300 hover:bg-law-100 dark:hover:bg-law-700 rounded-md transition-colors"
-          >
-            {{ $t('common.cancel') || '取消' }}
-          </button>
-          <button 
-            @click="uploadDocument" 
-            class="px-4 py-2 bg-accent text-white rounded-md hover:bg-accent-dark transition-colors"
-            :disabled="selectedFiles.length === 0 || isUploading"
-          >
-            <span v-if="isUploading" class="flex items-center">
-              <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-              </svg>
-              {{ $t('knowledge_base.uploading') || '上传中...' }}
-            </span>
-            <span v-else>{{ $t('knowledge_base.upload') || '上传' }}</span>
-          </button>
-        </div>
-      </div>
-    </div>
+    <upload-modal
+      v-if="showUploadModal"
+      :knowledge-base-list="knowledgeBaseList"
+      :selected-kb="selectedKb"
+      :is-uploading="isUploading"
+      @upload="uploadDocument"
+      @close="closeUploadModal"
+    />
 
     <!-- 上传进度显示模态框 -->
-    <div v-if="showUploadProgressModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-      <div class="bg-white dark:bg-law-800 rounded-lg shadow-xl w-full max-w-md mx-4">
-        <div class="p-5 border-b border-law-200 dark:border-law-700">
-          <h3 class="text-lg font-semibold text-law-800 dark:text-white">{{ $t('knowledge_base.upload_progress') || '上传进度' }}</h3>
-        </div>
-        <div class="p-5">
-          <div class="space-y-4">
-            <div v-for="(file, index) in uploadingFiles" :key="index" class="w-full">
-              <div class="flex justify-between items-center mb-1">
-                <span class="text-sm text-law-700 dark:text-law-300 truncate">{{ file.name }}</span>
-                <span class="text-xs text-law-500 dark:text-law-400">
-                  {{ 
-                    file.status === 'loading' ? ($t('knowledge_base.uploading') || '上传中...') :
-                    file.status === 'success' ? ($t('knowledge_base.upload_success') || '上传成功') :
-                    ($t('knowledge_base.upload_failed') || '上传失败')
-                  }}
-                </span>
-              </div>
-              <div class="w-full h-2 bg-law-200 dark:bg-law-700 rounded-full overflow-hidden">
-                <div 
-                  class="h-full transition-all duration-300 ease-out rounded-full"
-                  :class="{
-                    'bg-accent': file.status === 'loading',
-                    'bg-green-500': file.status === 'success',
-                    'bg-red-500': file.status === 'error'
-                  }"
-                  :style="{ width: file.status === 'loading' ? '90%' : (file.status === 'success' ? '100%' : '30%') }"
-                ></div>
-              </div>
-              <p v-if="file.status === 'error'" class="text-xs text-red-500 mt-1">{{ file.errorText || '上传失败，请重试' }}</p>
-            </div>
-          </div>
-        </div>
-        <div class="p-4 flex justify-end space-x-3 border-t border-law-200 dark:border-law-700">
-          <button 
-            @click="closeUploadProgressModal" 
-            class="px-4 py-2 bg-accent text-white rounded-md hover:bg-accent-dark transition-colors"
-          >
-            {{ $t('common.close') || '关闭' }}
-          </button>
-        </div>
-      </div>
-    </div>
+    <upload-progress-modal
+      v-if="showUploadProgressModal"
+      :files="uploadingFiles"
+      @close="closeUploadProgressModal"
+    />
 
     <!-- 文档详情模态框 -->
     <reference-modal
@@ -721,9 +211,15 @@ import { ref, onMounted, onUnmounted, watch, nextTick, computed } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { useKnowledgeBase } from '@/stores/useKnowledgeBase';
 import { storeToRefs } from 'pinia';
-import LanguageSwitcher from '../../components/layout/LanguageSwitcher.vue'
-import ThemeSwitcher from '../../components/layout/ThemeSwitcher.vue'
-import ReferenceModal from '../../components/reference/ReferenceModal.vue'
+import LanguageSwitcher from '@/components/layout/LanguageSwitcher.vue'
+import ThemeSwitcher from '@/components/layout/ThemeSwitcher.vue'
+import ReferenceModal from '@/components/reference/ReferenceModal.vue'
+import KnowledgeBaseList from '@/components/knowledge-base/KnowledgeBaseList.vue'
+import DocumentList from '@/components/knowledge-base/DocumentList.vue'
+import MobileDocumentList from '@/components/knowledge-base/MobileDocumentList.vue'
+import UploadModal from '@/components/knowledge-base/UploadModal.vue'
+import UploadProgressModal from '@/components/knowledge-base/UploadProgressModal.vue'
+import DialogModal from '@/components/knowledge-base/DialogModal.vue'
 import urlRequest from '@/services/urlConfig'
 import ipsResquest from '@/services/ipsConfig'
 import axios from 'axios';
@@ -742,111 +238,34 @@ const showRenameModal = ref(false);
 const showDeleteKbConfirm = ref(false);
 const showDeleteDocConfirm = ref(false);
 const showUploadModal = ref(false);
-const newKbName = ref('');
-const renameKbName = ref('');
 const kbToDelete = ref(null);
 const kbToRename = ref(null);
 const docToDelete = ref(null);
 const activeTab = ref('kb'); // 移动端标签切换状态：'kb' 或 'doc'
 const isMobile = ref(false); // 是否为移动设备
-const isSearchActive = ref(false);
-const searchQuery = ref('');
-const searchInput = ref(null);
-const showModal = ref(false)
-const activeReferenceId = ref('')
-const activeReferenceTitle = ref('')
-const activeReferenceSection = ref('')
+const renameKbName = ref(''); // 重命名知识库时的名称
+const showModal = ref(false);
+const activeReferenceId = ref('');
+const activeReferenceTitle = ref('');
+const activeReferenceSection = ref('');
 
 // 分页相关
 const pageSize = ref(15); // 每页显示15条
 const currentPage = ref(1);
-const totalItems = ref(0); // 修改为总条数
-const totalPages = ref(0); // 修改为总页数
+const totalItems = ref(0); // 总条数
+const totalPages = ref(0); // 总页数
 
 // 移动端滚动加载
-const mobileLoadedItems = ref(15); // 移动端初始加载10条
 const isLoadingMore = ref(false);
-const mobilePage = ref(1); // 添加移动端专用的页码计数器
+const mobilePage = ref(1); // 移动端专用的页码计数器
 
-// 计算当前页显示的文档
-const paginatedDocuments = computed(() => {
-  if (isMobile.value) {
-    // 移动端滚动加载
-    return documents.value.slice(0, mobileLoadedItems.value);
-  } else {
-    // PC端分页 - 当使用API分页时直接返回documents
-    return documents.value;
-  }
-});
+// 文件上传相关
+const showUploadProgressModal = ref(false);
+const uploadingFiles = ref([]);
+const isUploading = ref(false);
 
-// 监听滚动事件（移动端）
-const handleScroll = (event) => {
-  if (!isMobile.value) return;
-  
-  const documentContainer = document.querySelector('.mobile-document-container');
-  if (!documentContainer) return;
-  
-  const { scrollTop, scrollHeight, clientHeight } = documentContainer;
-  
-  // 当滚动到距离底部50px时加载更多
-  if (scrollHeight - scrollTop - clientHeight < 50 && !isLoadingMore.value && mobileLoadedItems.value < documents.value.length) {
-    loadMoreDocuments();
-  }
-};
-
-// 加载更多文档（移动端）
-const loadMoreDocuments = async () => {
-  if (isLoadingMore.value || mobileLoadedItems.value >= totalItems.value) return;
-  
-  isLoadingMore.value = true;
-  console.log('加载更多文档，当前已加载:', mobileLoadedItems.value);
-  
-  try {
-    // 使用移动端专用页码，递增页码
-    mobilePage.value += 1;
-    
-    // 调用API获取下一页数据
-    const response = await urlRequest.fileList({
-      kb_id: selectedKb.value.kb_id,
-      page: mobilePage.value,
-      page_size: pageSize.value
-    });
-    
-    if (response && response.data && response.data.details) {
-      // 将新数据追加到现有数据
-      documents.value = [...documents.value, ...response.data.details];
-      // 更新已加载条数
-      mobileLoadedItems.value = Math.min(mobileLoadedItems.value + response.data.details.length, totalItems.value);
-    }
-  } catch (error) {
-    console.error('加载更多文档失败:', error);
-  } finally {
-    isLoadingMore.value = false;
-  }
-};
-
-// 切换页码，更新为调用API获取数据
-const changePage = (page) => {
-  currentPage.value = page;
-  // 重新获取当前页的数据
-  fetchDocuments(selectedKb.value.kb_id);
-};
-
-// 跳转到指定页
-const goToPage = (event) => {
-  const page = parseInt(event.target.value);
-  if (page && page > 0 && page <= totalPages.value) {
-    currentPage.value = page;
-    // 重新获取当前页的数据
-    fetchDocuments(selectedKb.value.kb_id);
-  }
-};
-
-// 重置分页状态
-const resetPagination = () => {
-  currentPage.value = 1;
-  mobileLoadedItems.value = 10;
-};
+// 过滤知识库列表
+const filteredKnowledgeBaseList = ref([]);
 
 // 检测设备类型
 const checkDeviceType = () => {
@@ -858,15 +277,6 @@ onMounted(() => {
   // 检测设备类型
   checkDeviceType();
   window.addEventListener('resize', checkDeviceType);
-  
-  // 延迟添加滚动事件监听（移动端），确保DOM已经渲染
-  setTimeout(() => {
-    const documentContainer = document.querySelector('.mobile-document-container');
-    if (documentContainer) {
-      documentContainer.addEventListener('scroll', handleScroll);
-      console.log('已添加滚动事件监听');
-    }
-  }, 500);
   
   // 只有当知识库列表为空或未加载过数据时才获取列表
   if (!hasLoadedData.value || !knowledgeBaseList.value || knowledgeBaseList.value.length === 0) {
@@ -887,35 +297,32 @@ onMounted(() => {
 // 在组件销毁时移除事件监听
 onUnmounted(() => {
   window.removeEventListener('resize', checkDeviceType);
-  
-  // 移除滚动事件监听（移动端）
-  const documentContainer = document.querySelector('.mobile-document-container');
-  if (documentContainer) {
-    documentContainer.removeEventListener('scroll', handleScroll);
-  }
 });
 
 // 修改返回函数，优先返回到之前的对话页面
 const goBack = () => {
   // 如果是从聊天页面跳转过来的，则返回到那个聊天页面
   if (router.options.history.state.back && router.options.history.state.back.includes('/chat/')) {
-    router.back()
+    router.back();
   } else {
     // 否则返回首页，但不触发重新加载
-    router.push({ path: '/', replace: true })
+    router.push({ path: '/', replace: true });
   }
-}
+};
 
 // 选择知识库
 const selectKnowledgeBase = (kb) => {
   selectedKb.value = kb;
-  // 模拟获取文档列表
+  // 获取文档列表
   fetchDocuments(kb.kb_id);
   
   // 在移动端选择知识库后自动切换到文档标签
   if (isMobile.value) {
     activeTab.value = 'doc';
   }
+
+  // 重置移动端页码
+  mobilePage.value = 1;
 };
 
 // 获取文档列表
@@ -945,19 +352,51 @@ const fetchDocuments = async (kbId) => {
     totalItems.value = 0;
     totalPages.value = 1;
   }
+};
+
+// 加载更多文档（移动端）
+const loadMoreDocuments = async () => {
+  if (isLoadingMore.value || documents.value.length >= totalItems.value) return;
   
-  // 重置移动端加载状态
-  mobileLoadedItems.value = Math.min(10, documents.value.length);
-  isLoadingMore.value = false;
+  isLoadingMore.value = true;
+  console.log('加载更多文档，当前已加载:', documents.value.length);
+  
+  try {
+    // 使用移动端专用页码，递增页码
+    mobilePage.value += 1;
+    
+    // 调用API获取下一页数据
+    const response = await urlRequest.fileList({
+      kb_id: selectedKb.value.kb_id,
+      page: mobilePage.value,
+      page_size: pageSize.value
+    });
+    
+    if (response && response.data && response.data.details) {
+      // 将新数据追加到现有数据
+      documents.value = [...documents.value, ...response.data.details];
+    }
+  } catch (error) {
+    console.error('加载更多文档失败:', error);
+  } finally {
+    isLoadingMore.value = false;
+  }
+};
+
+// 切换页码
+const changePage = (page) => {
+  currentPage.value = page;
+  // 重新获取当前页的数据
+  fetchDocuments(selectedKb.value.kb_id);
 };
 
 // 创建知识库
-const createKnowledgeBase = async () => {
-  if (!newKbName.value.trim()) return;
+const createKnowledgeBase = async (name) => {
+  if (!name) return;
 
   try {
     // 调用API创建知识库
-    const response = await urlRequest.createKb({ kb_name: newKbName.value.trim() });
+    const response = await urlRequest.createKb({ kb_name: name });
     
     if (response.code === 200) {
       // 使用API返回的kb_id
@@ -968,17 +407,16 @@ const createKnowledgeBase = async () => {
       };
       knowledgeBaseList.value.push(newKb); // 更新知识库列表
       showCreateKbModal.value = false; // 关闭模态框
-      newKbName.value = ''; // 清空输入框
 
       filteredKnowledgeBaseList.value = [...knowledgeBaseList.value];
       // 选择新创建的知识库
       selectKnowledgeBase(newKb);
     } else {
-      message.error(response.msg || '创建知识库失败'); // 显示错误信息
+      alert(response.msg || '创建知识库失败'); // 显示错误信息
     }
   } catch (error) {
     console.error(error);
-    message.error(error.msg || '创建知识库时发生错误'); // 错误处理
+    alert(error.msg || '创建知识库时发生错误'); // 错误处理
   }
 };
 
@@ -990,17 +428,17 @@ const showRenameKbModal = (kb) => {
 };
 
 // 重命名知识库
-const renameKnowledgeBase = async () => {
-  if (!renameKbName.value.trim() || !kbToRename.value) return;
+const renameKnowledgeBase = async (newName) => {
+  if (!newName || !kbToRename.value) return;
   
   // 调用API重命名知识库
-  const response = await urlRequest.kbConfig({ kb_id: kbToRename.value.kb_id, new_kb_name: renameKbName.value.trim()});
+  const response = await urlRequest.kbConfig({ kb_id: kbToRename.value.kb_id, new_kb_name: newName});
   if (response.code === 200) {
-    await ipsResquest.ipsKbConfig({ kb_id: kbToRename.value.kb_id, kb_name: renameKbName.value.trim()});
+    await ipsResquest.ipsKbConfig({ kb_id: kbToRename.value.kb_id, kb_name: newName});
     // 更新列表数据
     const index = knowledgeBaseList.value.findIndex(kb => kb.kb_id === kbToRename.value.kb_id);
     if (index !== -1) {
-      knowledgeBaseList.value[index].kb_name = renameKbName.value.trim();
+      knowledgeBaseList.value[index].kb_name = newName;
       
       // 如果当前选中的是被重命名的知识库，更新选中的知识库
       if (selectedKb.value && selectedKb.value.kb_id === kbToRename.value.kb_id) {
@@ -1010,7 +448,6 @@ const renameKnowledgeBase = async () => {
   }  
   showRenameModal.value = false;
   kbToRename.value = null;
-  renameKbName.value = '';
 };
 
 // 显示删除知识库确认框
@@ -1036,8 +473,6 @@ const deleteKnowledgeBase = async() => {
       }
     });
   }
-  console.log(response)
-
   
   showDeleteKbConfirm.value = false;
   kbToDelete.value = null;
@@ -1045,22 +480,21 @@ const deleteKnowledgeBase = async() => {
 
 // 查看文档
 const viewDocument = (doc) => {
-  console.log('查看文档', doc);
   if (showModal.value && activeReferenceId.value === doc.file_id) {
-    closeActiveReference()
+    closeActiveReference();
   } else {
     // 否则设置为新的活动引用
-    activeReferenceId.value = doc.file_id
-    activeReferenceTitle.value = doc.file_name
-    activeReferenceSection.value = ''
-    showModal.value = true
+    activeReferenceId.value = doc.file_id;
+    activeReferenceTitle.value = doc.file_name;
+    activeReferenceSection.value = '';
+    showModal.value = true;
   }
 };
 
 // 关闭文档
 const closeActiveReference = () => {
-  showModal.value = false
-}
+  showModal.value = false;
+};
 
 // 确认删除文档
 const confirmDeleteDocument = (doc) => {
@@ -1097,116 +531,11 @@ const deleteDocument = async () => {
   }
 };
 
-// 格式化日期 - 修改为处理timestamp格式
-const formatDate = (timestamp) => {
-  if (!timestamp) return '-';
-  
-  try {
-    // 处理格式为"202503121229"的时间戳
-    const year = timestamp.substring(0, 4);
-    const month = timestamp.substring(4, 6);
-    const day = timestamp.substring(6, 8);
-    const hour = timestamp.substring(8, 10);
-    const minute = timestamp.substring(10, 12);
-    
-    return `${year}-${month}-${day} ${hour}:${minute}`;
-  } catch (e) {
-    return timestamp;
-  }
-};
-
-// 格式化文件大小
-const formatFileSize = (bytes) => {
-  if (bytes < 1024) return bytes + ' B';
-  if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(2) + ' KB';
-  if (bytes < 1024 * 1024 * 1024) return (bytes / (1024 * 1024)).toFixed(2) + ' MB';
-  return (bytes / (1024 * 1024 * 1024)).toFixed(2) + ' GB';
-};
-
-// 文件上传相关
-const fileInput = ref(null);
-const uploadKbId = ref('');
-const selectedFiles = ref([]);
-const isDragging = ref(false);
-const isUploading = ref(false);
-const showUploadProgressModal = ref(false);
-const uploadingFiles = ref([]);
-
-// 初始设置上传知识库ID为当前选中的知识库
-watch(selectedKb, (newValue) => {
-  if (newValue) {
-    uploadKbId.value = newValue.kb_id;
-  }
-});
-
-// 打开上传模态框
-const openUploadModal = () => {
-  // 设置默认上传的知识库为当前选中的知识库
-  if (selectedKb.value) {
-    uploadKbId.value = selectedKb.value.kb_id;
-  }
-  selectedFiles.value = [];
-  showUploadModal.value = true;
-};
-
 // 关闭上传模态框
 const closeUploadModal = () => {
   if (!isUploading.value) {
     showUploadModal.value = false;
-    selectedFiles.value = [];
   }
-};
-
-// 文件拖拽相关方法
-const onDragOver = () => {
-  isDragging.value = true;
-};
-
-const onDragLeave = () => {
-  isDragging.value = false;
-};
-
-const onDrop = (event) => {
-  isDragging.value = false;
-  const files = event.dataTransfer.files;
-  if (files.length > 0) {
-    addFiles(files);
-  }
-};
-
-// 文件选择
-const onFileSelected = (event) => {
-  const files = event.target.files;
-  if (files.length > 0) {
-    addFiles(files);
-  }
-  // 重置文件输入，以便可以重新选择相同的文件
-  event.target.value = '';
-};
-
-// 添加文件到选择列表
-const addFiles = (files) => {
-  for (let i = 0; i < files.length; i++) {
-    const file = files[i];
-    const fileExtension = file.name.split('.').pop().toLowerCase();
-    
-    // 检查文件类型是否支持
-    if (['pdf', 'docx', 'txt', 'md'].includes(fileExtension)) {
-      // 检查文件是否已经在列表中
-      const isDuplicate = selectedFiles.value.some(existingFile => 
-        existingFile.name === file.name && existingFile.size === file.size
-      );
-      
-      if (!isDuplicate) {
-        selectedFiles.value.push(file);
-      }
-    }
-  }
-};
-
-// 从选择列表中移除文件
-const removeFile = (index) => {
-  selectedFiles.value.splice(index, 1);
 };
 
 // 关闭上传进度模态框
@@ -1220,15 +549,15 @@ const closeUploadProgressModal = () => {
 };
 
 // 上传文档函数
-const uploadDocument = async () => {
-  if (selectedFiles.value.length === 0 || !uploadKbId.value) return;
+const uploadDocument = async ({ files, kbId }) => {
+  if (files.length === 0 || !kbId) return;
   
   isUploading.value = true;
   showUploadModal.value = false;
   showUploadProgressModal.value = true;
   
   // 准备上传文件列表
-  uploadingFiles.value = selectedFiles.value.map((file, index) => ({
+  uploadingFiles.value = files.map((file, index) => ({
     name: file.name,
     file: file,
     status: 'loading',
@@ -1244,7 +573,7 @@ const uploadDocument = async () => {
         // 创建FormData对象并添加文件和参数
         const formData = new FormData();
         formData.append('files', fileItem.file);
-        formData.append('kb_id', uploadKbId.value);
+        formData.append('kb_id', kbId);
         formData.append('user_id', 'zzp');
         formData.append('mode', 'strong');
         
@@ -1301,53 +630,8 @@ const uploadDocument = async () => {
     }, 1000);
   }
 };
-
-// 过滤知识库列表
-const filteredKnowledgeBaseList = ref([]);
-
-// 搜索知识库
-const toggleSearch = () => {
-  isSearchActive.value = !isSearchActive.value;
-  if (isSearchActive.value) {
-    nextTick(() => {
-      searchInput.value.focus();
-    });
-  }
-};
-
-// 监听搜索关键词变化
-watch(searchQuery, (newVal) => {
-  if (newVal.trim() === '') {
-    filteredKnowledgeBaseList.value = [...knowledgeBaseList.value];
-  } else {
-    filteredKnowledgeBaseList.value = knowledgeBaseList.value.filter(kb => 
-      kb.kb_name.toLowerCase().includes(newVal.toLowerCase())
-    );
-  }
-});
-
-// 搜索框失去焦点
-const onSearchBlur = () => {
-  if (searchQuery.value.trim() === '') {
-    isSearchActive.value = false;
-  }
-};
 </script>
 
 <style scoped>
 /* 可以添加特定的样式 */
-.animate-slide-in {
-  animation: slideIn 0.3s ease-out forwards;
-}
-
-@keyframes slideIn {
-  from {
-    opacity: 0;
-    transform: translateX(-20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateX(0);
-  }
-}
 </style> 
