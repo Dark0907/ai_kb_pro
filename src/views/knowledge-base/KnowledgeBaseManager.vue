@@ -11,7 +11,7 @@
             <path d="M19 12H5M12 19l-7-7 7-7"></path>
           </svg>
         </button>
-        <h1 class="text-xl font-bold text-law-800 dark:text-white truncate">{{ $t('knowledge_base.manager_title') || '知识库管理' }}</h1>
+        <h1 class="text-xl font-bold text-law-800 dark:text-white">{{ $t('app.title') }}</h1>
       </div>
       
       <!-- 添加语言和主题切换 -->
@@ -372,7 +372,6 @@ const loadMoreDocuments = async () => {
   if (isLoadingMore.value || documents.value.length >= totalItems.value) return;
   
   isLoadingMore.value = true;
-  console.log('加载更多文档，当前已加载:', documents.value.length);
   
   try {
     // 使用移动端专用页码，递增页码
@@ -409,7 +408,7 @@ const createKnowledgeBase = async (name) => {
 
   try {
     // 调用API创建知识库
-    const response = await urlRequest.createKB({ kb_name: name });
+    const response = await urlRequest.createKb({ kb_name: name });
     
     if (response.code === 200) {
       // 使用API返回的kb_id
@@ -417,6 +416,8 @@ const createKnowledgeBase = async (name) => {
       const newKb = {
         kb_id: response.data.kb_id,
         kb_name: response.data.kb_name,
+        delPermission: 1,
+        upPermission: 1
       };
       knowledgeBaseList.value.push(newKb); // 更新知识库列表
       showCreateKbModal.value = false; // 关闭模态框
@@ -424,8 +425,9 @@ const createKnowledgeBase = async (name) => {
       filteredKnowledgeBaseList.value = [...knowledgeBaseList.value];
       // 选择新创建的知识库
       selectKnowledgeBase(newKb);
+      message.success(t('knowledge_base.create_kb_success'));
     } else {
-      message.error(response.msg || t('knowledge_base.create_kb_failed'));
+      message.error(t('knowledge_base.create_kb_failed'));
     }
   } catch (error) {
     console.error(error);
@@ -458,6 +460,7 @@ const renameKnowledgeBase = async (newName) => {
         selectedKb.value = { ...knowledgeBaseList.value[index] };
       }
     }
+    message.success(t('knowledge_base.rename_kb_success'));
   }  
   showRenameModal.value = false;
   kbToRename.value = null;
@@ -652,4 +655,5 @@ const uploadDocument = async ({ files, kbId }) => {
 
 <style scoped>
 /* 可以添加特定的样式 */
+
 </style> 

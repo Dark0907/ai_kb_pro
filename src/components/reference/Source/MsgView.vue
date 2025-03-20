@@ -2,28 +2,28 @@
   <div class="msg-view-comp">
     <div v-if="loading" class="loading-container">
       <div class="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-accent"></div>
-      <p class="mt-2 text-law-600 dark:text-law-300">{{ t('common.loading') }}</p>
+      <p class="mt-2 text-law-600 dark:text-law-300">{{ $t('common.loading') }}</p>
     </div>
     
     <div v-else-if="error" class="error-container">
       <p class="text-red-500">{{ error }}</p>
       <button @click="downloadFile" class="download-btn mt-4">
-        <span class="mr-2">⬇️</span> {{ t('knowledge_base.download_original_file') }}
+        <span class="mr-2">⬇️</span> {{ $t('knowledge_base.download_original_file') }}
       </button>
     </div>
     
     <div v-else-if="msgInfo.subject" class="email-content">
       <h2 class="text-lg font-bold mb-4">{{ msgInfo.subject }}</h2>
       <div class="email-header mb-4 p-3 bg-law-50 dark:bg-law-700/50 rounded-lg">
-        <p><strong>{{ t('knowledge_base.sender') }}:</strong> {{ msgInfo.senderName }} <span v-if="msgInfo.senderEmail">({{ msgInfo.senderEmail }})</span></p>
-        <p v-if="msgInfo.recipients && msgInfo.recipients.length > 0"><strong>{{ t('knowledge_base.recipients') }}:</strong> {{ formatRecipients(msgInfo.recipients) }}</p>
+        <p><strong>{{ $t('knowledge_base.sender') }}:</strong> {{ msgInfo.senderName }} <span v-if="msgInfo.senderEmail">({{ msgInfo.senderEmail }})</span></p>
+        <p v-if="msgInfo.recipients && msgInfo.recipients.length > 0"><strong>{{ $t('knowledge_base.recipients') }}:</strong> {{ formatRecipients(msgInfo.recipients) }}</p>
         <p v-if="msgInfo.clientSubmitTime"><strong>{{ t('knowledge_base.send_date') }}:</strong> {{ formatDate(msgInfo.clientSubmitTime) }}</p>
       </div>
       
       <div class="email-body mb-4 p-4 bg-white dark:bg-law-800 rounded-lg border border-law-200 dark:border-law-700" v-html="formattedBody"></div>
       
       <!-- <div v-if="msgInfo.attachments && msgInfo.attachments.length > 0" class="email-attachments mt-4 p-3 bg-law-50 dark:bg-law-700/50 rounded-lg">
-        <h3 class="text-md font-semibold mb-2">{{ t('knowledge_base.attachments') }} ({{ msgInfo.attachments.length }})</h3>
+        <h3 class="text-md font-semibold mb-2">{{ $t('knowledge_base.attachments') }} ({{ msgInfo.attachments.length }})</h3>
         <ul class="list-disc pl-5">
           <li v-for="(attachment, index) in attachmentList" :key="index" class="mb-2 flex items-center">
             <span class="mr-2">📎</span>
@@ -169,7 +169,6 @@ export default defineComponent({
         // 解析MSG文件
         const msgReader = new MsgReader(arrayBuffer);
         const msgData = msgReader.getFileData();
-        console.log('msgReader:', msgReader);
         // 提取需要的信息
         msgInfo.value = {
           subject: msgData.subject || t('knowledge_base.no_subject'),
@@ -181,7 +180,7 @@ export default defineComponent({
           attachments: msgData.attachments || []
         };
         
-        console.log('MSG解析结果:', msgInfo.value);
+        // console.log('MSG解析结果:', msgInfo.value);
         
         // 处理附件
         if (msgData.attachments && msgData.attachments.length > 0) {

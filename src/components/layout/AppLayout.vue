@@ -85,7 +85,7 @@
           <!-- 应用标题 -->
           <div class="flex items-center" :class="{ 'ml-4': isLargeScreen }">
             <span class="text-2xl mr-2">⚖️</span>
-            <h1 class="text-xl font-bold text-law-800 dark:text-white">{{ $t('app.title') }}</h1>
+            <h1 class="text-xl font-bold text-law-800 dark:text-white mobile-title">{{ $t('app.title') }}</h1>
           </div>
         </div>
         
@@ -252,6 +252,13 @@ defineExpose({
     width: calc(100vw - 2rem);
     max-width: 20rem;
     right: 0;
+  }
+}
+@media (max-width: 768px) {
+  .mobile-title {
+    font-size: 1rem; /* 缩小字体大小 */
+    overflow: hidden; /* 隐藏超出部分 */
+    text-overflow: ellipsis; /* 超出部分用省略号表示 */
   }
 }
 </style> 
