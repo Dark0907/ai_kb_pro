@@ -39,7 +39,7 @@
     
     <div class="mt-2 flex justify-end">
       <span class="text-xs text-accent hover:underline flex items-center">
-        <span>{{ isActive ? '收起详情' : '查看详情' }}</span>
+        <span>{{ isActive ? $t('reference.collapse_details') : $t('reference.view_details') }}</span>
         <svg 
           class="w-3 h-3 ml-1 transition-transform duration-200" 
           :class="{ 'rotate-180': isActive }"
@@ -60,6 +60,9 @@
 
 <script setup>
 import { defineProps, defineEmits } from 'vue'
+import { useI18n } from 'vue-i18n'
+// 使用国际化
+const { t } = useI18n();
 
 const props = defineProps({
   reference: {

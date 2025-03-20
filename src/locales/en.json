@@ -21,7 +21,16 @@
     "share": "Share",
     "new_chat": "New Chat",
     "start_new": "Start a New Conversation",
-    "start_description": "Enter your legal question and our AI assistant will provide professional answers"
+    "start_description": "Enter your legal question and our AI assistant will provide professional answers",
+    "legal_consultation": "Legal Consultation",
+    "legal_consultation_desc": "Ask legal questions and get professional answers",
+    "document_analysis": "Document Analysis",
+    "document_analysis_desc": "Browse legal documents with professional interpretation",
+    "keyboard_tips": "Press Enter to send, Shift+Enter for new line",
+    "disclaimer": "Information provided by Legal AI Assistant is for reference only and does not constitute legal advice",
+    "enter_question_prompt": "Please enter your legal question",
+    "error_retry": "Error occurred, please refresh and try again later",
+    "error_occurred": "Error occurred"
   },
   "sidebar": {
     "recent": "Recent Conversations",
@@ -43,7 +52,9 @@
     "older": "Older",
     "collapse": "Collapse sidebar",
     "expand": "Expand sidebar",
-    "start_new_chat_tip": "Click \"New Chat\" above to start chatting"
+    "start_new_chat_tip": "Click \"New Chat\" above to start chatting",
+    "legal_ai_assistant": "Legal AI Assistant",
+    "professional_legal_consultation": "Professional Legal Consultation"
   },
   "reference": {
     "title": "References",
@@ -52,7 +63,9 @@
     "contracts": "Contracts",
     "view_more": "View More",
     "source": "Source",
-    "no_references": "No references available"
+    "no_references": "No references available",
+    "view_details": "View Details",
+    "collapse_details": "Collapse Details"
   },
   "settings": {
     "language": "Language",
@@ -81,7 +94,7 @@
     "doc_id": "Document ID",
     "doc_name": "Document Name",
     "status": "Status",
-    "status_success": "Completed",
+    "status_success": "Successfully",
     "status_processing": "Processing",
     "status_failed": "Failed",
     "file_size": "File Size",
@@ -106,14 +119,43 @@
     "go_to": "Go to",
     "page": "Page",
     "loading_more": "Loading more...",
-    "all_loaded": "All documents loaded"
+    "all_loaded": "All documents loaded",
+    "create_kb_failed": "Failed to create knowledge base",
+    "create_kb_error": "Error occurred while creating knowledge base",
+    "delete_kb_success": "Knowledge base deleted successfully",
+    "delete_doc_success": "Document deleted successfully",
+    "delete_doc_failed": "Failed to delete document: {reason}",
+    "download_attachment_failed": "Failed to download attachment: {reason}",
+    "upload_doc_success": "Document uploaded successfully, processing...",
+    "fetch_file_failed": "Failed to fetch file: {status} {statusText}",
+    "no_subject": "(No Subject)",
+    "no_body": "(No Body)",
+    "attachment": "Attachment",
+    "attachment_content_failed": "Failed to get content for attachment {name}",
+    "parse_msg_failed": "Failed to parse MSG file",
+    "cannot_parse_msg": "Cannot parse MSG file: {reason}",
+    "parse_msg_failed_notification": "Failed to parse email file, try downloading the original file",
+    "download_original_file": "Download Original File",
+    "sender": "Sender",
+    "recipients": "Recipients",
+    "send_date": "Send Date",
+    "attachments": "Attachments",
+    "local_knowledge_base": "Local Knowledge Base"
   },
   "common": {
     "cancel": "Cancel",
     "confirm": "Confirm",
     "delete": "Delete",
     "save": "Save",
-    "close": "Close"
+    "close": "Close",
+    "loading": "Loading...",
+    "download": "Download",
+    "unknown_error": "Unknown Error",
+    "missing_url_filename": "Missing URL or filename",
+    "pagination_info": "Showing {from} - {to} of {total} items",
+    "expand": "Expand",
+    "collapse": "Collapse",
+    "go_to": "Go to"
   },
   "notFound": {
     "title": "Page Not Found",

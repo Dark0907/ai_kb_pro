@@ -233,11 +233,15 @@ import ipsResquest from '@/services/ipsConfig'
 import axios from 'axios';
 import { apiBase } from '@/services';
 import { message } from 'ant-design-vue';
+import { useI18n } from 'vue-i18n';
 
 const router = useRouter();
 const route = useRoute();
 const knowledgeBaseStore = useKnowledgeBase();
 const { knowledgeBaseList, hasLoadedData } = storeToRefs(knowledgeBaseStore);
+
+// 使用国际化
+const { t } = useI18n();
 
 // 状态
 const selectedKb = ref(null);
@@ -405,7 +409,7 @@ const createKnowledgeBase = async (name) => {
 
   try {
     // 调用API创建知识库
-    const response = await urlRequest.createKb({ kb_name: name });
+    const response = await urlRequest.createKB({ kb_name: name });
     
     if (response.code === 200) {
       // 使用API返回的kb_id
@@ -421,11 +425,11 @@ const createKnowledgeBase = async (name) => {
       // 选择新创建的知识库
       selectKnowledgeBase(newKb);
     } else {
-      alert(response.msg || '创建知识库失败'); // 显示错误信息
+      message.error(response.msg || t('knowledge_base.create_kb_failed'));
     }
   } catch (error) {
     console.error(error);
-    alert(error.msg || '创建知识库时发生错误'); // 错误处理
+    message.error(error.msg || t('knowledge_base.create_kb_error'));
   }
 };
 
@@ -481,7 +485,9 @@ const deleteKnowledgeBase = async() => {
         selectKnowledgeBase(knowledgeBaseList.value[0]);
       }
     });
-    message.success('知识库删除成功！');
+    
+    // 显示成功提示
+    message.success(t('knowledge_base.delete_kb_success'));
   }
   
   showDeleteKbConfirm.value = false;
@@ -526,12 +532,15 @@ const deleteDocument = async () => {
     if (response && response.code === 200) {
       // 删除成功，重新获取文档列表
       fetchDocuments(selectedKb.value.kb_id);
-      message.success('文档删除成功');
+      // 显示成功提示
+      message.success(t('knowledge_base.delete_doc_success'));
     } else {
-      message.error('文档删除失败：' + (response?.msg || '未知错误'));
+      // 显示失败提示
+      message.error(t('knowledge_base.delete_doc_failed', { reason: response?.msg || t('common.unknown_error') }));
     }
   } catch (error) {
     console.error('删除文档失败:', error);
+    message.error(t('knowledge_base.delete_doc_failed', { reason: error.message }));
   } finally {
     showDeleteDocConfirm.value = false;
     docToDelete.value = null;
@@ -605,21 +614,23 @@ const uploadDocument = async ({ files, kbId }) => {
             // 上传成功
             uploadingFiles.value[i].status = 'success';
             uploadingFiles.value[i].file_id = result.file_id;
+            // 显示上传成功提示
+            message.success(t('knowledge_base.upload_doc_success'));
           } else {
             // 上传状态异常
             uploadingFiles.value[i].status = 'error';
-            uploadingFiles.value[i].errorText = '上传失败';
+            uploadingFiles.value[i].errorText = t('knowledge_base.upload_failed');
           }
         } else {
           // API返回错误
           uploadingFiles.value[i].status = 'error';
-          uploadingFiles.value[i].errorText = data?.msg || '上传失败';
+          uploadingFiles.value[i].errorText = data?.msg || t('knowledge_base.upload_failed');
         }
       } catch (error) {
         console.error('上传文档出错:', error);
         // 标记文件为上传失败
         uploadingFiles.value[i].status = 'error';
-        uploadingFiles.value[i].errorText = error.message || '上传失败';
+        uploadingFiles.value[i].errorText = error.message || t('knowledge_base.upload_failed');
       }
     }
   }

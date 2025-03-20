@@ -13,17 +13,17 @@
           <div class="bg-white dark:bg-law-700 p-4 rounded-lg shadow-law hover:shadow-md transition-all duration-200 hover:translate-y-[-2px] cursor-pointer">
             <div class="flex items-center mb-2">
               <span class="text-2xl mr-2">📜</span>
-              <h4 class="font-medium text-primary dark:text-accent">法律咨询</h4>
+              <h4 class="font-medium text-primary dark:text-accent">{{ $t('chat.legal_consultation') }}</h4>
             </div>
-            <p class="text-sm text-law-600 dark:text-law-300">询问法律问题，获取专业解答</p>
+            <p class="text-sm text-law-600 dark:text-law-300">{{ $t('chat.legal_consultation_desc') }}</p>
           </div>
           
           <div class="bg-white dark:bg-law-700 p-4 rounded-lg shadow-law hover:shadow-md transition-all duration-200 hover:translate-y-[-2px] cursor-pointer">
             <div class="flex items-center mb-2">
               <span class="text-2xl mr-2">📋</span>
-              <h4 class="font-medium text-primary dark:text-accent">文档分析</h4>
+              <h4 class="font-medium text-primary dark:text-accent">{{ $t('chat.document_analysis') }}</h4>
             </div>
-            <p class="text-sm text-law-600 dark:text-law-300">查看法律文件，获取专业解读</p>
+            <p class="text-sm text-law-600 dark:text-law-300">{{ $t('chat.document_analysis_desc') }}</p>
           </div>
         </div>
       </div>
@@ -67,10 +67,10 @@
       
       <div class="mt-2 flex justify-between items-center text-xs text-law-500 dark:text-law-400 px-1">
         <div class="hidden md:block">
-          <span>按 Enter 发送消息，Shift+Enter 换行</span>
+          <span>{{ $t('chat.keyboard_tips') }}</span>
         </div>
         <div>
-          <span>法律AI助手提供的信息仅供参考，不构成法律建议</span>
+          <span>{{ $t('chat.disclaimer') }}</span>
         </div>
       </div>
     </div>
@@ -81,12 +81,16 @@
 import { ref, watch, nextTick, onMounted, defineProps, inject, computed } from 'vue'
 import { useChatStore } from '../../stores/chat'
 import { useReferenceStore } from '../../stores/reference'
+import { useI18n } from 'vue-i18n'
 import MessageItem from './MessageItem.vue'
 import { apiBase } from '@services/index';
 import { userId } from '@services/urlConfig'; // 引入 userId
 import { fetchEventSource } from '@microsoft/fetch-event-source';
 import { Typewriter } from '@utils/typewriter';
 import { useRouter } from 'vue-router';
+
+// 使用国际化
+const { t } = useI18n();
 
 const props = defineProps({
   chatId: {
@@ -251,7 +255,7 @@ const sendMessage = async () => {
   // 检查是否有输入内容
   if (!messageInput.value.trim()) {
     // 显示提示信息
-    message.warning('请输入您的法律问题');
+    message.warning(t('chat.enter_question_prompt'));
     return;
   }
   
@@ -361,10 +365,10 @@ const sendApiRequest = async (question) => {
         } else if (e.headers.get('content-type') === 'application/json') {
           chatStore.isLoading = false;
           return e.json().then(data => {
-            message.error(data?.msg || '出错了,请稍后刷新重试。');
+            message.error(data?.msg || t('chat.error_retry'));
           }).catch(e => {
             console.log(e);
-            message.error('出错了,请稍后刷新重试。');
+            message.error(t('chat.error_retry'));
           });
         }
       },
@@ -430,11 +434,11 @@ const sendApiRequest = async (question) => {
         });
       },
       onerror(err) {
-        console.log('error',err);
+        console.log('error', err);
         typewriter.done();
         ctrl.abort();
         chatStore.isLoading = false;
-        message.error(err.msg || '出错了');
+        message.error(err.msg || t('chat.error_occurred'));
         nextTick(() => {
           scrollToBottom();
         });

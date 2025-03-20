@@ -62,7 +62,7 @@
             <button 
               @click.stop="$emit('rename-kb', kb)" 
               class="p-1 rounded-full hover:bg-law-200 dark:hover:bg-law-600 transition-colors"
-              title="重命名"
+              :title="$t('knowledge_base.rename_kb') || '重命名'"
             >
               <svg class="w-3.5 h-3.5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M12 20h9"></path>
@@ -72,7 +72,7 @@
             <button 
               @click.stop="$emit('delete-kb', kb)" 
               class="p-1 rounded-full hover:bg-law-200 dark:hover:bg-law-600 transition-colors ml-0.5"
-              title="删除"
+              :title="$t('knowledge_base.delete_kb') || '删除'"
             >
               <svg class="w-3.5 h-3.5 text-red-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M3 6h18"></path>
@@ -95,7 +95,10 @@ import { ref, computed, watch, nextTick, onMounted, onUnmounted } from 'vue';
 import { useKnowledgeBase } from '@/stores/useKnowledgeBase';
 const knowledgeBaseStore = useKnowledgeBase();
 const { kbLibPermission } = storeToRefs(knowledgeBaseStore);
-console.log('kbLibPermission',kbLibPermission.value)
+import { useI18n } from 'vue-i18n'
+// 使用国际化
+const { t } = useI18n();
+
 const props = defineProps({
   knowledgeBaseList: {
     type: Array,

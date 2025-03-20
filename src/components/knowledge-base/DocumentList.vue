@@ -1,7 +1,7 @@
 <template>
   <div class="hidden md:flex flex-col flex-1 overflow-hidden bg-white dark:bg-law-900">
     <!-- 表格布局容器 -->
-    <div class="flex-1 flex flex-col overflow-hidden px-3">
+    <div class="flex-1 flex flex-col overflow-hidden px-1">
       <!-- 表格头部 - 使用grid布局代替table使其更容易对齐 -->
       <div class="grid grid-cols-12 gap-4 py-4 border-b border-law-200 dark:border-law-700 flex-shrink-0 bg-law-50 dark:bg-law-800">
         <div class="col-span-1 text-left text-xs font-medium text-law-500 dark:text-law-400 uppercase tracking-wider">
@@ -11,7 +11,7 @@
           {{ $t('knowledge_base.doc_name') || '文档名称' }}
         </div>
         <div class="col-span-1 text-left text-xs font-medium text-law-500 dark:text-law-400 uppercase tracking-wider">
-          {{ $t('knowledge_base.status') || '状态' }}
+          {{ $t('knowledge_base.status') || '文档状态' }}
         </div>
         <div class="col-span-1 text-left text-xs font-medium text-law-500 dark:text-law-400 uppercase tracking-wider">
           {{ $t('knowledge_base.file_size') || '大小' }}
@@ -52,7 +52,7 @@
                 }"
               >
                 {{ 
-                  doc.status === 'green' ? ($t('knowledge_base.status_success') || '已完成') : 
+                  doc.status === 'green' ? ($t('knowledge_base.status_success') || '解析成功') : 
                   doc.status === 'yellow' ? ($t('knowledge_base.status_processing') || '处理中') : 
                   ($t('knowledge_base.status_failed') || '处理中') 
                 }}
@@ -179,7 +179,7 @@
           </div>
           <!-- 页码输入框 -->
           <div class="flex items-center space-x-2">
-            <span class="text-sm text-law-600 dark:text-law-400">转到</span>
+            <span class="text-sm text-law-600 dark:text-law-400">{{ $t('common.go_to') || '转到' }}</span>
             <input 
               v-model.number="pageInput" 
               @keyup.enter="jumpToPage" 
@@ -198,6 +198,9 @@
 
 <script setup>
 import { ref, computed, watch } from 'vue';
+import { useI18n } from 'vue-i18n'
+// 使用国际化
+const { t } = useI18n();
 
 const props = defineProps({
   documents: {

@@ -50,7 +50,7 @@
               <button 
                 @click="openKnowledgeBaseManager" 
                 class="ml-2 p-1.5 rounded-full bg-law-50 dark:bg-law-700 hover:bg-law-100 dark:hover:bg-law-600 transition-colors duration-200 text-law-800 dark:text-law-100 border border-law-200 dark:border-law-600 shadow-sm"
-                title="管理知识库"
+                :title="$t('knowledge_base.manager_title')"
               >
                 <svg class="w-4 h-4 text-accent" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                   <circle cx="12" cy="12" r="3"></circle>
@@ -83,9 +83,9 @@
           <!-- 分类显示 -->
           <div>
             <div class="flex items-center justify-between mt-3">
-              <h4 class="ml-2.5 font-semibold text-law-600 dark:text-law-100 text-sm">本地知识库</h4>
+              <h4 class="ml-2.5 font-semibold text-law-600 dark:text-law-100 text-sm">{{ $t('knowledge_base.local_knowledge_base') }}</h4>
               <button @click="toggleLocalKb" class="text-xs text-law-500 dark:text-law-400">
-                {{ isLocalKbOpen ? '收起' : '展开' }}
+                {{ isLocalKbOpen ? $t('common.collapse') : $t('common.expand') }}
               </button>
             </div>
             <div v-show="isLocalKbOpen">
@@ -157,6 +157,9 @@ import { ref, computed, watch, onMounted, onUnmounted } from 'vue';
 import { useKnowledgeBase } from '@/stores/useKnowledgeBase';
 import { storeToRefs } from 'pinia';
 import { useRouter } from 'vue-router';
+import { useI18n } from 'vue-i18n'
+// 使用国际化
+const { t } = useI18n();
 
 // 获取路由器
 const router = useRouter();

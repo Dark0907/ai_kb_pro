@@ -120,7 +120,7 @@
     
     <!-- 底部版权信息 -->
     <div class="p-3 text-xs text-center text-law-500 dark:text-law-400 border-t border-law-200 dark:border-law-700">
-      © 2025 法律AI助手 | 专业法律咨询
+      © 2025 {{ $t('sidebar.legal_ai_assistant') }} | {{ $t('sidebar.professional_legal_consultation') }}
     </div>
   </div>
 </template>
@@ -130,6 +130,9 @@ import { ref, computed, onMounted, nextTick } from 'vue'
 import { useRouter } from 'vue-router'
 import { useChatStore } from '../../stores/chat'
 import ChatItem from './ChatItem.vue'
+import { useI18n } from 'vue-i18n'
+// 使用国际化
+const { t } = useI18n();
 
 const router = useRouter()
 const chatStore = useChatStore()

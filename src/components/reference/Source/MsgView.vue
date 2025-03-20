@@ -2,33 +2,33 @@
   <div class="msg-view-comp">
     <div v-if="loading" class="loading-container">
       <div class="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-accent"></div>
-      <p class="mt-2 text-law-600 dark:text-law-300">加载中...</p>
+      <p class="mt-2 text-law-600 dark:text-law-300">{{ t('common.loading') }}</p>
     </div>
     
     <div v-else-if="error" class="error-container">
       <p class="text-red-500">{{ error }}</p>
       <button @click="downloadFile" class="download-btn mt-4">
-        <span class="mr-2">⬇️</span> 下载原始文件查看
+        <span class="mr-2">⬇️</span> {{ t('knowledge_base.download_original_file') }}
       </button>
     </div>
     
     <div v-else-if="msgInfo.subject" class="email-content">
       <h2 class="text-lg font-bold mb-4">{{ msgInfo.subject }}</h2>
       <div class="email-header mb-4 p-3 bg-law-50 dark:bg-law-700/50 rounded-lg">
-        <p><strong>发送人:</strong> {{ msgInfo.senderName }} <span v-if="msgInfo.senderEmail">({{ msgInfo.senderEmail }})</span></p>
-        <p v-if="msgInfo.recipients && msgInfo.recipients.length > 0"><strong>收件人:</strong> {{ formatRecipients(msgInfo.recipients) }}</p>
-        <p v-if="msgInfo.clientSubmitTime"><strong>发送日期:</strong> {{ formatDate(msgInfo.clientSubmitTime) }}</p>
+        <p><strong>{{ t('knowledge_base.sender') }}:</strong> {{ msgInfo.senderName }} <span v-if="msgInfo.senderEmail">({{ msgInfo.senderEmail }})</span></p>
+        <p v-if="msgInfo.recipients && msgInfo.recipients.length > 0"><strong>{{ t('knowledge_base.recipients') }}:</strong> {{ formatRecipients(msgInfo.recipients) }}</p>
+        <p v-if="msgInfo.clientSubmitTime"><strong>{{ t('knowledge_base.send_date') }}:</strong> {{ formatDate(msgInfo.clientSubmitTime) }}</p>
       </div>
       
       <div class="email-body mb-4 p-4 bg-white dark:bg-law-800 rounded-lg border border-law-200 dark:border-law-700" v-html="formattedBody"></div>
       
       <!-- <div v-if="msgInfo.attachments && msgInfo.attachments.length > 0" class="email-attachments mt-4 p-3 bg-law-50 dark:bg-law-700/50 rounded-lg">
-        <h3 class="text-md font-semibold mb-2">附件 ({{ msgInfo.attachments.length }})</h3>
+        <h3 class="text-md font-semibold mb-2">{{ t('knowledge_base.attachments') }} ({{ msgInfo.attachments.length }})</h3>
         <ul class="list-disc pl-5">
           <li v-for="(attachment, index) in attachmentList" :key="index" class="mb-2 flex items-center">
             <span class="mr-2">📎</span>
             <span>{{ attachment.name }}</span>
-            <a v-if="attachment.url" @click.prevent="downloadAttachment(attachment)" href="#" class="ml-2 text-accent hover:underline">下载</a>
+            <a v-if="attachment.url" @click.prevent="downloadAttachment(attachment)" href="#" class="ml-2 text-accent hover:underline">{{ t('common.download') }}</a>
           </li>
         </ul>
       </div> -->
@@ -37,8 +37,10 @@
 </template>
 
 <script>
-import { defineComponent, ref, computed, onMounted } from 'vue';
+import { defineComponent, ref, computed, onMounted, watch } from 'vue';
 import MsgReader from 'msgreader';
+import { message } from 'ant-design-vue';
+import { useI18n } from 'vue-i18n';
 
 export default defineComponent({
   props: {
@@ -48,6 +50,9 @@ export default defineComponent({
     },
   },
   setup(props) {
+    // 使用国际化
+    const { t } = useI18n();
+    
     const loading = ref(true);
     const error = ref(null);
     const msgInfo = ref({
@@ -120,6 +125,7 @@ export default defineComponent({
         document.body.removeChild(link);
       } catch (e) {
         console.error('下载文件失败:', e);
+        message.error(t('knowledge_base.download_attachment_failed', { reason: e.message || '' }));
       }
     };
 
@@ -128,6 +134,7 @@ export default defineComponent({
       try {
         if (!attachment.url || !attachment.name) {
           console.error('附件下载失败：缺少URL或文件名');
+          message.error(t('knowledge_base.download_attachment_failed', { reason: t('common.missing_url_filename') }));
           return;
         }
         
@@ -140,6 +147,7 @@ export default defineComponent({
         document.body.removeChild(link);
       } catch (e) {
         console.error('附件下载失败:', e);
+        message.error(t('knowledge_base.download_attachment_failed', { reason: e.message || '' }));
       }
     };
 
@@ -152,7 +160,7 @@ export default defineComponent({
         // 从URL获取MSG文件
         const response = await fetch(props.sourceUrl);
         if (!response.ok) {
-          throw new Error(`获取文件失败: ${response.status} ${response.statusText}`);
+          throw new Error(t('knowledge_base.fetch_file_failed', { status: response.status, statusText: response.statusText }));
         }
 
         // 转换为ArrayBuffer
@@ -164,12 +172,12 @@ export default defineComponent({
         console.log('msgReader:', msgReader);
         // 提取需要的信息
         msgInfo.value = {
-          subject: msgData.subject || '(无主题)',
+          subject: msgData.subject || t('knowledge_base.no_subject'),
           senderName: msgData.senderName || '',
           senderEmail: msgData.senderEmail || '',
           recipients: msgData.recipients || [],
           clientSubmitTime: msgData.clientSubmitTime || '',
-          body: msgData.body || msgData.bodyHTML || '(无正文)',
+          body: msgData.body || msgData.bodyHTML || t('knowledge_base.no_body'),
           attachments: msgData.attachments || []
         };
         
@@ -179,7 +187,7 @@ export default defineComponent({
         if (msgData.attachments && msgData.attachments.length > 0) {
           attachmentList.value = msgData.attachments.map((attachment, index) => {
             let fileUrl = null;
-            let fileName = attachment.fileName || `附件${index + 1}`;
+            let fileName = attachment.fileName || `${t('knowledge_base.attachment')}${index + 1}`;
             
             try {
               // 尝试获取附件内容并创建URL
@@ -217,7 +225,7 @@ export default defineComponent({
                 fileUrl = URL.createObjectURL(blob);
               }
             } catch (e) {
-              console.warn(`无法获取附件 ${fileName} 的内容:`, e);
+              console.warn(t('knowledge_base.attachment_content_failed', { name: fileName }), e);
             }
             
             return {
@@ -227,8 +235,9 @@ export default defineComponent({
           });
         }
       } catch (e) {
-        console.error('解析MSG文件失败:', e);
-        error.value = `无法解析MSG文件: ${e.message || '未知错误'}`;
+        console.error(t('knowledge_base.parse_msg_failed'), e);
+        error.value = t('knowledge_base.cannot_parse_msg', { reason: e.message || t('common.unknown_error') });
+        message.error(t('knowledge_base.parse_msg_failed_notification'));
       } finally {
         loading.value = false;
       }

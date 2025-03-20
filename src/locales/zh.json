@@ -21,7 +21,16 @@
     "share": "分享",
     "new_chat": "新建对话",
     "start_new": "开始新的对话",
-    "start_description": "输入您的法律问题，AI助手将为您提供专业解答"
+    "start_description": "输入您的法律问题，AI助手将为您提供专业解答",
+    "legal_consultation": "法律咨询",
+    "legal_consultation_desc": "询问法律问题，获取专业解答",
+    "document_analysis": "文档分析",
+    "document_analysis_desc": "查看法律文件，获取专业解读",
+    "keyboard_tips": "按 Enter 发送消息，Shift+Enter 换行",
+    "disclaimer": "法律AI助手提供的信息仅供参考，不构成法律建议",
+    "enter_question_prompt": "请输入您的法律问题",
+    "error_retry": "出错了，请稍后刷新重试",
+    "error_occurred": "出错了"
   },
   "sidebar": {
     "recent": "最近对话",
@@ -43,7 +52,9 @@
     "older": "更早",
     "collapse": "收起侧边栏",
     "expand": "展开侧边栏",
-    "start_new_chat_tip": "点击上方\"新建对话\"开始聊天"
+    "start_new_chat_tip": "点击上方\"新建对话\"开始聊天",
+    "legal_ai_assistant": "法律AI助手",
+    "professional_legal_consultation": "专业法律咨询"
   },
   "reference": {
     "title": "引用来源",
@@ -52,7 +63,9 @@
     "contracts": "合同",
     "view_more": "查看更多",
     "source": "来源",
-    "no_references": "暂无引用来源"
+    "no_references": "暂无引用来源",
+    "view_details": "查看详情",
+    "collapse_details": "收起详情"
   },
   "settings": {
     "language": "语言",
@@ -83,7 +96,7 @@
     "doc_id": "文档ID",
     "doc_name": "文档名称",
     "status": "状态",
-    "status_success": "已完成",
+    "status_success": "解析成功",
     "status_processing": "处理中",
     "status_failed": "失败",
     "file_size": "文件大小",
@@ -108,7 +121,28 @@
     "go_to": "跳转到",
     "page": "页",
     "loading_more": "加载更多...",
-    "all_loaded": "已加载全部文档"
+    "all_loaded": "已加载全部文档",
+    "create_kb_failed": "创建知识库失败",
+    "create_kb_error": "创建知识库时发生错误",
+    "delete_kb_success": "知识库删除成功",
+    "delete_doc_success": "文档删除成功",
+    "delete_doc_failed": "文档删除失败：{reason}",
+    "download_attachment_failed": "附件下载失败：{reason}",
+    "upload_doc_success": "文档上传成功，正在处理中...",
+    "fetch_file_failed": "获取文件失败: {status} {statusText}",
+    "no_subject": "(无主题)",
+    "no_body": "(无正文)",
+    "attachment": "附件",
+    "attachment_content_failed": "无法获取附件 {name} 的内容",
+    "parse_msg_failed": "解析MSG文件失败",
+    "cannot_parse_msg": "无法解析MSG文件: {reason}",
+    "parse_msg_failed_notification": "无法解析邮件文件，请尝试下载原始文件查看",
+    "download_original_file": "下载原始文件查看",
+    "sender": "发送人",
+    "recipients": "收件人",
+    "send_date": "发送日期",
+    "attachments": "附件",
+    "local_knowledge_base": "本地知识库"
   },
   "common": {
     "cancel": "取消",
@@ -116,7 +150,14 @@
     "delete": "删除",
     "save": "保存",
     "close": "关闭",
-    "pagination_info": "显示 {from} - {to} 条，共 {total} 条"
+    "pagination_info": "显示 {from} - {to} 条，共 {total} 条",
+    "loading": "加载中...",
+    "download": "下载",
+    "unknown_error": "未知错误",
+    "missing_url_filename": "缺少URL或文件名",
+    "expand": "展开",
+    "collapse": "收起",
+    "go_to": "转到"
   },
   "notFound": {
     "title": "页面未找到",
