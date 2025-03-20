@@ -232,6 +232,7 @@ import urlRequest from '@/services/urlConfig'
 import ipsResquest from '@/services/ipsConfig'
 import axios from 'axios';
 import { apiBase } from '@/services';
+import { message } from 'ant-design-vue';
 
 const router = useRouter();
 const route = useRoute();
@@ -480,6 +481,7 @@ const deleteKnowledgeBase = async() => {
         selectKnowledgeBase(knowledgeBaseList.value[0]);
       }
     });
+    message.success('知识库删除成功！');
   }
   
   showDeleteKbConfirm.value = false;
@@ -524,15 +526,12 @@ const deleteDocument = async () => {
     if (response && response.code === 200) {
       // 删除成功，重新获取文档列表
       fetchDocuments(selectedKb.value.kb_id);
-      // 显示成功提示
-      alert('文档删除成功');
+      message.success('文档删除成功');
     } else {
-      // 显示失败提示
-      alert('文档删除失败：' + (response?.msg || '未知错误'));
+      message.error('文档删除失败：' + (response?.msg || '未知错误'));
     }
   } catch (error) {
     console.error('删除文档失败:', error);
-    alert('文档删除失败：' + error.message);
   } finally {
     showDeleteDocConfirm.value = false;
     docToDelete.value = null;
