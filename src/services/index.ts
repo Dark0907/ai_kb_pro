@@ -1,7 +1,12 @@
 import axios from './axiosInterceptor/index';
 
-export const apiBase =
-  import.meta.env.VITE_APP_MODE === 'dev' ? '' : import.meta.env.VITE_APP_API_HOST;
+// API基础路径设置
+export const apiBase = import.meta.env.VITE_APP_MODE === 'dev' 
+  ? '' 
+  : import.meta.env.VITE_APP_API_HOST;
+
+// 获取子目录前缀 - 仅用于前端路由，不用于API请求
+export const webPrefix = import.meta.env.VITE_APP_WEB_PREFIX || '/KnowledgeBase';
 
 function validateStatus(status: number) {
   return status >= 200 && status < 300;
@@ -12,6 +17,8 @@ export const bondParams = {};
 
 export default {
   get(baseUrl: string, _query = {} as any, option = {} as any) {
+    // 如果是完整URL，直接使用，否则添加API基础路径
+    // 注意：这里不添加webPrefix，确保API请求不会带上子目录前缀
     let url = /http/.test(baseUrl) ? `${baseUrl}` : `${apiBase}${baseUrl}`;
     const query = {
       ...bondParams,
@@ -40,6 +47,9 @@ export default {
       ...bondParams,
       ...data,
     } as any;
+    
+    // 如果是完整URL，直接使用，否则添加API基础路径
+    // 注意：这里不添加webPrefix，确保API请求不会带上子目录前缀
     const _url = `${apiBase}${baseUrl}`;
     const url = /http/.test(baseUrl) ? baseUrl : _url;
     const { getResponseHeader, ...others } = option;
@@ -62,6 +72,8 @@ export default {
     return resData;
   },
   ipsPost(baseUrl: string, data = {}, option = {} as any) {
+    // 如果是完整URL，直接使用，否则添加API基础路径
+    // 注意：这里不添加webPrefix，确保API请求不会带上子目录前缀
     const _url = `${apiBase}${baseUrl}`;
     const url = /http/.test(baseUrl) ? baseUrl : _url;
     const { getResponseHeader, ...others } = option;

@@ -10,6 +10,26 @@
 import axios from 'axios';
 import interceptors from './interceptors/index';
 axios.defaults.withCredentials = false;
+
+// 创建实例
+const http = axios.create({
+  headers: {},
+});
+
+// 添加一个自定义拦截器移除KnowledgeBase前缀
+http.interceptors.request.use(config => {
+  // 检查URL是否包含/KnowledgeBase/kb_api或/KnowledgeBase/ip_service
+  if (config.url && (
+    config.url.includes('/KnowledgeBase/kb_api') || 
+    config.url.includes('/KnowledgeBase/ip_service')
+  )) {
+    // 移除KnowledgeBase前缀
+    config.url = config.url.replace('/KnowledgeBase', '');
+    console.log('Fixed URL:', config.url);
+  }
+  return config;
+});
+
 function isInterceptor(config: any, name: string) {
   return config[name];
 }
@@ -79,8 +99,6 @@ function cheakcCanResponse(response, name, interceptor, instance) {
   }
   return response;
 }
-const http = axios.create({
-  headers: {},
-});
+
 runInterceptors(http);
 export default http;

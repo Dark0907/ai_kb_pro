@@ -28,8 +28,12 @@ const routes = [
   }
 ]
 
+// 获取环境变量中的子目录配置
+const baseUrl = import.meta.env.VITE_APP_WEB_PREFIX || '/KnowledgeBase'
+
 const router = createRouter({
-  history: createWebHistory(),
+  // 使用子目录作为基础路径
+  history: createWebHistory(baseUrl),
   routes
 })
 
