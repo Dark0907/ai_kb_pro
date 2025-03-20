@@ -1,6 +1,7 @@
 <script setup>
 import { ref, provide, onMounted, computed } from 'vue'
 import { useRoute } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import AppLayout from './components/layout/AppLayout.vue'
 import { useChatStore } from './stores/chat'
 import { useSettingsStore } from './stores/settings'
@@ -11,6 +12,7 @@ const chatStore = useChatStore()
 const settingsStore = useSettingsStore()
 const knowledgeBaseStore = useKnowledgeBase()
 const route = useRoute()
+const i18n = useI18n()
 
 // 计算当前路由是否需要使用常规布局
 const useAppLayout = computed(() => {
@@ -31,6 +33,9 @@ provide('appLayout', {
 onMounted(async () => {
   await chatStore.fetchChatHistory()
   settingsStore.initTheme()
+  
+  // 同步i18n语言和store中的语言
+  i18n.locale.value = settingsStore.language
   
   // 预加载知识库数据
   await knowledgeBaseStore.getList()

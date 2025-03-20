@@ -11,9 +11,14 @@ import zh from './locales/zh.json'
 import en from './locales/en.json'
 import ja from './locales/ja.json'
 
+// 获取用户首选语言
+const savedLanguage = localStorage.getItem('language')
+const browserLanguage = navigator.language.split('-')[0]
+const defaultLanguage = savedLanguage || (browserLanguage && ['zh', 'en', 'ja'].includes(browserLanguage) ? browserLanguage : 'zh')
+
 const i18n = createI18n({
   legacy: false,
-  locale: navigator.language.split('-')[0] || 'zh', // 默认使用浏览器语言
+  locale: defaultLanguage, // 优先使用本地存储的语言
   fallbackLocale: 'zh', // 回退语言
   messages: {
     zh,

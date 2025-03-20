@@ -11,7 +11,7 @@
             <path d="M19 12H5M12 19l-7-7 7-7"></path>
           </svg>
         </button>
-        <h1 class="text-xl font-bold text-law-800 dark:text-white">{{ $t('app.title') }}</h1>
+        <h1 class="text-xl font-bold text-law-800 dark:text-white title-text">{{ $t('app.title') }}</h1>
       </div>
       
       <!-- 添加语言和主题切换 -->
@@ -655,5 +655,17 @@ const uploadDocument = async ({ files, kbId }) => {
 
 <style scoped>
 /* 可以添加特定的样式 */
+.title-text {
+  max-width: 200px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
 
+@media (max-width: 640px) {
+  .title-text {
+    font-size: 1rem;
+    max-width: 150px;
+  }
+}
 </style> 
