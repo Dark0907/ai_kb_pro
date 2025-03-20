@@ -13,7 +13,7 @@
   },
   "chat": {
     "placeholder": "法律に関する質問を入力してください...",
-    "new_placeholder": "法律に関する質問を入力し、Enterキーで送信、Shift+EnterまたはCtrl+Enterで改行してください...",
+    "new_placeholder": "法律に関する質問を入力し、Enterキーを押して送信、Shift+EnterまたはCtrl+Enterで改行...",
     "send": "送信",
     "thinking": "考え中...",
     "copy": "コピー",
@@ -23,14 +23,15 @@
     "start_new": "新しい会話を始める",
     "start_description": "法律に関する質問を入力すると、AIアシスタントが専門的な回答を提供します",
     "legal_consultation": "法律相談",
-    "legal_consultation_desc": "法律問題について質問し、専門的な回答を得る",
+    "legal_consultation_desc": "法的質問をして、専門的な回答を得る",
     "document_analysis": "文書分析",
-    "document_analysis_desc": "法律文書を閲覧し、専門的な解釈を得る",
+    "document_analysis_desc": "法的文書を確認し、専門的な解釈を得る",
     "keyboard_tips": "Enterキーで送信、Shift+Enterで改行",
     "disclaimer": "法律AIアシスタントが提供する情報は参考用であり、法的アドバイスを構成するものではありません",
     "enter_question_prompt": "法律に関する質問を入力してください",
     "error_retry": "エラーが発生しました。後でリフレッシュして再試行してください",
-    "error_occurred": "エラーが発生しました"
+    "error_occurred": "エラーが発生しました",
+    "select_kb_first": "質問する前に知識ベースを選択してください"
   },
   "sidebar": {
     "recent": "最近の会話",

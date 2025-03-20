@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
+import { message } from 'ant-design-vue'
 // import chats from '../assets/mock/chats.json' // 注释掉模拟数据的导入
 
 export const useChatStore = defineStore('chat', () => {
@@ -321,7 +322,7 @@ export const useChatStore = defineStore('chat', () => {
       const chatIndex = chatHistory.value.findIndex(chat => chat.id === chatId)
       if (chatIndex !== -1) {
         chatHistory.value.splice(chatIndex, 1)
-        
+        message.success('删除成功')
         // 保存聊天历史到本地存储
         saveChatHistoryToLocal(chatHistory.value)
         

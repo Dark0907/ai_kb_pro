@@ -82,12 +82,15 @@ import { ref, watch, nextTick, onMounted, defineProps, inject, computed } from '
 import { useChatStore } from '../../stores/chat'
 import { useReferenceStore } from '../../stores/reference'
 import { useI18n } from 'vue-i18n'
+import { useKnowledgeBase } from '@/stores/useKnowledgeBase'
+import { storeToRefs } from 'pinia'
 import MessageItem from './MessageItem.vue'
 import { apiBase } from '@services/index';
 import { userId } from '@services/urlConfig'; // 引入 userId
 import { fetchEventSource } from '@microsoft/fetch-event-source';
 import { Typewriter } from '@utils/typewriter';
 import { useRouter } from 'vue-router';
+import { message } from 'ant-design-vue';
 
 // 使用国际化
 const { t } = useI18n();
@@ -102,6 +105,8 @@ const props = defineProps({
 const chatStore = useChatStore()
 console.log('chatStore',chatStore.currentChat);
 const referenceStore = useReferenceStore()
+const knowledgeBaseStore = useKnowledgeBase();
+const { selectList } = storeToRefs(knowledgeBaseStore);
 const messageInput = ref('')
 const messagesContainer = ref(null)
 const appLayout = inject('appLayout')
@@ -128,31 +133,6 @@ const saveChatHistoryToLocal = (data) => {
       localStorage.setItem('chatHistory', JSON.stringify(data))
     } catch (error) {
       console.error('保存聊天历史到本地存储失败:', error)
-    }
-  }
-}
-
-// 从本地存储获取知识库选择列表
-const getLocalSelectList = () => {
-  const storedData = localStorage.getItem('selectList')
-  if (storedData) {
-    try {
-      return JSON.parse(storedData)
-    } catch (error) {
-      console.error('解析本地存储的知识库选择列表失败:', error)
-      return ['KB969f8f2f026e478eb98c5c4158c0bbac'] // 默认值
-    }
-  }
-  return ['KB969f8f2f026e478eb98c5c4158c0bbac'] // 默认值
-}
-
-// 保存知识库选择列表到本地存储
-const saveSelectListToLocal = (data) => {
-  if (data) {
-    try {
-      localStorage.setItem('selectList', JSON.stringify(data))
-    } catch (error) {
-      console.error('保存知识库选择列表到本地存储失败:', error)
     }
   }
 }
@@ -185,7 +165,6 @@ const saveCurrentChatToLocal = (data) => {
 // 聊天对话
 const chatHistory = ref(getLocalChatHistory())
 const currentChat = ref(getLocalCurrentChat())
-const selectList = ref(getLocalSelectList()); // 从本地存储获取知识库ID列表
 const history = ref([]); // 聊天历史
 const showLoading = ref(false); // 加载状态
 const QA_List = ref([{ answer: '' }]); // 问答列表
@@ -256,6 +235,13 @@ const sendMessage = async () => {
   if (!messageInput.value.trim()) {
     // 显示提示信息
     message.warning(t('chat.enter_question_prompt'));
+    return;
+  }
+  
+  // 检查是否选择了知识库
+  if (!selectList.value || selectList.value.length === 0) {
+    // 显示提示信息：请先选择知识库
+    message.warning(t('chat.select_kb_first') || '请先勾选知识库后再进行提问');
     return;
   }
   
@@ -475,84 +461,4 @@ const scrollToBottom = () => {
 const isMobile = computed(() => {
   return window.innerWidth < 768;
 });
-
-// 在script setup部分添加message对象
-const message = {
-  warning: (text) => {
-    // 创建一个更美观的消息提示元素
-    const messageDiv = document.createElement('div');
-    messageDiv.className = 'fixed top-4 left-1/2 transform -translate-x-1/2 bg-yellow-50 border-l-4 border-yellow-400 text-yellow-700 p-3 rounded shadow-md z-50 flex items-center max-w-md';
-    
-    // 添加警告图标
-    const iconSpan = document.createElement('span');
-    iconSpan.className = 'mr-2 text-yellow-500';
-    iconSpan.innerHTML = `
-      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-        <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
-      </svg>
-    `;
-    
-    // 添加文本内容
-    const textSpan = document.createElement('span');
-    textSpan.textContent = text;
-    
-    // 组合元素
-    messageDiv.appendChild(iconSpan);
-    messageDiv.appendChild(textSpan);
-    document.body.appendChild(messageDiv);
-    
-    // 添加淡入效果
-    messageDiv.style.opacity = '0';
-    messageDiv.style.transition = 'opacity 0.3s ease-in-out';
-    setTimeout(() => {
-      messageDiv.style.opacity = '1';
-    }, 10);
-    
-    // 2秒后淡出并移除
-    setTimeout(() => {
-      messageDiv.style.opacity = '0';
-      setTimeout(() => {
-        document.body.removeChild(messageDiv);
-      }, 300);
-    }, 2000);
-  },
-  error: (text) => {
-    // 创建一个更美观的错误消息提示元素
-    const messageDiv = document.createElement('div');
-    messageDiv.className = 'fixed top-4 left-1/2 transform -translate-x-1/2 bg-red-50 border-l-4 border-red-400 text-red-700 p-3 rounded shadow-md z-50 flex items-center max-w-md';
-    
-    // 添加错误图标
-    const iconSpan = document.createElement('span');
-    iconSpan.className = 'mr-2 text-red-500';
-    iconSpan.innerHTML = `
-      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
-      </svg>
-    `;
-    
-    // 添加文本内容
-    const textSpan = document.createElement('span');
-    textSpan.textContent = text;
-    
-    // 组合元素
-    messageDiv.appendChild(iconSpan);
-    messageDiv.appendChild(textSpan);
-    document.body.appendChild(messageDiv);
-    
-    // 添加淡入效果
-    messageDiv.style.opacity = '0';
-    messageDiv.style.transition = 'opacity 0.3s ease-in-out';
-    setTimeout(() => {
-      messageDiv.style.opacity = '1';
-    }, 10);
-    
-    // 2秒后淡出并移除
-    setTimeout(() => {
-      messageDiv.style.opacity = '0';
-      setTimeout(() => {
-        document.body.removeChild(messageDiv);
-      }, 300);
-    }, 2000);
-  }
-};
 </script>

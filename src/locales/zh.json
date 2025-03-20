@@ -30,7 +30,8 @@
     "disclaimer": "法律AI助手提供的信息仅供参考，不构成法律建议",
     "enter_question_prompt": "请输入您的法律问题",
     "error_retry": "出错了，请稍后刷新重试",
-    "error_occurred": "出错了"
+    "error_occurred": "出错了",
+    "select_kb_first": "请先勾选知识库后再进行提问"
   },
   "sidebar": {
     "recent": "最近对话",

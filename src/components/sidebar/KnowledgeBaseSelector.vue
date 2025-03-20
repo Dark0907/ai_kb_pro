@@ -227,6 +227,13 @@ const togglePersonalDocs = () => {
 // 更新选中的知识库
 const updateSelection = () => {
   knowledgeBaseStore.setSelectList([...selectedKbs.value]);
+  
+  // 保存到localStorage，确保刷新后能保持选择状态
+  try {
+    localStorage.setItem('selectList', JSON.stringify(selectedKbs.value));
+  } catch (error) {
+    console.error('保存知识库选择列表到本地存储失败:', error);
+  }
 };
 
 // 全选知识库
