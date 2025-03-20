@@ -1,18 +1,44 @@
 <template>
   <div class="msg-view-comp">
-    <h2>{{ msgInfo.subject }}</h2>
-    <p><strong>发送人:</strong> {{ msgInfo.senderName }} ({{ msgInfo.senderEmail }})</p>
-    <p><strong>发送日期:</strong> {{ new Date(msgInfo.clientSubmitTime).toLocaleString() }}</p>
-    <div v-html="msgInfo.body"></div>
-    <p><strong>关联附件</strong></p>
-    <div v-html="attachmentsHtml"></div>
+    <div v-if="loading" class="loading-container">
+      <div class="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-accent"></div>
+      <p class="mt-2 text-law-600 dark:text-law-300">加载中...</p>
+    </div>
+    
+    <div v-else-if="error" class="error-container">
+      <p class="text-red-500">{{ error }}</p>
+      <button @click="downloadFile" class="download-btn mt-4">
+        <span class="mr-2">⬇️</span> 下载原始文件查看
+      </button>
+    </div>
+    
+    <div v-else-if="msgInfo.subject" class="email-content">
+      <h2 class="text-lg font-bold mb-4">{{ msgInfo.subject }}</h2>
+      <div class="email-header mb-4 p-3 bg-law-50 dark:bg-law-700/50 rounded-lg">
+        <p><strong>发送人:</strong> {{ msgInfo.senderName }} <span v-if="msgInfo.senderEmail">({{ msgInfo.senderEmail }})</span></p>
+        <p v-if="msgInfo.recipients && msgInfo.recipients.length > 0"><strong>收件人:</strong> {{ formatRecipients(msgInfo.recipients) }}</p>
+        <p v-if="msgInfo.clientSubmitTime"><strong>发送日期:</strong> {{ formatDate(msgInfo.clientSubmitTime) }}</p>
+      </div>
+      
+      <div class="email-body mb-4 p-4 bg-white dark:bg-law-800 rounded-lg border border-law-200 dark:border-law-700" v-html="formattedBody"></div>
+      
+      <!-- <div v-if="msgInfo.attachments && msgInfo.attachments.length > 0" class="email-attachments mt-4 p-3 bg-law-50 dark:bg-law-700/50 rounded-lg">
+        <h3 class="text-md font-semibold mb-2">附件 ({{ msgInfo.attachments.length }})</h3>
+        <ul class="list-disc pl-5">
+          <li v-for="(attachment, index) in attachmentList" :key="index" class="mb-2 flex items-center">
+            <span class="mr-2">📎</span>
+            <span>{{ attachment.name }}</span>
+            <a v-if="attachment.url" @click.prevent="downloadAttachment(attachment)" href="#" class="ml-2 text-accent hover:underline">下载</a>
+          </li>
+        </ul>
+      </div> -->
+    </div>
   </div>
 </template>
 
-<script lang="ts">
-import { defineComponent, ref, onMounted } from 'vue';
-// import iconv from 'iconv-lite';
-// import MsgReader from '@kenjiuno/msgreader';
+<script>
+import { defineComponent, ref, computed, onMounted } from 'vue';
+import MsgReader from 'msgreader';
 
 export default defineComponent({
   props: {
@@ -22,77 +48,276 @@ export default defineComponent({
     },
   },
   setup(props) {
+    const loading = ref(true);
+    const error = ref(null);
     const msgInfo = ref({
       subject: '',
       senderName: '',
       senderEmail: '',
+      recipients: [],
       clientSubmitTime: '',
       body: '',
+      attachments: []
     });
-    const attachmentsHtml = ref('');
+    const attachmentList = ref([]);
 
-    // 换行处理
-    // const formattedContent = (string: string) => {
-    //   // 将换行符转换为 <br> 标签
-    //   return string.replace(/(\r\n\r\n)/g, '<br>');
-    // };
+    // 格式化日期
+    const formatDate = (dateString) => {
+      try {
+        if (!dateString) return '';
+        const date = new Date(dateString);
+        return date.toLocaleString();
+      } catch (e) {
+        return dateString || '';
+      }
+    };
 
-    // // 编码转换
-    // const transcoding = (string: string) => {
-    //   // 将换行符转换为 <br> 标签
-    //   return iconv.decode(string, 'gb2312');
-    // };
+    // 格式化收件人列表
+    const formatRecipients = (recipients) => {
+      if (!recipients || !recipients.length) return '';
+      return recipients.map(r => r.name ? `${r.name} <${r.email}>` : r.email).join(', ');
+    };
 
-    // const fetchData = async () => {
-    //   try {
-    //     const response = await fetch(props.sourceUrl);
-    //     const arrayBuffer = await response.arrayBuffer();
-    //     const msgReader = new MsgReader(arrayBuffer);
-    //     const info = msgReader.getFileData();
-    //     // 解码转换输出html
-    //     msgInfo.value = {
-    //       subject: transcoding(info.subject) || 'No Subject',
-    //       senderName: transcoding(info.senderName) || 'Unknown Sender',
-    //       senderEmail: transcoding(info.senderEmail) || '',
-    //       clientSubmitTime: info.clientSubmitTime || '',
-    //       body: formattedContent(transcoding(info.body)) || '',
-    //     };
-    //     // console.log('info', msgInfo.value);
-    //     attachmentsHtml.value = info.attachments
-    //       .map((attachment, i) => {
-    //         const fileName = transcoding(attachment.fileName);
-    //         const file = msgReader.getAttachment(i);
-    //         const fileUrl = URL.createObjectURL(
-    //           new File([file.content], fileName, {
-    //             type: attachment.attachMimeTag
-    //               ? attachment.attachMimeTag
-    //               : 'application/octet-stream',
-    //           })
-    //         );
-    //         return `<p>${fileName}<a target="_blank" href="${fileUrl}"> 查看</a></p>`;
-    //       })
-    //       .join('');
-    //   } catch (error) {
-    //     console.error('读取失败:', error);
-    //   }
-    // };
+    // 处理邮件正文格式
+    const formattedBody = computed(() => {
+      if (!msgInfo.value.body) return '';
+      
+      // 将换行符转换为<br>标签
+      let formatted = msgInfo.value.body
+        .replace(/(\r\n\r\n|\n\n)/g, '<br><br>')
+        .replace(/(\r\n|\n)/g, '<br>');
+      
+      // 检测是否已经是HTML内容
+      if (formatted.toLowerCase().includes('<html') || 
+          formatted.toLowerCase().includes('<body') || 
+          formatted.toLowerCase().includes('<div') || 
+          formatted.toLowerCase().includes('<p>')) {
+        return formatted;
+      }
+      
+      // 不是HTML内容，则包装在<div>中
+      return `<div class="msg-body">${formatted}</div>`;
+    });
 
+    // 下载原始文件
+    const downloadFile = () => {
+      try {
+        // 获取文件名
+        const urlParts = props.sourceUrl.split('/');
+        let fileName = urlParts[urlParts.length - 1];
+        
+        // 如果是data URL，则使用默认名称
+        if (props.sourceUrl.startsWith('data:')) {
+          fileName = 'email.msg';
+        }
+        
+        // 创建下载链接
+        const link = document.createElement('a');
+        link.href = props.sourceUrl;
+        link.download = fileName;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      } catch (e) {
+        console.error('下载文件失败:', e);
+      }
+    };
+
+    // 下载附件
+    const downloadAttachment = (attachment) => {
+      try {
+        if (!attachment.url || !attachment.name) {
+          console.error('附件下载失败：缺少URL或文件名');
+          return;
+        }
+        
+        // 创建下载链接
+        const link = document.createElement('a');
+        link.href = attachment.url;
+        link.download = attachment.name; // 确保使用正确的文件名（包含扩展名）
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      } catch (e) {
+        console.error('附件下载失败:', e);
+      }
+    };
+
+    // 获取MSG文件内容
+    const fetchData = async () => {
+      try {
+        loading.value = true;
+        error.value = null;
+
+        // 从URL获取MSG文件
+        const response = await fetch(props.sourceUrl);
+        if (!response.ok) {
+          throw new Error(`获取文件失败: ${response.status} ${response.statusText}`);
+        }
+
+        // 转换为ArrayBuffer
+        const arrayBuffer = await response.arrayBuffer();
+        
+        // 解析MSG文件
+        const msgReader = new MsgReader(arrayBuffer);
+        const msgData = msgReader.getFileData();
+        console.log('msgReader:', msgReader);
+        // 提取需要的信息
+        msgInfo.value = {
+          subject: msgData.subject || '(无主题)',
+          senderName: msgData.senderName || '',
+          senderEmail: msgData.senderEmail || '',
+          recipients: msgData.recipients || [],
+          clientSubmitTime: msgData.clientSubmitTime || '',
+          body: msgData.body || msgData.bodyHTML || '(无正文)',
+          attachments: msgData.attachments || []
+        };
+        
+        console.log('MSG解析结果:', msgInfo.value);
+        
+        // 处理附件
+        if (msgData.attachments && msgData.attachments.length > 0) {
+          attachmentList.value = msgData.attachments.map((attachment, index) => {
+            let fileUrl = null;
+            let fileName = attachment.fileName || `附件${index + 1}`;
+            
+            try {
+              // 尝试获取附件内容并创建URL
+              const attachmentData = msgReader.getAttachment(index);
+              if (attachmentData && attachmentData.content) {
+                // 确保文件名包含扩展名
+                if (!fileName.includes('.')) {
+                  // 根据MIME类型添加默认扩展名
+                  const contentType = attachment.contentType || '';
+                  if (contentType.includes('pdf')) {
+                    fileName += '.pdf';
+                  } else if (contentType.includes('word') || contentType.includes('document')) {
+                    fileName += '.docx';
+                  } else if (contentType.includes('excel') || contentType.includes('sheet')) {
+                    fileName += '.xlsx';
+                  } else if (contentType.includes('image/jpeg')) {
+                    fileName += '.jpg';
+                  } else if (contentType.includes('image/png')) {
+                    fileName += '.png';
+                  } else if (contentType.includes('text/plain')) {
+                    fileName += '.txt';
+                  } else if (contentType.includes('html')) {
+                    fileName += '.html';
+                  } else {
+                    // 默认添加通用扩展名
+                    fileName += '.bin';
+                  }
+                }
+                
+                // 创建Blob对象并附带文件名
+                const blob = new Blob([attachmentData.content], {
+                  type: attachment.contentType || 'application/octet-stream'
+                });
+                
+                fileUrl = URL.createObjectURL(blob);
+              }
+            } catch (e) {
+              console.warn(`无法获取附件 ${fileName} 的内容:`, e);
+            }
+            
+            return {
+              name: fileName,
+              url: fileUrl
+            };
+          });
+        }
+      } catch (e) {
+        console.error('解析MSG文件失败:', e);
+        error.value = `无法解析MSG文件: ${e.message || '未知错误'}`;
+      } finally {
+        loading.value = false;
+      }
+    };
+
+    // 组件挂载时获取数据
     onMounted(() => {
       fetchData();
     });
 
     return {
+      loading,
+      error,
       msgInfo,
-      attachmentsHtml,
+      attachmentList,
+      formattedBody,
+      formatDate,
+      formatRecipients,
+      downloadFile,
+      downloadAttachment
     };
-  },
+  }
 });
 </script>
 
 <style lang="scss">
 .msg-view-comp {
-  // width: fit-content;
-  width: 750px;
-  padding: 0 20px 20px 20px;
+  width: 100%;
+  max-width: 750px;
+  margin: 0 auto;
+  padding: 1rem;
+  
+  .loading-container, .error-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+    text-align: center;
+  }
+  
+  .email-content {
+    h2 {
+      border-bottom: 1px solid #e5e7eb;
+      padding-bottom: 0.5rem;
+    }
+  }
+  
+  .email-body {
+    line-height: 1.6;
+    
+    a {
+      color: #3182ce;
+      text-decoration: none;
+      
+      &:hover {
+        text-decoration: underline;
+      }
+    }
+    
+    .msg-body {
+      white-space: pre-wrap;
+    }
+  }
+  
+  .download-btn {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.5rem 1rem;
+    background-color: #3182ce;
+    color: white;
+    border-radius: 0.375rem;
+    font-weight: 500;
+    transition: background-color 0.2s;
+    
+    &:hover {
+      background-color: #2c5282;
+    }
+  }
+}
+
+/* 暗黑模式适配 */
+.dark {
+  .msg-view-comp {
+    .email-body {
+      a {
+        color: #63b3ed;
+      }
+    }
+  }
 }
 </style>
