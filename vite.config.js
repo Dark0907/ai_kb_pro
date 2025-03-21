@@ -59,11 +59,11 @@ export default defineConfig(({ command, mode }) => {
         '^/kb_api': {
           target: 'https://ips.wanhuida.cn/kb_api/',
           changeOrigin: true,
-          rewrite: path => path.replace(/^\/kb_api/, ''), 
+          rewrite: path => path.replace(/^\/kb_api/, ''),
         },
         // 处理直接以/ip_service开头的请求
         '^/ip_service': {
-          target: 'https://ips.wanhuida.cn/',
+          target: 'https://ips.wanhuida.cn',
           changeOrigin: true,
           rewrite: path => path.replace(/^\/ip_service/, '/ip_service'),
         },
