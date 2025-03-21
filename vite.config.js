@@ -63,7 +63,7 @@ export default defineConfig(({ command, mode }) => {
         },
         // 处理直接以/ip_service开头的请求
         '^/ip_service': {
-          target: 'http://192.168.0.168:8000',
+          target: 'https://ips.wanhuida.cn/',
           changeOrigin: true,
           rewrite: path => path.replace(/^\/ip_service/, '/ip_service'),
         },

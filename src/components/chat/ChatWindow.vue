@@ -165,9 +165,8 @@ const saveCurrentChatToLocal = (data) => {
 // 聊天对话
 const chatHistory = ref(getLocalChatHistory())
 const currentChat = ref(getLocalCurrentChat())
-const history = ref([]); // 聊天历史
+const history = ref([]); // 聊天历史，格式为[["问题", "回答"]]（二维数组）
 const showLoading = ref(false); // 加载状态
-const QA_List = ref([{ answer: '' }]); // 问答列表
 
 const typewriter = new Typewriter((str) => {
   if (str && currentMessageId) {
@@ -195,23 +194,37 @@ onMounted(async () => {
   } else if (props.chatId === 'new') {
     // 处理新对话页面的情况
     if (chatStore.currentChat) {
-      chatStore.currentChat = null;
+    chatStore.currentChat = null;
     }
   }
 })
 
-// 监听聊天ID变化
-watch(() => props.chatId, async (newChatId) => {
+watch(() => props.chatId, async (newChatId, oldChatId) => {
   if (newChatId && newChatId !== 'new') {
     await chatStore.fetchChat(newChatId);
+    
+    // 使用公共方法获取最新的一组问答对
+    const historyItem = getLatestHistoryItem();
+    
+    if (historyItem) {
+      // 更新history，使用二维数组格式
+      history.value = [historyItem];
+      console.log('更新history二维数组格式:', history.value);
+    } else {
+      // 如果没有完整的问答对，清空history
+      history.value = [];
+    }
+    
     scrollToBottom();
   } else if (newChatId === 'new') {
     // 处理新对话页面的情况
     if (chatStore.currentChat) {
       chatStore.currentChat = null;
     }
+    // 清空history
+    history.value = [];
   }
-})
+}, { immediate: true })
 
 // 监听消息变化，自动滚动到底部
 watch(() => chatStore.currentChat?.messages.length, () => {
@@ -300,8 +313,59 @@ const sendMessage = async () => {
   }
 }
 
+// 从聊天消息中获取最新的一组问答对，用于 history
+const getLatestHistoryItem = () => {
+  console.log("chatStore.currentChat", chatStore.currentChat);
+
+  if (!chatStore.currentChat || chatStore.currentChat.messages.length < 2) {
+    history.value = [];
+    console.log("消息不足，清空history");
+    return;
+  }
+
+  // 获取所有消息
+  const messages = chatStore.currentChat.messages;
+  let lastAssistantIndex = -1;
+  let lastUserIndex = -1;
+
+  // 从后向前查找，先找到最后一个 "assistant"，然后找它上面的 "user"
+  for (let i = messages.length - 1; i >= 0; i--) {
+    if (messages[i].role === "assistant") {
+      lastAssistantIndex = i;
+    } else if (messages[i].role === "user" && lastAssistantIndex !== -1) {
+      lastUserIndex = i;
+      break; // 找到匹配的 "user" 立即停止
+    }
+  }
+
+  console.log("lastUserIndex:", lastUserIndex, "lastAssistantIndex:", lastAssistantIndex);
+
+  // 确保找到有效的问答对
+  if (lastUserIndex !== -1 && lastAssistantIndex !== -1 && lastUserIndex < lastAssistantIndex) {
+    const userQuestion = messages[lastUserIndex].content;
+    const aiAnswer = messages[lastAssistantIndex].content;
+
+    // 创建新的 history 项 - 使用二维数组格式 [["问题", "回答"]]
+    const historyItem = [userQuestion, aiAnswer];
+
+    // 更新 history，使用二维数组格式
+    history.value = [historyItem];
+    console.log("更新 history 二维数组格式:", history.value);
+  } else {
+    // 如果没有完整的问答对，清空 history
+    history.value = [];
+    console.log("没有完整问答对，清空 history");
+  }
+};
+
+
 // 发送API请求
 const sendApiRequest = async (question) => {
+  // 使用公共方法获取最新的聊天记录
+  getLatestHistoryItem();
+  console.log('historyItem',history.value)
+  // return;
+  
   // 重置完整响应内容
   fullResponse = '';
 
@@ -369,8 +433,7 @@ const sendApiRequest = async (question) => {
             // 如果 response 为空但 history 有值，说明这是最后一条消息
             if (res.response === "" && res.history && res.history.length > 0) {
               // 最后一条消息，包含完整的对话历史
-              // 不做任何处理，等待 onclose 处理
-              console.log("收到最后一条消息，包含完整历史");
+              // console.log('最后一条消息，包含完整的对话历史',res.history)
             } else {
               // 正常的消息片段，累加到 fullResponse
               fullResponse += res.response;

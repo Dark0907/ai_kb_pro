@@ -117,7 +117,6 @@ const props = defineProps({
     required: true
   }
 })
-console.log('message',props);
 defineEmits(['reference-click'])
 
 // 状态变量，控制复制图标的状态
