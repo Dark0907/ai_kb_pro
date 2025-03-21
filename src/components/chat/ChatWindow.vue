@@ -34,6 +34,7 @@
           :key="message.id"
           :message="message"
           @reference-click="handleReferenceClick"
+          @reload-message="handleReloadMessage"
         />
       </template>
     </div>
@@ -499,6 +500,44 @@ const handleReferenceClick = (references) => {
     // 确保引用面板显示
     referenceStore.setShowReferencePanel(true);
   }
+}
+
+// 处理重新加载消息
+const handleReloadMessage = (message) => {
+  if (message.role !== 'assistant') return;
+  
+  // 获取所有消息
+  const messages = chatStore.currentChat.messages;
+  // 在当前消息之前找到最近的用户消息
+  const messageIndex = messages.findIndex(m => m.id === message.id);
+  
+  if (messageIndex > 0) {
+    // 向前查找最近的用户消息
+    for (let i = messageIndex - 1; i >= 0; i--) {
+      if (messages[i].role === 'user') {
+        const userQuestion = messages[i].content;
+        console.log('找到关联的用户问题:', userQuestion);
+        
+        // 添加用户问题作为新消息
+        chatStore.currentChat.messages.push({
+          id: Date.now().toString(),
+          role: 'user',
+          content: userQuestion,
+          timestamp: new Date().toISOString()
+        });
+        
+        // 保存当前聊天到本地存储
+        chatStore.saveCurrentChatToLocal(chatStore.currentChat);
+        
+        // 触发重新加载
+        chatStore.isLoading = true;
+        sendApiRequest(userQuestion);
+        return;
+      }
+    }
+  }
+  
+  console.error('未找到关联的用户问题');
 }
 
 // 滚动到底部

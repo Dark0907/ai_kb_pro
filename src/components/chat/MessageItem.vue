@@ -59,6 +59,19 @@
               
               <div class="flex space-x-3 mt-1">
                 <button 
+                  v-if="message.role === 'assistant'"
+                  @click="reloadMessage"
+                  class="text-law-600 dark:text-law-400 hover:text-accent dark:hover:text-accent transition-colors duration-200"
+                  :title="$t('chat.reload')"
+                >
+                  <svg class="w-4 h-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 2v6h-6"></path>
+                    <path d="M3 12a9 9 0 0 1 15-6.7L21 8"></path>
+                    <path d="M3 22v-6h6"></path>
+                    <path d="M21 12a9 9 0 0 1-15 6.7L3 16"></path>
+                  </svg>
+                </button>
+                <button 
                   @click="copyMessage"
                   class="text-law-600 dark:text-law-400 hover:text-accent dark:hover:text-accent transition-colors duration-200"
                   :title="$t('chat.copy')"
@@ -117,7 +130,7 @@ const props = defineProps({
     required: true
   }
 })
-defineEmits(['reference-click'])
+const emit = defineEmits(['reference-click', 'reload-message'])
 
 // 状态变量，控制复制图标的状态
 const isCopied = ref(false)
@@ -250,6 +263,12 @@ const shareMessage = () => {
   } else {
     console.log('浏览器不支持原生分享')
   }
+}
+
+// 重新加载消息
+const reloadMessage = () => {
+  // 触发重新加载事件，通知父组件
+  emit('reload-message', props.message);
 }
 </script>
 
