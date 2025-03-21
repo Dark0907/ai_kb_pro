@@ -199,32 +199,18 @@ onMounted(async () => {
   }
 })
 
-watch(() => props.chatId, async (newChatId, oldChatId) => {
+// 监听聊天ID变化
+watch(() => props.chatId, async (newChatId) => {
   if (newChatId && newChatId !== 'new') {
     await chatStore.fetchChat(newChatId);
-    
-    // 使用公共方法获取最新的一组问答对
-    const historyItem = getLatestHistoryItem();
-    
-    if (historyItem) {
-      // 更新history，使用二维数组格式
-      history.value = [historyItem];
-      console.log('更新history二维数组格式:', history.value);
-    } else {
-      // 如果没有完整的问答对，清空history
-      history.value = [];
-    }
-    
     scrollToBottom();
   } else if (newChatId === 'new') {
     // 处理新对话页面的情况
     if (chatStore.currentChat) {
       chatStore.currentChat = null;
     }
-    // 清空history
-    history.value = [];
   }
-}, { immediate: true })
+})
 
 // 监听消息变化，自动滚动到底部
 watch(() => chatStore.currentChat?.messages.length, () => {
