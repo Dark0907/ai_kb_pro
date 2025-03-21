@@ -158,6 +158,8 @@ import { useKnowledgeBase } from '@/stores/useKnowledgeBase';
 import { storeToRefs } from 'pinia';
 import { useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n'
+import ipsResquest from '@/services/ipsConfig'
+import { message } from 'ant-design-vue'
 // 使用国际化
 const { t } = useI18n();
 
@@ -225,27 +227,90 @@ const togglePersonalDocs = () => {
 };
 
 // 更新选中的知识库
-const updateSelection = () => {
+const updateSelection = async (e) => {
+  // 更新Store中的数据
   knowledgeBaseStore.setSelectList([...selectedKbs.value]);
   
   // 保存到localStorage，确保刷新后能保持选择状态
   try {
     localStorage.setItem('selectList', JSON.stringify(selectedKbs.value));
+    
+    // 如果有事件对象，说明是通过checkbox触发的
+    if (e && e.target) {
+      const kbId = e.target.value;
+      const checked = e.target.checked;
+      
+      // 调用ipsKbCheck接口保存状态
+      try {
+        const res = await ipsResquest.ipsKbCheck({ 
+          kb_id: kbId, 
+          ucheck: checked ? 1 : 0 
+        });
+        
+        if (!res.success) {
+          message.error('保存知识库状态失败');
+          console.error('保存知识库状态失败:', res);
+        }
+      } catch (error) {
+        message.error('保存知识库状态失败');
+        console.error('调用ipsKbCheck接口失败:', error);
+      }
+    }
   } catch (error) {
     console.error('保存知识库选择列表到本地存储失败:', error);
   }
 };
 
 // 全选知识库
-const selectAllKbs = () => {
+const selectAllKbs = async () => {
   selectedKbs.value = knowledgeBaseList.value.map(kb => kb.kb_id);
-  updateSelection();
+  
+  // 更新Store中的数据
+  knowledgeBaseStore.setSelectList([...selectedKbs.value]);
+  
+  // 保存到localStorage
+  try {
+    localStorage.setItem('selectList', JSON.stringify(selectedKbs.value));
+    
+    // 对所有知识库调用ipsKbCheck接口
+    for (const kbId of selectedKbs.value) {
+      try {
+        await ipsResquest.ipsKbCheck({ kb_id: kbId, ucheck: 1 });
+      } catch (error) {
+        console.error(`知识库${kbId}状态保存失败:`, error);
+      }
+    }
+  } catch (error) {
+    console.error('保存知识库选择列表到本地存储失败:', error);
+  }
 };
 
 // 清空选择
-const clearSelection = () => {
+const clearSelection = async () => {
+  // 记录之前选中的知识库ID
+  const previousSelected = [...selectedKbs.value];
+  
+  // 清空选择
   selectedKbs.value = [];
-  updateSelection();
+  
+  // 更新Store中的数据
+  knowledgeBaseStore.setSelectList([]);
+  
+  // 保存到localStorage
+  try {
+    localStorage.setItem('selectList', JSON.stringify([]));
+    
+    // 对之前选中的所有知识库调用ipsKbCheck接口取消选择
+    for (const kbId of previousSelected) {
+      try {
+        await ipsResquest.ipsKbCheck({ kb_id: kbId, ucheck: 0 });
+      } catch (error) {
+        console.error(`知识库${kbId}状态保存失败:`, error);
+      }
+    }
+  } catch (error) {
+    console.error('保存知识库选择列表到本地存储失败:', error);
+  }
 };
 
 // 打开知识库管理界面
