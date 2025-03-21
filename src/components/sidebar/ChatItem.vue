@@ -101,13 +101,10 @@ const formatDate = (timestamp) => {
 // 删除聊天确认
 const confirmDelete = async () => {
   try {
-    // 调用 store 中的删除方法
-    await chatStore.deleteChat(props.chat.id)
-    
     // 关闭确认弹框
     showDeleteConfirm.value = false
     
-    // 通知父组件聊天已被删除
+    // 通知父组件聊天被删除
     emit('delete', props.chat.id)
   } catch (error) {
     console.error('删除聊天失败:', error)

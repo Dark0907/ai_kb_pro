@@ -131,6 +131,7 @@ import { useRouter } from 'vue-router'
 import { useChatStore } from '../../stores/chat'
 import ChatItem from './ChatItem.vue'
 import { useI18n } from 'vue-i18n'
+import { message } from 'ant-design-vue'
 // 使用国际化
 const { t } = useI18n();
 
@@ -188,6 +189,7 @@ const hasSearchResults = computed(() => {
 // 选择聊天
 const selectChat = (chatId) => {
   currentChatId.value = chatId
+  console.log('selectChat',chatId)
   router.push(`/chat/${chatId}`)
   
   // 在移动端关闭侧边栏
@@ -198,6 +200,7 @@ const selectChat = (chatId) => {
 
 // 创建新聊天
 const createNewChat = () => {
+  currentChatId.value = ''
   // 不再直接创建对话，而是跳转到新对话页面
   router.push('/chat/new')
   
@@ -213,11 +216,23 @@ const togglePinChat = (chatId) => {
 }
 
 // 删除聊天
-const deleteChat = (chatId) => {
-  chatStore.deleteChat(chatId)
-  // 如果删除的是当前活动的聊天，则切换到第一个聊天
-  if (chatId === currentChatId.value && chatStore.chatHistory.length > 0) {
-    selectChat(chatStore.chatHistory[0].id)
+const deleteChat = async (chatId) => {
+  try {
+    // 调用store中的删除方法
+    const result = await chatStore.deleteChat(chatId)
+    
+    // 如果删除成功且删除的是当前活动的聊天，则根据情况跳转
+    if (result && chatId === currentChatId.value) {
+      // 检查是否还有其他聊天
+      if (chatStore.chatHistory.length > 0) {
+        // 如果还有聊天，切换到第一个聊天
+        selectChat(chatStore.chatHistory[0].id)
+      } else {
+        createNewChat()
+      }
+    }
+  } catch (error) {
+    message.error('删除聊天失败')
   }
 }
 

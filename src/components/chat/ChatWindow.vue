@@ -103,7 +103,6 @@ const props = defineProps({
 })
 
 const chatStore = useChatStore()
-console.log('chatStore',chatStore.currentChat);
 const referenceStore = useReferenceStore()
 const knowledgeBaseStore = useKnowledgeBase();
 const { selectList } = storeToRefs(knowledgeBaseStore);
@@ -301,11 +300,9 @@ const sendMessage = async () => {
 
 // 从聊天消息中获取最新的一组问答对，用于 history
 const getLatestHistoryItem = () => {
-  console.log("chatStore.currentChat", chatStore.currentChat);
-
   if (!chatStore.currentChat || chatStore.currentChat.messages.length < 2) {
     history.value = [];
-    console.log("消息不足，清空history");
+    // console.log("消息不足，清空history");
     return;
   }
 
@@ -336,11 +333,11 @@ const getLatestHistoryItem = () => {
 
     // 更新 history，使用二维数组格式
     history.value = [historyItem];
-    console.log("更新 history 二维数组格式:", history.value);
+    // console.log("更新 history 二维数组格式:", history.value);
   } else {
     // 如果没有完整的问答对，清空 history
     history.value = [];
-    console.log("没有完整问答对，清空 history");
+    // console.log("没有完整问答对，清空 history");
   }
 };
 

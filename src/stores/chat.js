@@ -332,11 +332,6 @@ export const useChatStore = defineStore('chat', () => {
         // 如果当前聊天被删除，则清空当前聊天
         if (currentChat.value && currentChat.value.id === chatId) {
           currentChat.value = null
-          
-          // 如果还有其他聊天，则切换到第一个聊天
-          if (chatHistory.value.length > 0) {
-            await fetchChat(chatHistory.value[0].id)
-          }
         }
         
         return true
