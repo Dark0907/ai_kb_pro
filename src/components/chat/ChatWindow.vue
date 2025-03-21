@@ -272,7 +272,14 @@ const sendMessage = async () => {
       await sendApiRequest(q.trim());
       
       // 导航到新对话页面
+      console.log('创建了新对话，ID:', chatStore.currentChatId);
       router.push(`/chat/${chatStore.currentChatId}`);
+      
+      // 通知其他组件进行更新
+      window.dispatchEvent(new CustomEvent('chat-created', { 
+        detail: { chatId: chatStore.currentChatId } 
+      }));
+      
       return;
     }
     

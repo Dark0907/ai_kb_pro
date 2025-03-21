@@ -126,7 +126,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, nextTick } from 'vue'
+import { ref, computed, onMounted, nextTick, watch, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useChatStore } from '../../stores/chat'
 import ChatItem from './ChatItem.vue'
@@ -151,7 +151,44 @@ onMounted(async () => {
   if (route.name === 'Chat' && route.params.id) {
     currentChatId.value = route.params.id
   }
+  
+  // 监听聊天创建事件
+  window.addEventListener('chat-created', handleChatCreated);
 })
+
+// 在组件卸载时移除事件监听器
+onUnmounted(() => {
+  window.removeEventListener('chat-created', handleChatCreated);
+})
+
+// 处理聊天创建事件
+const handleChatCreated = async (event) => {
+  console.log('收到聊天创建事件:', event.detail);
+  
+  // 刷新聊天历史列表
+  await chatStore.fetchChatHistory();
+  
+  // 更新当前聊天ID
+  if (event.detail && event.detail.chatId) {
+    currentChatId.value = event.detail.chatId;
+  }
+}
+
+// 监听store里的currentChatId变化，以保持同步
+watch(() => chatStore.currentChatId, (newChatId) => {
+  if (newChatId && newChatId !== 'new' && newChatId !== currentChatId.value) {
+    console.log('监测到新的聊天ID:', newChatId)
+    currentChatId.value = newChatId
+  }
+})
+
+// 监听路由变化
+watch(() => router.currentRoute.value.params.id, (newId) => {
+  if (newId && newId !== 'new') {
+    console.log('路由参数变化，更新当前聊天ID:', newId);
+    currentChatId.value = newId;
+  }
+}, { immediate: true })
 
 // 过滤聊天历史
 const filteredChats = computed(() => {
